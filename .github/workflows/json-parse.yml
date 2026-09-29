@@ -1,0 +1,38 @@
+name: JSON Parse Validation
+
+on:
+  push:
+    paths:
+      - '**/*.json'
+      - '.github/workflows/json-parse.yml'
+  pull_request:
+    paths:
+      - '**/*.json'
+      - '.github/workflows/json-parse.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate-json:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate JSON syntax
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          failed = False
+          for path in Path(".").rglob("*.json"):
+              try:
+                  json.loads(path.read_text(encoding="utf-8"))
+                  print(f"OK: {path}")
+              except Exception as exc:
+                  failed = True
+                  print(f"ERROR: {path}: {exc}")
+
+          raise SystemExit(1 if failed else 0)
+          PY
