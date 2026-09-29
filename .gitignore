@@ -1,0 +1,49 @@
+# Discovery outputs / client data
+output/
+outputs/
+*.sha256
+samples/generated/
+artifacts/
+reports/generated/
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.pfx
+*.p12
+*.kdbx
+credentials*
+secrets*
+inventory/hosts.csv
+orchestrator/inventory/hosts.csv
+
+# PowerShell / Windows
+*.clixml
+*.ps1xml
+Thumbs.db
+Desktop.ini
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# Editors / IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
