@@ -8,7 +8,7 @@
 - **Windows / AD Collector:** 0.3.0 — candidate, validado em LAB para coleta local/AD, FTP e SMB; teste específico de AD stale ainda precisa de validação com técnica compatível com atributos system-managed.
 - **Linux Collector:** 0.3.0 — candidate, validado em LAB em Ubuntu e Rocky para SSH, FTP, Samba, password policy, serviços e plataforma.
 - **Analyzer / Rule Engine:** 0.2.0 — candidate, 19 regras determinísticas e rastreabilidade para a evidência de origem.
-- **Network Discovery Scanner:** 0.4.0 — candidate MVP, sem credenciais, criado para descoberta por múltiplos ranges antes do deep discovery.
+- **Network Discovery Scanner:** 0.4.1 — candidate, incorporating first real home/LAB ground-truth findings, sem credenciais, criado para descoberta por múltiplos ranges antes do deep discovery.
 - **Reporting Engine:** planejado após Network Discovery + Asset Resolver.
 
 > Saídas reais de discovery devem ser tratadas como **CONFIDENCIAL — DADOS DO CLIENTE**.
