@@ -1,0 +1,7 @@
+# Default repository owner
+* @brunosfs-droid
+
+# Collectors and schemas require explicit owner review
+/collectors/ @brunosfs-droid
+/schemas/ @brunosfs-droid
+/.github/workflows/ @brunosfs-droid
