@@ -2,7 +2,7 @@ import importlib.util
 import pathlib
 import unittest
 
-MODULE_PATH = pathlib.Path(__file__).resolve().parents[1] / 'network_discovery' / 'P01_Network_Discovery_Scanner.py'
+MODULE_PATH = pathlib.Path(__file__).with_name('../network_discovery/P01_Network_Discovery_Scanner.py')
 spec = importlib.util.spec_from_file_location('p01_network_discovery', MODULE_PATH)
 mod = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mod)
@@ -49,6 +49,22 @@ class ClassificationTests(unittest.TestCase):
         )
         self.assertEqual(device, 'Router/Gateway')
         self.assertEqual(confidence, 'High')
+
+
+    def test_mac_address_type(self):
+        self.assertEqual(mod.mac_address_type("92:9A:4A:05:80:77"), "Locally Administered")
+        self.assertEqual(mod.mac_address_type("00:D7:6D:74:79:17"), "Universally Administered")
+
+    def test_same_mac_multiple_ips_correlation(self):
+        assets = [
+            {"ip": "192.168.15.7", "mac": "92:9A:4A:05:80:77"},
+            {"ip": "192.168.15.102", "mac": "92:9A:4A:05:80:77"},
+            {"ip": "192.168.15.9", "mac": "34:C6:DD:93:7B:12"},
+        ]
+        correlations = mod.build_mac_correlations(assets)
+        self.assertEqual(len(correlations), 1)
+        self.assertEqual(correlations[0]["ips"], ["192.168.15.7", "192.168.15.102"])
+        self.assertFalse(correlations[0]["automatic_deduplication"])
 
 
 if __name__ == '__main__':
