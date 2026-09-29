@@ -41,10 +41,23 @@ Correlacionar:
 
 Objetivo: um ativo lógico, múltiplas fontes de evidência, sem duplicidade no relatório.
 
+## v0.4d — Dynamic Scope Expansion
+
+Usar evidências de interfaces, rotas, VLANs e neighbors obtidas pela v0.4b para descobrir novas redes candidatas e expandir o discovery somente dentro de limites explicitamente autorizados.
+
+Guardrails:
+- auto-expansão desligada por padrão;
+- authorized_supernets + exclude_scopes;
+- max_depth / max_new_networks / max_hosts;
+- deduplicação de redes já visitadas;
+- sem pivot/jump automático;
+- sem herança automática de credenciais;
+- redes sem alcance ficam registradas para futuro Remote Discovery Node/Sensor.
+
 ## Depois da v0.4
 
 - Reporting Engine v0.1;
-- SNMP/LLDP/CDP e topologia;
+- SNMP/LLDP/CDP e topologia ampliada;
 - plugins de fabricantes/controladoras;
 - remote discovery nodes/sensors;
 - CVE correlation e Patch Compliance.

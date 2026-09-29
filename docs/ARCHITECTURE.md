@@ -38,6 +38,9 @@ Future v0.4b layer for SNMP, SSH and WinRM/WMI using credential profiles and sec
 ### Analyzer
 Deterministic rules consume normalized evidence and produce traceable findings. Analyzer logic stays outside collectors.
 
+### Dynamic Scope Expansion
+Future v0.4d layer that consumes credentialed topology evidence (interfaces, routes, VLANs and neighbors) and creates candidate networks. New networks are scanned only when they match explicit authorization policy and guardrails. Discovered hosts are not used as automatic pivots.
+
 ### Reporting
 Future layer for technical/executive reporting and dashboards after asset deduplication is stable.
 
@@ -97,5 +100,6 @@ warnings
 - v0.4a: non-credentialed Network Discovery.
 - v0.4b: Credential Manager + SNMP/SSH/WinRM enrichment.
 - v0.4c: Asset Resolver.
-- Reporting Engine after asset identity is reliable.
+- v0.4d: topology-driven Dynamic Scope Expansion with authorization boundaries.
+- Reporting Engine after asset identity and discovery scope are reliable.
 - Later: CVE intelligence, patch compliance, file-server assessment, topology and vendor plugins.
