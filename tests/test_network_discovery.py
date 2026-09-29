@@ -2,7 +2,7 @@ import importlib.util
 import pathlib
 import unittest
 
-MODULE_PATH = pathlib.Path(__file__).with_name('../network_discovery/P01_Network_Discovery_Scanner.py')
+MODULE_PATH = pathlib.Path(__file__).resolve().parents[1] / 'network_discovery' / 'P01_Network_Discovery_Scanner.py'
 spec = importlib.util.spec_from_file_location('p01_network_discovery', MODULE_PATH)
 mod = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mod)
