@@ -42,3 +42,16 @@ JSON outputs were parseable and SHA-256 sidecars matched the generated artifacts
 6. Validate discovery coverage against an independent router/AP client inventory before promotion.
 
 Raw home-network evidence is intentionally stored outside Git because discovery artifacts are confidential.
+
+
+## Ground-truth comparison
+
+Router/AP screenshots were compared with the scanner result after the initial run.
+
+- All currently displayed Wi-Fi client IPs were detected.
+- All client IPs visible across the supplied router screenshots were detected.
+- Adding the gateway and local execution host, every observed IP endpoint in the evidence set was present in the scanner output.
+- One device identity was visible under two IP addresses with the same MAC, so endpoint count and logical-asset count are not equivalent.
+- This finding directly motivates the future Asset Resolver; v0.4.1 surfaces the correlation but does not auto-merge assets.
+
+The ground-truth screenshots and raw addresses/MACs remain in protected Drive storage and are intentionally not committed to Git.
