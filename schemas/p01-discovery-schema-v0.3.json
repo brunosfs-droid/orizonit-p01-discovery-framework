@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://orizonit.example/schemas/p01-discovery-v0.3.json",
+  "title": "Orizon IT P01 Discovery Output v0.3",
+  "type": "object",
+  "required": [
+    "metadata",
+    "data",
+    "errors",
+    "limitations",
+    "warnings"
+  ],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": [
+        "collector_name",
+        "collector_version",
+        "schema_version",
+        "read_only_mode",
+        "error_count",
+        "limitation_count",
+        "warning_count"
+      ],
+      "properties": {
+        "collector_name": {
+          "type": "string"
+        },
+        "collector_version": {
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "0.3"
+        },
+        "collected_at_utc": {
+          "type": "string"
+        },
+        "execution_user": {
+          "type": "string"
+        },
+        "read_only_mode": {
+          "const": true
+        },
+        "error_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "limitation_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "warning_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "run_label": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "inactive_threshold_days": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        }
+      },
+      "additionalProperties": true
+    },
+    "data": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/diagnostic"
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/diagnostic"
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/diagnostic"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "diagnostic": {
+      "type": "object",
+      "required": [
+        "section",
+        "message",
+        "exception_type"
+      ],
+      "properties": {
+        "section": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "exception_type": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
