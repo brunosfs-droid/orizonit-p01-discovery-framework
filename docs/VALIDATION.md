@@ -1,69 +1,106 @@
 # Validation Plan
 
-## Objective
+## General acceptance
 
-Prove that collectors:
+Every component must prove:
 
-- execute successfully on supported platforms;
-- do not make unintended configuration changes;
-- generate parseable JSON;
-- generate the expected SHA-256 artifact;
-- report privilege/module limitations honestly;
-- maintain stable field semantics between compatible versions.
+- parseable output;
+- SHA-256 match where generated;
+- explicit errors/limitations/warnings;
+- no unintended configuration changes;
+- stable field semantics;
+- no secrets in output;
+- reproducible test evidence archived outside Git.
 
-## Windows test matrix
+## Windows / AD collector
 
-| Scenario | Expected result |
+Validate at minimum:
+
+| Scenario | Expected |
 |---|---|
-| Standalone Windows, standard user | Collection completes with limitations |
-| Standalone Windows, local admin | Full local collection expected |
-| Domain member, standard user | Local collection + domain context where available |
-| Domain member, local admin | Expanded local visibility |
-| Domain Controller with AD module | AD collection succeeds |
-| Host without AD module | AD error/limitation recorded; local collection continues |
-| `-SkipAD` | AD collection intentionally skipped |
-| `-SkipGPO` | GPO collection intentionally skipped |
+| Domain member, standard user | collection completes with privilege limitations |
+| Domain member, local admin | expanded local visibility |
+| AD module available | domain inventory succeeds |
+| AD/GPO skipped | local collection continues |
+| SMB broad share + broad NTFS | confirmed broad write |
+| SMB broad share + restrictive NTFS | not confirmed broad write |
+| IIS FTP plaintext allowed | NET-FTP-001 evidence available |
+| Secure channel healthy/broken | status reported without repair action |
 
-## Output validation
+### AD stale
 
-### JSON
+Do **not** attempt to validate by directly editing `lastLogonTimestamp` or `lastLogon`. These are system-managed logon attributes.
 
-```powershell
-Get-Content .\output.json -Raw | ConvertFrom-Json | Out-Null
-```
+Use:
 
-### SHA-256
+1. never-logged-on test objects;
+2. reduced `-InactiveThresholdDays` for lab;
+3. synthetic/unit tests with controlled dates;
+4. production threshold normally set to 90 days.
 
-```powershell
-Get-FileHash .\output.json -Algorithm SHA256
-Get-Content .\output.json.sha256
-```
+See `docs/validation/AD_STALE_v0.3.md`.
 
-The computed hash must match the hash file.
+## Linux collector
 
-## Read-only validation
+Validate Ubuntu and Rocky with:
 
-Before and after a test run, compare relevant configuration state. The collector
-must not:
+- root and non-root contexts;
+- SSH effective config;
+- FTP plaintext/unknown states;
+- Samba confirmed/potential/read-only permission cases;
+- pwquality/PAM;
+- NTP;
+- systemd failed services;
+- JSON + SHA256.
 
-- install packages;
-- create users;
-- modify firewall rules;
+## Analyzer
+
+For every ruleset version:
+
+- run against previous Golden Dataset;
+- require `ingestion_error_count = 0`;
+- require `rule_error_count = 0`;
+- confirm positive and negative fixtures;
+- confirm no duplicate findings from lower-coverage collectors.
+
+## Network Discovery v0.4a
+
+### Unit
+- CIDR/range expansion;
+- exclusions;
+- safe/standard port profiles;
+- basic classification.
+
+### Self-test
+- loopback scan;
+- parseable JSON;
+- valid SHA256;
+- no credential attempts.
+
+### Home/LAB
+Compare discovered assets to an independently known inventory such as router/AP client list.
+
+Record:
+
+- effective scope;
+- duration;
+- known devices;
+- discovered devices;
+- missed devices;
+- false positives;
+- classification confidence;
+- ports/fingerprints;
+- SSDP enrichment.
+
+Absence of response is not proof of absence. Mobile/sleeping devices and routed networks require special interpretation.
+
+## Read-only / non-destructive expectations
+
+Collectors must not modify system configuration. Network Discovery is allowed to generate authorized ICMP/TCP/SSDP probe traffic but must not:
+
+- exploit vulnerabilities;
+- perform brute force;
+- spray credentials;
 - change services;
-- change registry configuration;
-- change domain objects;
-- alter GPO;
+- install software on targets;
 - create persistence.
-
-## Evidence
-
-For each validated release record:
-
-- collector version;
-- OS/version;
-- PowerShell/Python version;
-- privilege profile;
-- command used;
-- result;
-- known limitations;
-- representative sanitized output.

@@ -2,54 +2,43 @@
 
 ## Data classification
 
-Discovery output can expose sensitive infrastructure information such as:
-
-- hostnames;
-- IP addresses and routes;
-- domain and forest names;
-- software and patch levels;
-- administrative groups;
-- services and roles;
-- security configuration;
-- Active Directory topology.
-
-Treat real customer discovery output as **CONFIDENTIAL — CUSTOMER DATA**.
+Discovery outputs can expose sensitive infrastructure information. Treat real customer output as **CONFIDENTIAL — CUSTOMER DATA**.
 
 ## Never commit
 
-Do not commit:
+Do not commit passwords, API tokens, private keys, credential files, production inventories, raw customer outputs, discovery JSONs, logs with confidential data, or private certificates.
 
-- passwords;
-- API tokens;
-- private keys;
-- certificates containing private keys;
-- SSH private keys;
-- production inventories containing credentials;
-- raw customer outputs;
-- secrets embedded in scripts.
+## Active network discovery
 
-## Credentials
+Network discovery is active probing and must only be executed against explicitly authorized scope.
 
-Use dedicated technical identities and least privilege. Laboratory permissions
-may be intentionally broad for validation, but production deployment must
-restrict privileges to the minimum commands and data required.
+v0.4a:
+- requires `--ack-authorized-scan`;
+- does not attempt credentials;
+- does not run exploit scripts;
+- has scope and concurrency guardrails.
 
-## Reporting vulnerabilities
+## Credentialed discovery
 
-Do not disclose vulnerabilities from this repository or customer assessments in
-public issues. Use a private communication channel approved by Orizon IT.
+v0.4b must use a Secret Provider abstraction. Configuration may contain only references such as `secret_ref`, never plaintext secrets.
 
-## Collector security principles
+Credential selection must be constrained by:
+- protocol;
+- target scope;
+- priority;
+- retry limit;
+- lockout protection.
 
-Collectors should be:
+Authentication failures must not trigger uncontrolled credential spraying.
 
-- read-only by default;
-- transparent about collected fields;
-- explicit about errors and limitations;
-- local-first unless remote transfer is part of the documented workflow;
-- free of hidden persistence or configuration changes.
+## Least privilege
 
-## Integrity
+Use dedicated technical identities. Separate discovery identities by technology when practical: Windows/AD, Linux/SSH, SNMP, virtualization and vendor APIs.
 
-Collectors should generate or support cryptographic hashes for collected
-artifacts when practical. Current Windows output uses SHA-256.
+## Evidence integrity
+
+Use SHA-256 for collected artifacts. Hashes detect accidental or post-collection changes but are not equivalent to digital signatures. Signed release/evidence manifests may be added later.
+
+## Vulnerability reporting
+
+Do not disclose repository or customer vulnerabilities in public issues. Use private communication approved by Orizon IT.

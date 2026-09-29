@@ -1,0 +1,189 @@
+{
+  "ruleset_name": "P01-Rule-Engine",
+  "ruleset_version": "0.2.0",
+  "description": "Ruleset deterministico do Orizon IT Infrastructure Assessment. v0.2 adiciona inatividade AD, secure channel, compartilhamentos, FTP e política de senha Linux.",
+  "baseline": {
+    "ad_min_password_length": 14,
+    "defender_signature_max_age_days": 7,
+    "ad_inactivity_days": 90,
+    "linux_password_min_length": 14
+  },
+  "rules": [
+    {
+      "id": "WIN-FW-001",
+      "handler": "windows_firewall_disabled",
+      "enabled": true,
+      "title": "Windows Firewall com perfil desabilitado",
+      "category": "Host Security",
+      "severity": "High",
+      "recommendation": "Validar a necessidade operacional e habilitar os perfis aplicáveis do Windows Defender Firewall com regras explícitas e gerenciamento centralizado."
+    },
+    {
+      "id": "WIN-DEF-001",
+      "handler": "defender_signature_stale",
+      "enabled": true,
+      "title": "Assinaturas do Microsoft Defender potencialmente desatualizadas",
+      "category": "Endpoint Protection",
+      "severity": "High",
+      "threshold_days": 7,
+      "recommendation": "Validar conectividade e política de atualização do Defender, atualizar as assinaturas e monitorar a idade das definições."
+    },
+    {
+      "id": "AD-PWD-001",
+      "handler": "ad_min_password_length",
+      "enabled": true,
+      "title": "Comprimento mínimo de senha abaixo do baseline",
+      "category": "Identity & Access Management",
+      "severity": "Medium",
+      "threshold": 14,
+      "recommendation": "Revisar a política de senha do domínio conforme o baseline de segurança aprovado e os requisitos do cliente."
+    },
+    {
+      "id": "AD-PWD-002",
+      "handler": "ad_password_never_expires",
+      "enabled": true,
+      "title": "Contas com PasswordNeverExpires identificadas",
+      "category": "Identity & Access Management",
+      "severity": "Medium",
+      "recommendation": "Revisar as contas identificadas. Para contas de serviço, avaliar gMSA ou mecanismo equivalente; para usuários, remover a exceção quando não houver justificativa formal."
+    },
+    {
+      "id": "AD-LOCK-001",
+      "handler": "ad_lockout_disabled",
+      "enabled": true,
+      "title": "Bloqueio de conta não configurado",
+      "category": "Identity & Access Management",
+      "severity": "Medium",
+      "recommendation": "Definir política de bloqueio e proteção contra tentativas repetidas de autenticação de acordo com o risco e o baseline adotado."
+    },
+    {
+      "id": "LIN-FW-001",
+      "handler": "linux_firewall_inactive",
+      "enabled": true,
+      "title": "Firewall local Linux não está ativo",
+      "category": "Host Security",
+      "severity": "Medium",
+      "recommendation": "Validar a estratégia de filtragem do host e habilitar/configurar o mecanismo de firewall aplicável (UFW, firewalld ou nftables) quando requerido pelo desenho de segurança."
+    },
+    {
+      "id": "LIN-SSH-001",
+      "handler": "linux_ssh_root_login",
+      "enabled": true,
+      "title": "SSH permite login direto de root",
+      "category": "Remote Access",
+      "severity": "High",
+      "recommendation": "Desabilitar login SSH direto de root e utilizar contas nominativas com sudo e controles de auditoria."
+    },
+    {
+      "id": "LIN-SSH-002",
+      "handler": "linux_ssh_password_auth",
+      "enabled": true,
+      "title": "SSH permite autenticação por senha",
+      "category": "Remote Access",
+      "severity": "Medium",
+      "recommendation": "Quando compatível com o ambiente, priorizar autenticação por chave, certificado ou mecanismo centralizado e restringir autenticação por senha."
+    },
+    {
+      "id": "LIN-TIME-001",
+      "handler": "linux_ntp_not_synchronized",
+      "enabled": true,
+      "title": "Servidor Linux não está sincronizado via NTP",
+      "category": "Platform Reliability",
+      "severity": "Medium",
+      "recommendation": "Configurar e validar uma fonte de tempo confiável e monitorar o estado de sincronização do servidor."
+    },
+    {
+      "id": "LIN-SVC-001",
+      "handler": "linux_failed_services",
+      "enabled": true,
+      "title": "Serviços systemd em estado failed",
+      "category": "Platform Reliability",
+      "severity": "Medium",
+      "recommendation": "Analisar as unidades em falha, confirmar se são necessárias ao workload e corrigir, desabilitar ou documentar a exceção conforme aplicável."
+    },
+    {
+      "id": "AD-COMP-001",
+      "handler": "ad_stale_computers",
+      "enabled": true,
+      "title": "Computadores habilitados inativos no Active Directory",
+      "category": "Identity & Access Management",
+      "severity": "Medium",
+      "threshold_days": 90,
+      "recommendation": "Revisar as contas de computador inativas, confirmar descomissionamento ou indisponibilidade do ativo e desabilitar/remover objetos somente após validação operacional e de dependências."
+    },
+    {
+      "id": "AD-USER-001",
+      "handler": "ad_stale_users",
+      "enabled": true,
+      "title": "Usuários habilitados inativos no Active Directory",
+      "category": "Identity & Access Management",
+      "severity": "Medium",
+      "threshold_days": 90,
+      "recommendation": "Revisar os usuários inativos com o responsável do negócio. Tratar contas de serviço e exceções separadamente antes de desabilitar ou remover qualquer identidade."
+    },
+    {
+      "id": "WIN-AD-001",
+      "handler": "windows_secure_channel_broken",
+      "enabled": true,
+      "title": "Secure channel com o domínio apresenta falha",
+      "category": "Identity & Access Management",
+      "severity": "High",
+      "recommendation": "Validar DNS, conectividade, horário e objeto de computador. Reparar a relação de confiança somente após confirmar a causa e o procedimento de mudança aplicável."
+    },
+    {
+      "id": "SHARE-001",
+      "handler": "share_broad_write_confirmed",
+      "enabled": true,
+      "title": "Compartilhamento com escrita ampla confirmada",
+      "category": "Data Protection",
+      "severity": "High",
+      "recommendation": "Revisar permissões de compartilhamento e filesystem aplicando menor privilégio. Remover escrita para Everyone/Guest/Anonymous quando não houver requisito formal e documentar exceções."
+    },
+    {
+      "id": "SHARE-002",
+      "handler": "share_broad_write_potential",
+      "enabled": true,
+      "title": "Compartilhamento com escrita ampla potencial",
+      "category": "Data Protection",
+      "severity": "Medium",
+      "recommendation": "Validar o acesso efetivo combinando permissões do compartilhamento, ACLs do filesystem e identidade utilizada. Ajustar somente após confirmar que a escrita ampla é efetivamente possível."
+    },
+    {
+      "id": "NET-FTP-001",
+      "handler": "ftp_plaintext_exposed",
+      "enabled": true,
+      "title": "FTP acessível pela rede permite sessão sem criptografia",
+      "category": "Network Security",
+      "severity": "High",
+      "recommendation": "Desabilitar FTP em texto claro quando possível. Migrar para SFTP/SSH ou exigir FTPS/TLS com configuração validada, certificados adequados e restrição de origem."
+    },
+    {
+      "id": "NET-FTP-002",
+      "handler": "ftp_encryption_unknown",
+      "enabled": true,
+      "title": "FTP exposto com postura de criptografia não confirmada",
+      "category": "Network Security",
+      "severity": "Medium",
+      "recommendation": "Validar a configuração do serviço e confirmar se TLS é obrigatório. Caso texto claro seja permitido, tratar conforme a regra de FTP sem criptografia."
+    },
+    {
+      "id": "LIN-PWD-001",
+      "handler": "linux_password_minlen",
+      "enabled": true,
+      "title": "Comprimento mínimo de senha Linux abaixo do baseline",
+      "category": "Identity & Access Management",
+      "severity": "Medium",
+      "threshold": 14,
+      "recommendation": "Revisar libpwquality/PAM conforme o baseline aprovado. Em hosts com identidade centralizada, correlacionar a política local com AD/LDAP/IPA antes de alterar a configuração."
+    },
+    {
+      "id": "LIN-PWD-002",
+      "handler": "linux_password_complexity_missing",
+      "enabled": true,
+      "title": "Módulo local de complexidade de senha Linux não identificado",
+      "category": "Identity & Access Management",
+      "severity": "Medium",
+      "recommendation": "Confirmar como a complexidade é aplicada ao host. Quando senhas locais forem utilizadas, adotar libpwquality/PAM ou mecanismo equivalente; em identidade centralizada, validar a política do provedor."
+    }
+  ]
+}

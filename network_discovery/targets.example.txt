@@ -1,0 +1,4 @@
+# One target per line. CIDR, single IP or range.
+192.168.1.0/24
+# 192.168.10.10-192.168.10.50
+# 10.10.20.15

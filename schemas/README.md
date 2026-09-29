@@ -1,28 +1,13 @@
 # Schemas
 
-The schema directory contains contracts used between collectors and downstream
-analysis.
+JSON Schemas define the interchange contract used by P01 components.
 
-## Current strategy
+Current candidate: `p01-discovery-schema-v0.3.json`.
 
-During the laboratory phase, schema `0.2` strictly defines the common envelope:
+Older schema files may remain in this directory when compatibility testing requires coexistence. Unlike ordinary source files, schema versions are protocol contracts and may legitimately be stored side by side.
 
-- `metadata`
-- `data`
-- `errors`
-- `limitations`
-- `warnings`
+Validation example:
 
-The `data` object remains extensible while Windows and Linux collectors are
-being validated. Once platform fields stabilize, platform-specific definitions
-can be added without losing the common envelope.
-
-## Versioning
-
-A collector declares its expected schema in:
-
-```json
-"schema_version": "0.2"
+```bash
+python -m json.tool schemas/p01-discovery-schema-v0.3.json > /dev/null
 ```
-
-Breaking schema changes require a new schema version.

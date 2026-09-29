@@ -1,21 +1,21 @@
-<#
+﻿<#
 .SYNOPSIS
   Orizon IT - Produto 01 / Infrastructure Assessment
-  Windows + Active Directory Discovery Collector v0.2.1
+  Windows + Active Directory Discovery Collector v0.3
 
 .DESCRIPTION
   Coletor read-only para inventário técnico de host Windows e, opcionalmente,
-  Active Directory e GPO. Não altera configurações e não envia dados para rede.
+  Active Directory e GPO. A v0.3 adiciona inatividade AD, secure channel, SMB e postura FTP. Não altera configurações e não envia dados para rede.
 
   Saída: JSON + arquivo SHA256 no diretório informado.
 
 .EXAMPLE
-  powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\P01_Windows_AD_Discovery_Collector.ps1 `
+  powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\P01_Windows_AD_Discovery_Collector_v0.3.ps1 `
     -OutputDirectory C:\P01\output -RunLabel W01-domain-user
 
 .NOTES
-  Versão: 0.2.1
-  Schema: 0.2
+  Versão: 0.3.0
+  Schema: 0.3
   Classificação recomendada da saída: CONFIDENCIAL - DADOS DO CLIENTE
 
   Para laboratório, prefira -ExecutionPolicy Bypass somente no processo iniciado.
@@ -29,14 +29,16 @@ param(
     [switch]$SkipAD,
     [switch]$SkipGPO,
     [switch]$IncludeLocalUsers,
-    [switch]$IncludeInstalledSoftware
+    [switch]$IncludeInstalledSoftware,
+    [switch]$IncludeIdentityDetails,
+    [int]$InactiveThresholdDays = 90
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $CollectorName = 'P01-Windows-AD-Discovery-Collector'
-$CollectorVersion = '0.2.1'
-$SchemaVersion = '0.2'
+$CollectorVersion = '0.3.0'
+$SchemaVersion = '0.3'
 $StartTime = Get-Date
 $script:CollectorErrors = New-Object System.Collections.Generic.List[object]
 $script:CollectorLimitations = New-Object System.Collections.Generic.List[object]
@@ -137,6 +139,223 @@ function Get-InstalledSoftwareFromRegistry {
     return $items | Sort-Object DisplayName, DisplayVersion -Unique
 }
 
+
+function ConvertTo-IsoDateOrNull {
+    param($Value)
+    if ($null -eq $Value) { return $null }
+    try { return ([datetime]$Value).ToUniversalTime().ToString('o') }
+    catch { return $null }
+}
+
+function Get-DaysSince {
+    param($Value)
+    if ($null -eq $Value) { return $null }
+    try { return [int][Math]::Floor(((Get-Date) - [datetime]$Value).TotalDays) }
+    catch { return $null }
+}
+
+function Resolve-PrincipalSidSafe {
+    param([string]$AccountName)
+    if ([string]::IsNullOrWhiteSpace($AccountName)) { return $null }
+    try {
+        $nt = New-Object System.Security.Principal.NTAccount($AccountName)
+        return $nt.Translate([System.Security.Principal.SecurityIdentifier]).Value
+    }
+    catch { return $null }
+}
+
+function Test-IsBroadPrincipal {
+    param([string]$AccountName, [string]$Sid)
+    $broadSids = @('S-1-1-0','S-1-5-7','S-1-5-32-546') # Everyone, Anonymous Logon, BUILTIN\Guests
+    if ($Sid -and ($broadSids -contains $Sid)) { return $true }
+    $name = ([string]$AccountName).ToLowerInvariant()
+    return ($name -match '(^|\\)(everyone|todos|anonymous logon|logon an[oô]nimo|guests|convidados)$')
+}
+
+function Test-IsWidePrincipal {
+    param([string]$AccountName, [string]$Sid)
+    if (Test-IsBroadPrincipal -AccountName $AccountName -Sid $Sid) { return $true }
+    if ($Sid -eq 'S-1-5-11') { return $true } # Authenticated Users
+    $name = ([string]$AccountName).ToLowerInvariant()
+    return ($name -match '(^|\\)(authenticated users|usu[aá]rios autenticados|domain users|usu[aá]rios do dom[ií]nio)$')
+}
+
+function Test-IsShareWriteRight {
+    param($AccessRight)
+    $v = ([string]$AccessRight).ToLowerInvariant()
+    return ($v -eq 'full' -or $v -eq 'change')
+}
+
+function Test-IsNtfsWriteRight {
+    param($FileSystemRights)
+    $v = ([string]$FileSystemRights)
+    return ($v -match 'FullControl|Modify|Write|CreateFiles|AppendData|WriteData|WriteAttributes|WriteExtendedAttributes')
+}
+
+function Get-SmbShareAssessment {
+    $results = New-Object System.Collections.Generic.List[object]
+    if (-not (Get-Command Get-SmbShare -ErrorAction SilentlyContinue)) {
+        return [pscustomobject]@{ available = $false; reason = 'Get-SmbShare unavailable'; items = @() }
+    }
+
+    foreach ($share in @(Get-SmbShare -ErrorAction Stop | Sort-Object Name)) {
+        $shareAccess = @()
+        $ntfsAccess = @()
+        $shareAccessAvailable = $true
+        $ntfsAccessAvailable = $true
+
+        try {
+            $shareAccess = @(Get-SmbShareAccess -Name $share.Name -ErrorAction Stop | ForEach-Object {
+                $sid = Resolve-PrincipalSidSafe -AccountName ([string]$_.AccountName)
+                [pscustomobject]@{
+                    account = [string]$_.AccountName
+                    sid = $sid
+                    access_control_type = [string]$_.AccessControlType
+                    access_right = [string]$_.AccessRight
+                    broad_principal = (Test-IsBroadPrincipal -AccountName ([string]$_.AccountName) -Sid $sid)
+                    wide_principal = (Test-IsWidePrincipal -AccountName ([string]$_.AccountName) -Sid $sid)
+                    write_capable = (([string]$_.AccessControlType -eq 'Allow') -and (Test-IsShareWriteRight -AccessRight $_.AccessRight))
+                }
+            })
+        }
+        catch {
+            $shareAccessAvailable = $false
+            Add-CollectorLimitation -Section ("shares.smb.share_acl.{0}" -f $share.Name) -Message $_.Exception.Message -ExceptionType $_.Exception.GetType().FullName
+        }
+
+        if (-not [string]::IsNullOrWhiteSpace([string]$share.Path) -and (Test-Path -LiteralPath $share.Path)) {
+            try {
+                $acl = Get-Acl -LiteralPath $share.Path -ErrorAction Stop
+                $ntfsAccess = @($acl.Access | ForEach-Object {
+                    $account = [string]$_.IdentityReference.Value
+                    $sid = Resolve-PrincipalSidSafe -AccountName $account
+                    [pscustomobject]@{
+                        account = $account
+                        sid = $sid
+                        access_control_type = [string]$_.AccessControlType
+                        rights = [string]$_.FileSystemRights
+                        inherited = [bool]$_.IsInherited
+                        broad_principal = (Test-IsBroadPrincipal -AccountName $account -Sid $sid)
+                        wide_principal = (Test-IsWidePrincipal -AccountName $account -Sid $sid)
+                        write_capable = (([string]$_.AccessControlType -eq 'Allow') -and (Test-IsNtfsWriteRight -FileSystemRights $_.FileSystemRights))
+                    }
+                })
+            }
+            catch {
+                $ntfsAccessAvailable = $false
+                Add-CollectorLimitation -Section ("shares.smb.ntfs_acl.{0}" -f $share.Name) -Message $_.Exception.Message -ExceptionType $_.Exception.GetType().FullName
+            }
+        }
+        elseif (-not [string]::IsNullOrWhiteSpace([string]$share.Path)) {
+            $ntfsAccessAvailable = $false
+        }
+
+        $shareBroadWrite = @($shareAccess | Where-Object { $_.broad_principal -and $_.write_capable })
+        $ntfsBroadWrite = @($ntfsAccess | Where-Object { $_.broad_principal -and $_.write_capable })
+        $confirmed = $false
+        foreach ($sa in $shareBroadWrite) {
+            foreach ($na in $ntfsBroadWrite) {
+                if ($sa.sid -and $na.sid -and ($sa.sid -eq $na.sid)) { $confirmed = $true }
+                elseif (([string]$sa.account).ToLowerInvariant() -eq ([string]$na.account).ToLowerInvariant()) { $confirmed = $true }
+            }
+        }
+
+        $results.Add([pscustomobject]@{
+            name = [string]$share.Name
+            path = [string]$share.Path
+            description = [string]$share.Description
+            special = [bool]$share.Special
+            temporary = [bool]$share.Temporary
+            share_permissions_available = $shareAccessAvailable
+            ntfs_permissions_available = $ntfsAccessAvailable
+            share_access = $shareAccess
+            ntfs_access = $ntfsAccess
+            broad_write_share = $shareBroadWrite
+            broad_write_ntfs = $ntfsBroadWrite
+            confirmed_broad_write = $confirmed
+        }) | Out-Null
+    }
+
+    return [pscustomobject]@{ available = $true; items = $results.ToArray() }
+}
+
+function Get-WindowsFtpPosture {
+    $listenerItems = @()
+    if (Get-Command Get-NetTCPConnection -ErrorAction SilentlyContinue) {
+        try {
+            $listenerItems = @(Get-NetTCPConnection -State Listen -ErrorAction Stop | Where-Object { $_.LocalPort -eq 21 } | ForEach-Object {
+                $procName = $null
+                try { $procName = (Get-Process -Id $_.OwningProcess -ErrorAction Stop).ProcessName } catch { }
+                $addr = [string]$_.LocalAddress
+                [pscustomobject]@{
+                    local_address = $addr
+                    local_port = [int]$_.LocalPort
+                    owning_process_id = [int]$_.OwningProcess
+                    process_name = $procName
+                    network_exposed = ($addr -notin @('127.0.0.1','::1'))
+                }
+            })
+        }
+        catch {
+            Add-CollectorLimitation -Section 'security.ftp.listeners' -Message $_.Exception.Message -ExceptionType $_.Exception.GetType().FullName
+        }
+    }
+
+    $ftpServices = @(Get-CimInstance Win32_Service -ErrorAction SilentlyContinue | Where-Object {
+        $_.Name -match 'ftp' -or $_.DisplayName -match 'ftp'
+    } | Select-Object Name, DisplayName, State, StartMode, PathName)
+
+    $iisSites = New-Object System.Collections.Generic.List[object]
+    $iisConfig = Join-Path $env:windir 'System32\inetsrv\config\applicationHost.config'
+    if (Test-Path -LiteralPath $iisConfig) {
+        try {
+            [xml]$xml = Get-Content -LiteralPath $iisConfig -Raw -ErrorAction Stop
+            $sitesNode = $xml.configuration.'system.applicationHost'.sites
+            if ($null -ne $sitesNode) {
+                foreach ($site in @($sitesNode.site)) {
+                    $ftpBindings = @($site.bindings.binding | Where-Object { [string]$_.protocol -eq 'ftp' })
+                    if ($ftpBindings.Count -eq 0) { continue }
+                    $ssl = $site.ftpServer.security.ssl
+                    $control = if ($null -ne $ssl) { [string]$ssl.controlChannelPolicy } else { '' }
+                    $data = if ($null -ne $ssl) { [string]$ssl.dataChannelPolicy } else { '' }
+                    $required = ($control -eq 'SslRequire' -and $data -eq 'SslRequire')
+                    $plaintextAllowed = -not $required
+                    $iisSites.Add([pscustomobject]@{
+                        name = [string]$site.name
+                        id = [string]$site.id
+                        bindings = @($ftpBindings | ForEach-Object { [string]$_.bindingInformation })
+                        control_channel_policy = $control
+                        data_channel_policy = $data
+                        tls_required = $required
+                        plaintext_allowed = $plaintextAllowed
+                    }) | Out-Null
+                }
+            }
+        }
+        catch {
+            Add-CollectorWarning -Section 'security.ftp.iis' -Message ("IIS FTP config could not be parsed: {0}" -f $_.Exception.Message)
+        }
+    }
+
+    $exposed = @($listenerItems | Where-Object { $_.network_exposed }).Count -gt 0
+    $plaintextAllowed = @($iisSites.ToArray() | Where-Object { $_.plaintext_allowed }).Count -gt 0
+    $allRequired = ($iisSites.Count -gt 0 -and @($iisSites.ToArray() | Where-Object { -not $_.tls_required }).Count -eq 0)
+    $encryptionStatus = 'not_detected'
+    if ($exposed -and $plaintextAllowed) { $encryptionStatus = 'plaintext_allowed' }
+    elseif ($exposed -and $allRequired) { $encryptionStatus = 'tls_required' }
+    elseif ($exposed) { $encryptionStatus = 'unknown' }
+
+    return [pscustomobject]@{
+        listener_detected = ($listenerItems.Count -gt 0)
+        network_exposed = $exposed
+        listeners = $listenerItems
+        services = $ftpServices
+        iis_ftp_sites = $iisSites.ToArray()
+        encryption_status = $encryptionStatus
+        plaintext_allowed = $plaintextAllowed
+    }
+}
+
 $IsAdministrator = Test-IsAdministrator
 $SafeRunLabel = ConvertTo-SafeLabel -Value $RunLabel
 
@@ -159,6 +378,8 @@ $metadata = [ordered]@{
     is_administrator = $IsAdministrator
     privilege_profile = $(if ($IsAdministrator) { 'local-admin' } else { 'standard-user' })
     run_label = $SafeRunLabel
+    inactive_threshold_days = [Math]::Abs($InactiveThresholdDays)
+    identity_details_included = [bool]$IncludeIdentityDetails
     powershell_version = $PSVersionTable.PSVersion.ToString()
     powershell_language_mode = $ExecutionContext.SessionState.LanguageMode.ToString()
     execution_policy = (Get-ExecutionPolicy).ToString()
@@ -176,7 +397,7 @@ if (-not $IsAdministrator) {
 $system = [ordered]@{}
 $system.computer_system = Invoke-CollectorSection 'system.computer_system' {
     Get-CimInstance Win32_ComputerSystem |
-        Select-Object Manufacturer, Model, Domain, PartOfDomain, TotalPhysicalMemory, NumberOfProcessors, NumberOfLogicalProcessors
+        Select-Object Manufacturer, Model, Domain, PartOfDomain, DomainRole, TotalPhysicalMemory, NumberOfProcessors, NumberOfLogicalProcessors
 }
 $system.operating_system = Invoke-CollectorSection 'system.operating_system' {
     Get-CimInstance Win32_OperatingSystem |
@@ -283,6 +504,31 @@ $security.local_administrators = Invoke-CollectorSection 'security.local_adminis
     }
 }
 
+$security.domain_secure_channel = Invoke-CollectorSection 'security.domain_secure_channel' {
+    $cs = Get-CimInstance Win32_ComputerSystem -ErrorAction Stop
+    if (-not [bool]$cs.PartOfDomain) {
+        [pscustomobject]@{ domain_joined = $false; domain = [string]$cs.Domain; status = 'not_domain_joined'; healthy = $null; method = $null }
+    }
+    elseif ([int]$cs.DomainRole -in @(4,5)) {
+        [pscustomobject]@{ domain_joined = $true; domain = [string]$cs.Domain; status = 'not_applicable_domain_controller'; healthy = $null; method = 'Win32_ComputerSystem.DomainRole' }
+    }
+    elseif (Get-Command Test-ComputerSecureChannel -ErrorAction SilentlyContinue) {
+        try {
+            $healthy = [bool](Test-ComputerSecureChannel -ErrorAction Stop)
+            [pscustomobject]@{ domain_joined = $true; domain = [string]$cs.Domain; status = $(if ($healthy) { 'healthy' } else { 'broken' }); healthy = $healthy; method = 'Test-ComputerSecureChannel' }
+        }
+        catch {
+            Add-CollectorLimitation -Section 'security.domain_secure_channel' -Message $_.Exception.Message -ExceptionType $_.Exception.GetType().FullName
+            [pscustomobject]@{ domain_joined = $true; domain = [string]$cs.Domain; status = 'unknown'; healthy = $null; method = 'Test-ComputerSecureChannel' }
+        }
+    }
+    else {
+        [pscustomobject]@{ domain_joined = $true; domain = [string]$cs.Domain; status = 'unknown'; healthy = $null; method = $null }
+    }
+}
+$security.ftp = Invoke-CollectorSection 'security.ftp' { Get-WindowsFtpPosture }
+
+
 $services = [ordered]@{}
 $services.windows_services = Invoke-CollectorSection 'services.windows_services' {
     $svc = @(Get-CimInstance Win32_Service |
@@ -316,6 +562,10 @@ $services.server_roles = Invoke-CollectorSection 'services.server_roles' {
         [pscustomobject]@{ available = $false; note = 'Get-WindowsFeature indisponivel neste sistema.' }
     }
 }
+
+
+$shares = [ordered]@{}
+$shares.smb = Invoke-CollectorSection 'shares.smb' { Get-SmbShareAssessment }
 
 $optional = [ordered]@{}
 if ($IncludeLocalUsers) {
@@ -390,21 +640,97 @@ if (-not $SkipAD) {
             }
         }
         $activeDirectory.object_summary = Invoke-CollectorSection 'ad.object_summary' {
-            $staleCutoff = (Get-Date).AddDays(-90)
-            $users = Get-ADUser -Filter * -Properties Enabled, PasswordNeverExpires
-            $computers = Get-ADComputer -Filter * -Properties Enabled, LastLogonDate, OperatingSystem
+            $staleCutoff = (Get-Date).AddDays(-1 * [Math]::Abs($InactiveThresholdDays))
+            $users = @(Get-ADUser -Filter * -Properties Enabled, PasswordNeverExpires, LastLogonDate, whenCreated, ServicePrincipalName)
+            $computers = @(Get-ADComputer -Filter * -Properties Enabled, LastLogonDate, whenCreated, OperatingSystem, OperatingSystemVersion, PasswordLastSet)
+
+            $staleUsersEnabled = @($users | Where-Object {
+                $_.Enabled -and ((($_.LastLogonDate) -and ($_.LastLogonDate -lt $staleCutoff)) -or ((-not $_.LastLogonDate) -and $_.whenCreated -and ($_.whenCreated -lt $staleCutoff)))
+            })
+            $staleUsersAll = @($users | Where-Object {
+                ((($_.LastLogonDate) -and ($_.LastLogonDate -lt $staleCutoff)) -or ((-not $_.LastLogonDate) -and $_.whenCreated -and ($_.whenCreated -lt $staleCutoff)))
+            })
+            $staleComputersEnabled = @($computers | Where-Object {
+                $_.Enabled -and ((($_.LastLogonDate) -and ($_.LastLogonDate -lt $staleCutoff)) -or ((-not $_.LastLogonDate) -and $_.whenCreated -and ($_.whenCreated -lt $staleCutoff)))
+            })
+            $staleComputersAll = @($computers | Where-Object {
+                ((($_.LastLogonDate) -and ($_.LastLogonDate -lt $staleCutoff)) -or ((-not $_.LastLogonDate) -and $_.whenCreated -and ($_.whenCreated -lt $staleCutoff)))
+            })
+
             [pscustomobject]@{
-                users_total = @($users).Count
+                users_total = $users.Count
                 users_enabled = @($users | Where-Object Enabled).Count
                 users_disabled = @($users | Where-Object { -not $_.Enabled }).Count
                 users_password_never_expires = @($users | Where-Object PasswordNeverExpires).Count
-                computers_total = @($computers).Count
+                users_stale_threshold_days = [Math]::Abs($InactiveThresholdDays)
+                users_stale_enabled = $staleUsersEnabled.Count
+                users_stale_all = $staleUsersAll.Count
+                computers_total = $computers.Count
                 computers_enabled = @($computers | Where-Object Enabled).Count
                 computers_disabled = @($computers | Where-Object { -not $_.Enabled }).Count
-                computers_stale_90_days = @($computers | Where-Object { -not $_.LastLogonDate -or $_.LastLogonDate -lt $staleCutoff }).Count
+                computers_stale_90_days = $staleComputersAll.Count
+                computers_stale_threshold_days = [Math]::Abs($InactiveThresholdDays)
+                computers_stale_enabled = $staleComputersEnabled.Count
+                computers_stale_all = $staleComputersAll.Count
                 server_os_count = @($computers | Where-Object { $_.OperatingSystem -like '*Server*' }).Count
             }
         }
+        $activeDirectory.inactive_accounts = Invoke-CollectorSection 'ad.inactive_accounts' {
+            $thresholdDays = [Math]::Abs($InactiveThresholdDays)
+            $cutoff = (Get-Date).AddDays(-1 * $thresholdDays)
+            $users = @(Get-ADUser -Filter * -Properties Enabled, PasswordNeverExpires, LastLogonDate, whenCreated, ServicePrincipalName)
+            $computers = @(Get-ADComputer -Filter * -Properties Enabled, LastLogonDate, whenCreated, OperatingSystem, OperatingSystemVersion, PasswordLastSet)
+
+            $staleUsers = @($users | Where-Object {
+                $_.Enabled -and ((($_.LastLogonDate) -and ($_.LastLogonDate -lt $cutoff)) -or ((-not $_.LastLogonDate) -and $_.whenCreated -and ($_.whenCreated -lt $cutoff)))
+            })
+            $staleComputers = @($computers | Where-Object {
+                $_.Enabled -and ((($_.LastLogonDate) -and ($_.LastLogonDate -lt $cutoff)) -or ((-not $_.LastLogonDate) -and $_.whenCreated -and ($_.whenCreated -lt $cutoff)))
+            })
+
+            $userItems = @()
+            $computerItems = @()
+            if ($IncludeIdentityDetails) {
+                $userItems = @($staleUsers | ForEach-Object {
+                    $reference = if ($_.LastLogonDate) { $_.LastLogonDate } else { $_.whenCreated }
+                    [pscustomobject]@{
+                        sam_account_name = [string]$_.SamAccountName
+                        enabled = [bool]$_.Enabled
+                        last_logon_utc = ConvertTo-IsoDateOrNull $_.LastLogonDate
+                        created_utc = ConvertTo-IsoDateOrNull $_.whenCreated
+                        inactivity_days = Get-DaysSince $reference
+                        inactivity_basis = $(if ($_.LastLogonDate) { 'LastLogonDate' } else { 'whenCreated_no_logon' })
+                        password_never_expires = [bool]$_.PasswordNeverExpires
+                        service_account_candidate = (@($_.ServicePrincipalName).Count -gt 0)
+                        distinguished_name = [string]$_.DistinguishedName
+                    }
+                })
+                $computerItems = @($staleComputers | ForEach-Object {
+                    $reference = if ($_.LastLogonDate) { $_.LastLogonDate } else { $_.whenCreated }
+                    [pscustomobject]@{
+                        name = [string]$_.Name
+                        enabled = [bool]$_.Enabled
+                        last_logon_utc = ConvertTo-IsoDateOrNull $_.LastLogonDate
+                        created_utc = ConvertTo-IsoDateOrNull $_.whenCreated
+                        password_last_set_utc = ConvertTo-IsoDateOrNull $_.PasswordLastSet
+                        inactivity_days = Get-DaysSince $reference
+                        inactivity_basis = $(if ($_.LastLogonDate) { 'LastLogonDate' } else { 'whenCreated_no_logon' })
+                        operating_system = [string]$_.OperatingSystem
+                        operating_system_version = [string]$_.OperatingSystemVersion
+                        distinguished_name = [string]$_.DistinguishedName
+                    }
+                })
+            }
+
+            [pscustomobject]@{
+                threshold_days = $thresholdDays
+                details_included = [bool]$IncludeIdentityDetails
+                users = [pscustomobject]@{ enabled_stale_count = $staleUsers.Count; items = $userItems }
+                computers = [pscustomobject]@{ enabled_stale_count = $staleComputers.Count; items = $computerItems }
+                note = 'LastLogonDate is derived from replicated lastLogonTimestamp and is appropriate for inactivity assessment, not exact authentication auditing.'
+            }
+        }
+
 
         if (-not $SkipGPO) {
             $activeDirectory.gpo = Invoke-CollectorSection 'ad.gpo' {
@@ -436,6 +762,7 @@ $result = [ordered]@{
         network = $network
         security = $security
         services = $services
+        shares = $shares
         optional = $optional
         active_directory = $activeDirectory
     }
