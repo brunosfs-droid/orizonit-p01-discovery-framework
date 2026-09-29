@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Orizon IT P01 Network Discovery Scanner v0.4.0 (MVP).
+"""Orizon IT P01 Network Discovery Scanner v0.4.1 (MVP).
 
 Active, non-credentialed network discovery intended for authorized infrastructure
 assessment. The scanner supports multiple IPv4 CIDRs/ranges, exclusions,
@@ -31,7 +31,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Set, Tuple
 
 SCANNER_NAME = "P01-Network-Discovery-Scanner"
-SCANNER_VERSION = "0.4.0"
+SCANNER_VERSION = "0.4.1"
 SCHEMA_VERSION = "0.4"
 
 DEFAULT_SAFE_PORTS = [
@@ -285,8 +285,49 @@ def normalize_mac(mac: str) -> str:
     return ":".join(compact[i:i+2] for i in range(0, 12, 2))
 
 
-def ssdp_discover(timeout: float = 1.6) -> Dict[str, List[Dict[str, str]]]:
-    """Return SSDP responses keyed by source IPv4 address."""
+def mac_address_type(mac: Optional[str]) -> Optional[str]:
+    """Classify MAC administration bit; does not infer vendor."""
+    if not mac:
+        return None
+    compact = re.sub(r"[^0-9A-Fa-f]", "", mac)
+    if len(compact) != 12:
+        return "Unknown"
+    first = int(compact[:2], 16)
+    if first & 0x01:
+        return "Multicast"
+    if first & 0x02:
+        return "Locally Administered"
+    return "Universally Administered"
+
+
+def build_mac_correlations(assets: Sequence[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Surface same-MAC/multi-IP observations without auto-deduplicating assets."""
+    mac_to_ips: Dict[str, Set[str]] = defaultdict(set)
+    for asset in assets:
+        mac = asset.get("mac")
+        ip = asset.get("ip")
+        if mac and ip:
+            mac_to_ips[str(mac)].add(str(ip))
+    correlations: List[Dict[str, Any]] = []
+    for mac, ips in sorted(mac_to_ips.items()):
+        if len(ips) > 1:
+            correlations.append({
+                "type": "same_mac_multiple_ips",
+                "mac": mac,
+                "ips": sorted(ips, key=lambda x: int(ipaddress.ip_address(x))),
+                "confidence": "High",
+                "automatic_deduplication": False,
+                "interpretation": "May represent multi-addressing, DHCP/ARP transition, proxying, bridging, or stale neighbor state. Confirm before merging assets.",
+            })
+    return correlations
+
+
+def ssdp_discover(timeout: float = 1.6, source_ips: Optional[Sequence[str]] = None) -> Dict[str, List[Dict[str, str]]]:
+    """Return SSDP responses keyed by source IPv4 address.
+
+    On multi-homed hosts, attempt one M-SEARCH per in-scope local IPv4 so the
+    multicast query is emitted from the relevant interface when possible.
+    """
     responses: Dict[str, List[Dict[str, str]]] = defaultdict(list)
     message = (
         'M-SEARCH * HTTP/1.1\r\n'
@@ -296,39 +337,58 @@ def ssdp_discover(timeout: float = 1.6) -> Dict[str, List[Dict[str, str]]]:
         'ST:ssdp:all\r\n'
         '\r\n'
     ).encode("ascii")
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-    try:
-        sock.settimeout(0.2)
-        sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
-        sock.sendto(message, ("239.255.255.250", 1900))
-        deadline = time.monotonic() + timeout
-        while time.monotonic() < deadline:
-            try:
-                data, addr = sock.recvfrom(65535)
-            except socket.timeout:
-                continue
-            except OSError:
-                break
-            headers: Dict[str, str] = {}
-            text = data.decode("utf-8", errors="replace")
-            lines = text.split("\r\n")
-            if lines:
-                headers["status_line"] = lines[0][:200]
-            for line in lines[1:]:
-                if ":" not in line:
-                    continue
-                key, value = line.split(":", 1)
-                key = key.strip().lower()
-                if key in {"server", "location", "st", "usn", "cache-control"}:
-                    headers[key] = value.strip()[:500]
-            if headers and headers not in responses[addr[0]]:
-                responses[addr[0]].append(headers)
-    except OSError:
-        pass
-    finally:
-        sock.close()
-    return dict(responses)
 
+    candidates: List[Optional[str]] = []
+    for value in source_ips or []:
+        try:
+            if ipaddress.ip_address(value).version == 4:
+                candidates.append(value)
+        except ValueError:
+            continue
+    if not candidates:
+        candidates = [None]
+
+    for source_ip in candidates:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+        try:
+            sock.settimeout(0.2)
+            sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, 2)
+            if source_ip:
+                sock.bind((source_ip, 0))
+                try:
+                    sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_IF, socket.inet_aton(source_ip))
+                except OSError:
+                    pass
+            sock.sendto(message, ("239.255.255.250", 1900))
+            deadline = time.monotonic() + timeout
+            while time.monotonic() < deadline:
+                try:
+                    data, addr = sock.recvfrom(65535)
+                except socket.timeout:
+                    continue
+                except OSError:
+                    break
+                headers: Dict[str, str] = {}
+                text = data.decode("utf-8", errors="replace")
+                lines = text.split("\r\n")
+                if lines:
+                    headers["status_line"] = lines[0][:200]
+                for line in lines[1:]:
+                    if ":" not in line:
+                        continue
+                    key, value = line.split(":", 1)
+                    key = key.strip().lower()
+                    if key in {"server", "location", "st", "usn", "cache-control"}:
+                        headers[key] = value.strip()[:500]
+                if source_ip:
+                    headers["scanner_source_interface"] = source_ip
+                if headers and headers not in responses[addr[0]]:
+                    responses[addr[0]].append(headers)
+        except OSError:
+            pass
+        finally:
+            sock.close()
+    return dict(responses)
 
 def get_local_context() -> Dict[str, Any]:
     hostname = socket.gethostname()
@@ -468,14 +528,27 @@ def discover_host(ip: str, ports: Sequence[int], timeout: float, ping_result: bo
 
     open_ports = set(initial_open)
     open_ports.update(scan_tcp_ports(ip, [p for p in ports if p not in open_ports], timeout))
-    hostname = reverse_dns(ip)
+
+    local_ips = set(local_context.get("local_ipv4") or [])
+    if ip in local_ips:
+        hostname = str(local_context.get("hostname") or "") or reverse_dns(ip)
+        hostname_source = "local_execution_host"
+        hostname_confidence = "High"
+    else:
+        hostname = reverse_dns(ip)
+        hostname_source = "reverse_dns" if hostname else None
+        hostname_confidence = "Medium" if hostname else None
+
     port_details = enrich_open_ports(ip, sorted(open_ports), timeout)
     device, os_guess, confidence, evidence = classify_asset(ip, hostname, open_ports, port_details, ssdp, local_context)
 
     return {
         "ip": ip,
         "hostname": hostname,
+        "hostname_source": hostname_source,
+        "hostname_confidence": hostname_confidence,
         "mac": arp_mac,
+        "mac_address_type": mac_address_type(arp_mac),
         "discovery_methods": methods,
         "open_ports": port_details,
         "ssdp": ssdp,
@@ -485,7 +558,6 @@ def discover_host(ip: str, ports: Sequence[int], timeout: float, ping_result: bo
         "classification_evidence": evidence,
         "credentialed": False,
     }
-
 
 def write_output(output_dir: Path, run_label: str, payload: Dict[str, Any]) -> Tuple[Path, Path]:
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -506,7 +578,7 @@ def write_output(output_dir: Path, run_label: str, payload: Dict[str, Any]) -> T
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
-    parser = argparse.ArgumentParser(description="Orizon IT P01 Network Discovery Scanner v0.4.0")
+    parser = argparse.ArgumentParser(description="Orizon IT P01 Network Discovery Scanner v0.4.1")
     parser.add_argument("--target", action="append", default=[], help="IPv4 CIDR, IP or range. Repeatable.")
     parser.add_argument("--target-file", help="Text file with one target expression per line.")
     parser.add_argument("--exclude", action="append", default=[], help="IPv4 CIDR, IP or range to exclude. Repeatable.")
@@ -558,10 +630,27 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     errors: List[Dict[str, str]] = []
     local_context = get_local_context()
     scope_set = set(scope_ips)
+    local_ips_in_scope = sorted(ip for ip in (local_context.get("local_ipv4") or []) if ip in scope_set)
+    gateways_in_scope = sorted(ip for ip in (local_context.get("default_gateways") or []) if ip in scope_set)
+    scope_relationship = {
+        "local_ipv4_in_scope": local_ips_in_scope,
+        "default_gateways_in_scope": gateways_in_scope,
+        "has_local_overlap": bool(local_ips_in_scope),
+        "has_gateway_overlap": bool(gateways_in_scope),
+    }
+    if not local_ips_in_scope and not gateways_in_scope:
+        warnings.append({
+            "section": "scope_sanity",
+            "message": "Selected scope contains no local IPv4 address or default gateway. Routed discovery may be intentional, but ARP/MAC and multicast enrichment can be limited.",
+        })
 
     ssdp_map: Dict[str, List[Dict[str, str]]] = {}
     if not args.disable_ssdp:
-        ssdp_map = {ip: rows for ip, rows in ssdp_discover().items() if in_scope(ip, scope_set)}
+        ssdp_map = {
+            ip: rows
+            for ip, rows in ssdp_discover(source_ips=local_ips_in_scope).items()
+            if in_scope(ip, scope_set)
+        }
 
     # Phase 1: ICMP attempts primarily for liveness and ARP cache stimulation.
     ping_results: Dict[str, bool] = {}
@@ -602,6 +691,22 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                 errors.append({"section": "host_discovery", "target": ip, "message": str(exc)[:300]})
 
     assets.sort(key=lambda x: int(ipaddress.ip_address(x["ip"])))
+    identity_correlations = build_mac_correlations(assets)
+    correlation_by_mac = {c["mac"]: c for c in identity_correlations}
+    for asset in assets:
+        corr = correlation_by_mac.get(asset.get("mac"))
+        if corr:
+            asset["identity_hints"] = {
+                "same_mac_seen_on_ips": corr["ips"],
+                "possible_same_asset": True,
+                "automatic_deduplication": False,
+            }
+    if identity_correlations:
+        warnings.append({
+            "section": "asset_identity",
+            "message": f"{len(identity_correlations)} MAC address(es) were observed on multiple IPs. Review identity_correlations before counting logical assets.",
+        })
+
     by_type = Counter(a["device_type_guess"] for a in assets)
     by_confidence = Counter(a["confidence"] for a in assets)
     if len(scope_ips) > 1024:
@@ -636,6 +741,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             "workers": args.workers,
             "timeout_seconds": args.timeout,
             "ssdp_enabled": not args.disable_ssdp,
+            "scope_relationship": scope_relationship,
         },
         "local_context": local_context,
         "summary": {
@@ -644,8 +750,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             "by_confidence": dict(sorted(by_confidence.items())),
             "ssdp_hosts": sum(1 for a in assets if a.get("ssdp")),
             "credentialed_hosts": 0,
+            "unique_macs_observed": len({a.get("mac") for a in assets if a.get("mac")}),
+            "multi_ip_mac_correlations": len(identity_correlations),
         },
         "assets": assets,
+        "identity_correlations": identity_correlations,
         "errors": errors,
         "limitations": limitations,
         "warnings": warnings,
