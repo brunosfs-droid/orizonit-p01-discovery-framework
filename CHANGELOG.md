@@ -10,6 +10,24 @@ All notable changes to the P01 Discovery Framework are documented here.
 - Asset Resolver / deduplication (v0.4c)
 - Reporting Engine v0.1
 
+## [0.4.1-candidate] - 2026-09-29
+
+### Fixed
+- Warn when the selected scope contains no local IPv4/default gateway while still allowing routed scans
+- Prefer local execution-host identity over reverse DNS for the scanner host
+- Bind SSDP discovery to in-scope local IPv4 interfaces when possible
+
+### Added
+- `hostname_source` and `hostname_confidence`
+- `mac_address_type` to distinguish locally administered MACs
+- same-MAC/multiple-IP identity correlations without automatic deduplication
+- summary counters for unique MACs and multi-IP MAC correlations
+- unit tests for MAC classification and identity correlation
+
+### Validated
+- First real home/LAB scan discovered all IP endpoints visible in the supplied router evidence
+- One logical device was observed under two IPs, confirming the need for the Asset Resolver
+
 ## [0.4.0-candidate] - 2026-09-29
 
 ### Added
