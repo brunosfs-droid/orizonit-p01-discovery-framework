@@ -1,10 +1,13 @@
-# Discovery outputs / client data
+# Discovery outputs / customer data
 output/
 outputs/
-*.sha256
+network_discovery/output/
 samples/generated/
 artifacts/
 reports/generated/
+*.sha256
+*.pcap
+*.pcapng
 
 # Secrets and local configuration
 .env
@@ -17,6 +20,9 @@ reports/generated/
 *.kdbx
 credentials*
 secrets*
+*secret*.json
+targets.local.*
+excludes.local.*
 inventory/hosts.csv
 orchestrator/inventory/hosts.csv
 
