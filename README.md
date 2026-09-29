@@ -9,7 +9,7 @@
 - **Linux Collector:** 0.3.0 — candidate, validado em LAB em Ubuntu e Rocky para SSH, FTP, Samba, password policy, serviços e plataforma.
 - **Analyzer / Rule Engine:** 0.2.0 — candidate, 19 regras determinísticas e rastreabilidade para a evidência de origem.
 - **Network Discovery Scanner:** 0.4.1 — LAB VALIDATED para o core não autenticado no cenário atual; produção/cobertura corporativa ainda em expansão, sem credenciais, criado para descoberta por múltiplos ranges antes do deep discovery.
-- **Credential Manager:** 0.4b.1 — foundation candidate para perfis, seleção por escopo/protocolo e referências seguras.\n- **Reporting Engine:** planejado após Network Discovery + Asset Resolver.
+- **Credential Manager:** 0.4b.1 — LAB VALIDATED para a foundation de perfis, Secret Provider e seleção por escopo/protocolo; autenticação real entra na v0.4b.2.\n- **Reporting Engine:** planejado após Network Discovery + Asset Resolver.
 
 > Saídas reais de discovery devem ser tratadas como **CONFIDENCIAL — DADOS DO CLIENTE**.
 
