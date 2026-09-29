@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://orizonit.local/schemas/p01-discovery-schema-v0.2.json",
+  "title": "Orizon IT P01 Discovery Common Envelope",
+  "description": "Common envelope for P01 discovery collector outputs. Platform-specific data remains extensible during the validation phase.",
+  "type": "object",
+  "required": ["metadata", "data", "errors", "limitations", "warnings"],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": [
+        "collector_name",
+        "collector_version",
+        "schema_version",
+        "collected_at_utc",
+        "computer_name",
+        "read_only_mode"
+      ],
+      "properties": {
+        "collector_name": { "type": "string", "minLength": 1 },
+        "collector_version": { "type": "string", "minLength": 1 },
+        "schema_version": { "type": "string", "const": "0.2" },
+        "collected_at_utc": { "type": "string", "format": "date-time" },
+        "computer_name": { "type": "string", "minLength": 1 },
+        "execution_user": { "type": ["string", "null"] },
+        "is_administrator": { "type": ["boolean", "null"] },
+        "privilege_profile": { "type": ["string", "null"] },
+        "run_label": { "type": ["string", "null"] },
+        "duration_seconds": { "type": ["number", "null"], "minimum": 0 },
+        "error_count": { "type": ["integer", "null"], "minimum": 0 },
+        "limitation_count": { "type": ["integer", "null"], "minimum": 0 },
+        "warning_count": { "type": ["integer", "null"], "minimum": 0 },
+        "read_only_mode": { "type": "boolean" }
+      },
+      "additionalProperties": true
+    },
+    "data": {
+      "type": "object",
+      "description": "Platform-specific discovery payload.",
+      "additionalProperties": true
+    },
+    "errors": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/collectorMessage" }
+    },
+    "limitations": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/collectorMessage" }
+    },
+    "warnings": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/collectorMessage" }
+    }
+  },
+  "$defs": {
+    "collectorMessage": {
+      "type": "object",
+      "required": ["section", "message"],
+      "properties": {
+        "section": { "type": "string", "minLength": 1 },
+        "message": { "type": "string", "minLength": 1 },
+        "exception_type": { "type": ["string", "null"] }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}
