@@ -323,11 +323,10 @@ def _selector_match(
     profile: Mapping[str, Any],
     context: Optional[Mapping[str, Any]],
 ) -> Tuple[bool, int, Tuple[str, ...]]:
-    """Evaluate optional contextual selectors.
+    """Evaluate contextual selectors and v0.4b.6 credential taxonomy.
 
-    Backward compatibility: when context is None, selectors are not evaluated.
-    Safety: when context is supplied and the asset is unknown, a profile is not
-    eligible unless selectors.allow_unknown is explicitly true.
+    Backward compatibility: profiles without taxonomy fields retain the v0.4b.3
+    behavior. New taxonomy fields become hard gates only when explicitly set.
     """
     if context is None:
         return True, 0, ()
@@ -341,13 +340,13 @@ def _selector_match(
     hostname = str(context.get("hostname") or "")
     vendor = str(context.get("vendor") or "")
     realm = _norm(context.get("realm"))
+    realm_kind = _norm(context.get("realm_kind"))
+    realm_evidence = _norm(context.get("realm_evidence_state"))
     confidence = _norm(context.get("confidence")) or "unknown"
     services = _as_lower_set(context.get("services") or [])
+    target_classes = _as_lower_set(context.get("target_classes") or [])
 
-    asset_unknown = (
-        device_type in {"", "unknown"}
-        and os_family in {"", "unknown"}
-    )
+    asset_unknown = device_type in {"", "unknown"} and os_family in {"", "unknown"}
     allow_unknown = bool(selectors.get("allow_unknown", False))
     if asset_unknown and not allow_unknown:
         return False, 0, ()
@@ -367,6 +366,42 @@ def _selector_match(
                 return False, 0, ()
             score += 20
             matched.append(key)
+
+    profile_realm_name = _norm(profile.get("realm_name"))
+    if profile_realm_name:
+        if not realm or realm != profile_realm_name:
+            return False, 0, ()
+        score += 20
+        matched.append("realm_name")
+
+    expected_realm_kinds = _as_lower_set(selectors.get("realm_kinds"))
+    profile_realm_kind = _norm(profile.get("realm_kind"))
+    if profile_realm_kind:
+        expected_realm_kinds.add(profile_realm_kind)
+    if expected_realm_kinds:
+        if not realm_kind or realm_kind not in expected_realm_kinds:
+            return False, 0, ()
+        score += 10
+        matched.append("realm_kind")
+
+    expected_target_classes = _as_lower_set(selectors.get("target_classes"))
+    expected_target_classes.update(_as_lower_set(profile.get("target_classes")))
+    if expected_target_classes:
+        if not target_classes or not target_classes.intersection(expected_target_classes):
+            return False, 0, ()
+        score += 15
+        matched.append("target_classes")
+
+    required_realm_evidence = _norm(
+        profile.get("realm_evidence_min") or selectors.get("min_realm_evidence")
+    )
+    if required_realm_evidence:
+        required_rank = REALM_EVIDENCE_RANK.get(required_realm_evidence, 999)
+        actual_rank = REALM_EVIDENCE_RANK.get(realm_evidence, 0)
+        if actual_rank < required_rank:
+            return False, 0, ()
+        score += 5
+        matched.append("realm_evidence_min")
 
     expected_services = _as_lower_set(selectors.get("services"))
     if expected_services:
@@ -403,7 +438,6 @@ def _selector_match(
         matched.append("allow_unknown")
 
     return True, score, tuple(matched)
-
 
 def context_from_network_asset(asset: Mapping[str, Any], realm: Optional[str] = None) -> Dict[str, Any]:
     services = []
