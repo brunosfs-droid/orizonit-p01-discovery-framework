@@ -27,6 +27,18 @@ All notable changes to the P01 Discovery Framework are documented here.
 - WinRM/NTLM authentication succeeded against P01-MGMT01 with one bounded /32 profile attempt and zero retries
 - v0.4b.4 full collection failure reproduced and isolated to payload size, not credentials or WinRM connectivity
 
+## [0.4b.4.2-lab-validated] - 2026-09-30
+
+### Validated
+- P01-MGMT01 WinRM full enrichment completed successfully
+- all modular collection sections passed
+- candidate-network filtering returned only subnet-level networks
+- JSON/SHA256 integrity passed
+- zero warnings and zero errors
+
+### Next
+- validate a dedicated domain profile against P01-DC01
+
 ## [0.4b.4.2-candidate] - 2026-09-30
 
 ### Fixed
