@@ -219,7 +219,7 @@ def main(argv=None):
     try:
         doc=load_profiles(Path(args.profiles));context=build_context(args.scheme,args.device_type,args.os_family,args.hostname,args.vendor,args.realm,args.confidence);matches=match_profiles(doc,str(target),"winrm",args.max_candidates,context=context)
     except (CredentialConfigError,OSError,ValueError) as exc:print(f"Credential profile error: {safe_error(exc)}",file=sys.stderr);return 2
-    errors=[];limitations=[{"section":"transport","message":"v0.4b.4.2 validates password authentication using NTLM transport first; Kerberos/certificate/CredSSP are later increments."},{"section":"dynamic_scope","message":"Candidate networks are evidence only and are never automatically scanned by this adapter."}];warnings=[]
+    errors=[];limitations=[{"section":"transport","message":"v0.4b.4.3 validates password authentication using NTLM transport first; Kerberos/certificate/CredSSP are later increments."},{"section":"dynamic_scope","message":"Candidate networks are evidence only and are never automatically scanned by this adapter."}];warnings=[]
     if not matches:warnings.append({"section":"credentials","message":"No eligible WinRM credential profile matched the target context."})
     attempts=[];enrichment=None;selected=None
     for match in matches:
