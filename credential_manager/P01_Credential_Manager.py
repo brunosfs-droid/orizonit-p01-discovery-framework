@@ -439,7 +439,13 @@ def _selector_match(
 
     return True, score, tuple(matched)
 
-def context_from_network_asset(asset: Mapping[str, Any], realm: Optional[str] = None) -> Dict[str, Any]:
+def context_from_network_asset(
+    asset: Mapping[str, Any],
+    realm: Optional[str] = None,
+    realm_kind: Optional[str] = None,
+    realm_evidence_state: Optional[str] = None,
+    target_classes: Optional[Sequence[str]] = None,
+) -> Dict[str, Any]:
     services = []
     for port in asset.get("open_ports", []) or []:
         if isinstance(port, Mapping):
@@ -447,16 +453,31 @@ def context_from_network_asset(asset: Mapping[str, Any], realm: Optional[str] = 
             if service:
                 services.append(service)
 
+    inferred_classes: List[str] = []
+    device_type = _norm(asset.get("device_type_guess"))
+    if "windows" in device_type:
+        inferred_classes.append("windows")
+    elif "linux" in device_type or "unix" in device_type:
+        inferred_classes.append("linux")
+    elif "router" in device_type or "gateway" in device_type:
+        inferred_classes.extend(["network_device", "router"])
+    elif "network" in device_type or "embedded" in device_type:
+        inferred_classes.append("network_device")
+
+    merged_classes = sorted(set(inferred_classes + list(target_classes or [])))
+
     return {
         "device_type": asset.get("device_type_guess"),
         "os_family": asset.get("os_guess"),
         "hostname": asset.get("hostname"),
         "vendor": asset.get("vendor"),
         "realm": realm,
+        "realm_kind": realm_kind,
+        "realm_evidence_state": realm_evidence_state,
+        "target_classes": merged_classes,
         "confidence": asset.get("confidence"),
         "services": sorted(set(services)),
     }
-
 
 def match_profiles(
     doc: Mapping[str, Any],
