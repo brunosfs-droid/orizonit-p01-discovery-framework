@@ -1,4 +1,4 @@
-# P01 Central Ingestion API — v0.5c.1
+# P01 Central Ingestion API — v0.5d.0
 
 The Central Ingestion API receives the same `.p01bundle` used by offline/manual import and delegates processing to the exact same v0.5b `import_bundle()` pipeline.
 
@@ -8,19 +8,22 @@ The Central Ingestion API receives the same `.p01bundle` used by offline/manual 
 
 After the server receives the bundle, both paths use the same validation, evidence store, Asset Resolver replay and semantic checks.
 
-## v0.5c safety boundary
+## Transport modes
 
-v0.5c is **localhost-only**.
+### localhost
 
-It intentionally does not provide:
-- Internet exposure;
-- TLS termination;
-- node enrollment;
-- remote customer authentication;
-- server-to-node control;
-- arbitrary command execution.
+Preserves the v0.5c development mode and remains loopback-only.
 
-Those belong to v0.5d.
+### mtls
+
+Allows remote binding only when all trust material is configured:
+- server certificate;
+- server private key;
+- trusted client CA.
+
+mTLS mode requires a client certificate before HTTP ingestion. `X-P01-Node-ID` must match the authenticated client certificate identity, and the validated bundle `node_id` must match that same node identity.
+
+No server-to-node command execution is introduced.
 
 ## Start server
 
@@ -96,3 +99,23 @@ v0.5d will add production connected-mode controls: TLS, authenticated Discovery 
 ## v0.5c.1 connection hygiene
 
 Requests rejected before the upload body is consumed (for example missing/malformed SHA256 or oversized Content-Length) return `Connection: close` and terminate the HTTP/1.1 connection. This prevents unread request bytes from being interpreted as a follow-on HTTP request.
+
+## mTLS server example
+
+    python .\ingestion\P01_Ingestion_API.py serve `
+      --store-dir C:\P01\mtls-server-r1 `
+      --bind 127.0.0.1 `
+      --port 8443 `
+      --transport-mode mtls `
+      --tls-cert C:\P01\pki\server.crt `
+      --tls-key C:\P01\pki\server.key `
+      --client-ca C:\P01\pki\ca.crt `
+      --process
+
+Remote/non-loopback use is permitted only in `mtls` mode.
+
+## Node identity
+
+The first DNS Subject Alternative Name of the client certificate is used as the node identity. Common Name is a compatibility fallback only when no DNS SAN exists.
+
+The server also verifies that the bundle manifest `node_id` matches the authenticated node.
