@@ -11,3 +11,9 @@ Validation example:
 ```bash
 python -m json.tool schemas/p01-discovery-schema-v0.3.json > /dev/null
 ```
+
+
+## v0.4b.6 contracts
+
+- `p01-assessment-manifest-schema-v0.4b.6.json` — non-secret pre-flight environment context.
+- `p01-credential-profiles-schema-v0.4b.json` — backward-compatible profile contract extended with credential taxonomy fields.

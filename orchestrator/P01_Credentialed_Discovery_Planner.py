@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""P01 Credentialed Discovery Planner v0.4b.3.1.
+"""P01 Credentialed Discovery Planner v0.4b.3.2.
 
 Consumes Network Discovery evidence and Credential Profiles to produce a safe,
 non-secret execution plan. It does not resolve secrets and does not authenticate.
@@ -20,8 +20,11 @@ from typing import Any, Dict, List, Mapping, Optional, Sequence
 
 ROOT = Path(__file__).resolve().parents[1]
 CRED_DIR = ROOT / "credential_manager"
+ASSESSMENT_DIR = ROOT / "assessment"
 if str(CRED_DIR) not in sys.path:
     sys.path.insert(0, str(CRED_DIR))
+if str(ASSESSMENT_DIR) not in sys.path:
+    sys.path.insert(0, str(ASSESSMENT_DIR))
 
 from P01_Credential_Manager import (  # noqa: E402
     context_from_network_asset,
@@ -29,9 +32,10 @@ from P01_Credential_Manager import (  # noqa: E402
     match_profiles,
     _safe_profile_view,
 )
+from P01_Assessment_Context import load_manifest, manifest_context_for_asset  # noqa: E402
 
 PLANNER_NAME = "P01-Credentialed-Discovery-Planner"
-PLANNER_VERSION = "0.4b.3.1"
+PLANNER_VERSION = "0.4b.3.2"
 
 SERVICE_TO_PROTOCOL = {
     "ssh": "ssh",
@@ -69,6 +73,7 @@ def build_plan(
     profiles: Mapping[str, Any],
     realm_map: Optional[Mapping[str, str]] = None,
     max_candidates: int = 2,
+    manifest: Optional[Mapping[str, Any]] = None,
 ) -> Dict[str, Any]:
     realm_map = realm_map or {}
     assets_out: List[Dict[str, Any]] = []
@@ -80,8 +85,44 @@ def build_plan(
         if not ip:
             continue
 
-        realm = realm_map.get(ip)
-        context = context_from_network_asset(asset, realm=realm)
+        manifest_ctx = manifest_context_for_asset(asset, manifest) if manifest else {
+            "assessment_id": None,
+            "target_classes": [],
+            "declared_realm_candidates": [],
+            "realm": None,
+            "realm_kind": None,
+            "realm_evidence_state": None,
+            "realm_source": None,
+        }
+        mapped_realm = realm_map.get(ip)
+        observed_realm = manifest_ctx.get("realm")
+        realm = None
+        realm_kind = None
+        realm_evidence_state = None
+        realm_source = None
+        context_conflicts: List[str] = []
+
+        if observed_realm and mapped_realm and str(observed_realm).lower() != str(mapped_realm).lower():
+            context_conflicts.append("realm_map_conflicts_with_observed_manifest_domain")
+            realm_source = "conflict"
+        elif observed_realm:
+            realm = str(observed_realm)
+            realm_kind = manifest_ctx.get("realm_kind")
+            realm_evidence_state = manifest_ctx.get("realm_evidence_state")
+            realm_source = manifest_ctx.get("realm_source")
+        elif mapped_realm:
+            realm = str(mapped_realm)
+            realm_kind = "local_host" if str(mapped_realm).lower() == "local" else None
+            realm_evidence_state = "declared"
+            realm_source = "realm_map"
+
+        context = context_from_network_asset(
+            asset,
+            realm=realm,
+            realm_kind=realm_kind,
+            realm_evidence_state=realm_evidence_state,
+            target_classes=manifest_ctx.get("target_classes") or [],
+        )
         protocols = detect_protocols(asset)
         protocol_plans = []
 
@@ -113,6 +154,9 @@ def build_plan(
         if has_candidate:
             action_status = "adapter_candidate"
             skip_reasons = []
+        elif context_conflicts:
+            action_status = "not_planned"
+            skip_reasons = ["context_conflict"]
         elif not protocols:
             action_status = "not_planned"
             skip_reasons = ["no_supported_management_protocol_detected"]
@@ -126,7 +170,13 @@ def build_plan(
             "device_type": asset.get("device_type_guess"),
             "os_family": asset.get("os_guess"),
             "confidence": asset.get("confidence"),
+            "target_classes": context.get("target_classes", []),
             "realm": realm,
+            "realm_kind": realm_kind,
+            "realm_evidence_state": realm_evidence_state,
+            "realm_source": realm_source,
+            "declared_realm_candidates": manifest_ctx.get("declared_realm_candidates", []),
+            "context_conflicts": context_conflicts,
             "detected_protocols": protocols,
             "protocol_plans": protocol_plans,
             "credentialed_action_status": action_status,
@@ -141,6 +191,8 @@ def build_plan(
             "execution_host": socket.gethostname(),
             "secret_resolution": False,
             "authentication_attempts": False,
+            "assessment_id": manifest.get("assessment_id") if manifest else None,
+            "assessment_manifest_applied": bool(manifest),
         },
         "source": {
             "scanner_name": discovery.get("metadata", {}).get("scanner_name"),
@@ -167,6 +219,15 @@ def build_plan(
                 1 for a in assets_out
                 if "no_eligible_profile_for_detected_protocols" in a["skip_reasons"]
             ),
+            "assets_with_declared_realm_candidates": sum(
+                1 for a in assets_out if a["declared_realm_candidates"]
+            ),
+            "assets_with_observed_realm": sum(
+                1 for a in assets_out if a["realm_evidence_state"] == "observed"
+            ),
+            "assets_with_context_conflicts": sum(
+                1 for a in assets_out if a["context_conflicts"]
+            ),
             "protocols": sorted({
                 p
                 for a in assets_out
@@ -175,7 +236,6 @@ def build_plan(
         },
         "assets": assets_out,
     }
-
 
 def write_output(output_dir: Path, run_label: str, payload: Mapping[str, Any]) -> tuple[Path, Path]:
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -190,10 +250,11 @@ def write_output(output_dir: Path, run_label: str, payload: Mapping[str, Any]) -
 
 
 def cli(argv: Optional[Sequence[str]] = None) -> int:
-    p = argparse.ArgumentParser(description="P01 Context-aware Credentialed Discovery Planner v0.4b.3.1")
+    p = argparse.ArgumentParser(description="P01 Context-aware Credentialed Discovery Planner v0.4b.3.2")
     p.add_argument("--discovery", required=True, help="Network Discovery JSON")
     p.add_argument("--profiles", required=True, help="Credential Profiles JSON")
     p.add_argument("--realm-map", help="Optional JSON object mapping IP -> realm")
+    p.add_argument("--manifest", help="Optional v0.4b.6 Assessment Manifest")
     p.add_argument("--max-candidates", type=int, default=2)
     p.add_argument("--run-label", default="credential-plan")
     p.add_argument("--output-dir", default="./output")
@@ -210,7 +271,22 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
         realm_doc = load_json(Path(args.realm_map))
         realm_map = {str(k): str(v) for k, v in realm_doc.items()}
 
-    payload = build_plan(discovery, profiles, realm_map=realm_map, max_candidates=args.max_candidates)
+    manifest = None
+    manifest_hash = None
+    if args.manifest:
+        manifest_path = Path(args.manifest)
+        manifest = load_manifest(manifest_path)
+        manifest_hash = hashlib.sha256(manifest_path.read_bytes()).hexdigest()
+
+    payload = build_plan(
+        discovery,
+        profiles,
+        realm_map=realm_map,
+        max_candidates=args.max_candidates,
+        manifest=manifest,
+    )
+    if manifest_hash:
+        payload["metadata"]["assessment_manifest_sha256"] = manifest_hash
     out, sha = write_output(Path(args.output_dir), args.run_label, payload)
 
     print("Credentialed discovery plan finalizado.")

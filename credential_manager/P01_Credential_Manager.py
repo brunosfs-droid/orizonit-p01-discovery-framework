@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Orizon IT P01 Credential Manager v0.4b.3.
+"""Orizon IT P01 Credential Manager v0.4b.6.
 
 Secure foundation for credential profile selection and secret resolution.
 
@@ -31,8 +31,16 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
 MANAGER_NAME = "P01-Credential-Manager"
-MANAGER_VERSION = "0.4b.3"
+MANAGER_VERSION = "0.4b.6"
 PROFILE_SCHEMA_VERSION = "0.4b"
+
+REALM_EVIDENCE_RANK = {"declared": 1, "observed": 2, "credentialed_confirmed": 3}
+REALM_KINDS = {"ad_domain", "local_host", "linux_local", "vcenter_sso", "network_aaa", "device_local", "other"}
+TARGET_CLASSES = {"windows", "windows_server", "windows_workstation", "domain_controller", "linux", "vcenter", "esxi", "network_device", "switch", "router", "firewall", "storage", "appliance", "other"}
+PRIVILEGE_CLASSES = {"read_only", "inventory", "operator", "local_admin", "domain_admin", "platform_admin", "network_admin"}
+PURPOSES = {"discovery", "inventory", "configuration_audit", "patch_assessment", "topology"}
+HIGH_PRIVILEGE_CLASSES = {"domain_admin", "platform_admin", "network_admin"}
+SUSPICIOUS_PLACEHOLDER_RE = re.compile(r"(?i)(SEU[_ -]?USUARIO|CHANGE[_ -]?ME|REPLACE[_ -]?ME|EXAMPLE[_ -]?USER|YOUR[_ -]?USER)")
 
 SUPPORTED_SECRET_SCHEMES = {"env", "prompt", "wincred"}
 CONFIDENCE_RANK = {"unknown": 0, "low": 1, "medium": 2, "high": 3}
@@ -43,6 +51,9 @@ SUPPORTED_SELECTOR_KEYS = {
     "hostname_patterns",
     "vendor_patterns",
     "realms",
+    "target_classes",
+    "realm_kinds",
+    "min_realm_evidence",
     "min_confidence",
     "allow_unknown",
 }
@@ -123,7 +134,7 @@ def _parse_network(scope: str) -> ipaddress.IPv4Network:
     except ValueError as exc:
         raise CredentialConfigError(f"Invalid IPv4 scope '{scope}': {exc}") from exc
     if network.version != 4:
-        raise CredentialConfigError(f"Only IPv4 credential scopes are supported in v0.4b.3: {scope}")
+        raise CredentialConfigError(f"Only IPv4 credential scopes are supported in v0.4b.6: {scope}")
     return network
 
 
@@ -186,6 +197,40 @@ def validate_profile_document(doc: Mapping[str, Any]) -> Dict[str, Any]:
         if not isinstance(max_attempts, int) or max_attempts < 1 or max_attempts > 3:
             errors.append(f"{base}.max_attempts_per_target must be integer 1..3")
 
+        username = str(profile.get("username") or "")
+        if username and SUSPICIOUS_PLACEHOLDER_RE.search(username):
+            warnings.append(f"{base}.username looks like a placeholder: {username}")
+
+        realm_kind = profile.get("realm_kind")
+        if realm_kind is not None and _norm(realm_kind) not in REALM_KINDS:
+            errors.append(f"{base}.realm_kind is unsupported: {realm_kind}")
+
+        realm_name = profile.get("realm_name")
+        if realm_name is not None and not str(realm_name).strip():
+            errors.append(f"{base}.realm_name must be a non-empty string when provided")
+
+        target_classes = profile.get("target_classes")
+        if target_classes is not None:
+            if not isinstance(target_classes, list) or not target_classes:
+                errors.append(f"{base}.target_classes must be a non-empty array")
+            elif any(_norm(x) not in TARGET_CLASSES for x in target_classes):
+                errors.append(f"{base}.target_classes contains unsupported values")
+
+        privilege_class = profile.get("privilege_class")
+        if privilege_class is not None and _norm(privilege_class) not in PRIVILEGE_CLASSES:
+            errors.append(f"{base}.privilege_class is unsupported: {privilege_class}")
+
+        purposes = profile.get("purposes")
+        if purposes is not None:
+            if not isinstance(purposes, list) or not purposes:
+                errors.append(f"{base}.purposes must be a non-empty array")
+            elif any(_norm(x) not in PURPOSES for x in purposes):
+                errors.append(f"{base}.purposes contains unsupported values")
+
+        realm_evidence_min = profile.get("realm_evidence_min")
+        if realm_evidence_min is not None and _norm(realm_evidence_min) not in REALM_EVIDENCE_RANK:
+            errors.append(f"{base}.realm_evidence_min must be declared, observed, or credentialed_confirmed")
+
         selectors = profile.get("selectors", {})
         if selectors is None:
             selectors = {}
@@ -197,7 +242,7 @@ def validate_profile_document(doc: Mapping[str, Any]) -> Dict[str, Any]:
             for key in unknown_selector_keys:
                 errors.append(f"{base}.selectors contains unsupported key: {key}")
 
-            for key in ("device_types", "os_families", "services", "hostname_patterns", "vendor_patterns", "realms"):
+            for key in ("device_types", "os_families", "services", "hostname_patterns", "vendor_patterns", "realms", "target_classes", "realm_kinds"):
                 value = selectors.get(key)
                 if value is not None:
                     if not isinstance(value, list) or not value or not all(isinstance(x, str) and x.strip() for x in value):
@@ -208,12 +253,26 @@ def validate_profile_document(doc: Mapping[str, Any]) -> Dict[str, Any]:
                 if confidence not in CONFIDENCE_RANK:
                     errors.append(f"{base}.selectors.min_confidence must be one of Unknown, Low, Medium, High")
 
+            if "min_realm_evidence" in selectors:
+                state = _norm(selectors.get("min_realm_evidence"))
+                if state not in REALM_EVIDENCE_RANK:
+                    errors.append(f"{base}.selectors.min_realm_evidence must be declared, observed, or credentialed_confirmed")
+
             if "allow_unknown" in selectors and not isinstance(selectors.get("allow_unknown"), bool):
                 errors.append(f"{base}.selectors.allow_unknown must be boolean")
 
         failure_budget = profile.get("failure_budget_per_job", 2)
         if not isinstance(failure_budget, int) or failure_budget < 1 or failure_budget > 50:
             errors.append(f"{base}.failure_budget_per_job must be integer 1..50")
+
+        high_privilege = _norm(privilege_class) in HIGH_PRIVILEGE_CLASSES if privilege_class is not None else False
+        if high_privilege:
+            if profile.get("high_privilege_acknowledged") is not True:
+                errors.append(f"{base}.high_privilege_acknowledged must be true for {privilege_class}")
+            if failure_budget != 1:
+                errors.append(f"{base}.failure_budget_per_job must be 1 for high-privilege profiles")
+            if max_attempts != 1:
+                errors.append(f"{base}.max_attempts_per_target must be 1 for high-privilege profiles")
 
         secret_refs = profile.get("secret_refs", {})
         if not isinstance(secret_refs, dict) or not secret_refs:
@@ -272,13 +331,18 @@ def _selector_match(
     profile: Mapping[str, Any],
     context: Optional[Mapping[str, Any]],
 ) -> Tuple[bool, int, Tuple[str, ...]]:
-    """Evaluate optional contextual selectors.
+    """Evaluate contextual selectors and v0.4b.6 credential taxonomy.
 
-    Backward compatibility: when context is None, selectors are not evaluated.
-    Safety: when context is supplied and the asset is unknown, a profile is not
-    eligible unless selectors.allow_unknown is explicitly true.
+    Backward compatibility: profiles without taxonomy fields retain the v0.4b.3
+    behavior. New taxonomy fields become hard gates only when explicitly set.
     """
     if context is None:
+        taxonomy_requires_context = any(
+            profile.get(key) not in (None, [], "")
+            for key in ("realm_kind", "realm_name", "target_classes", "realm_evidence_min")
+        )
+        if taxonomy_requires_context:
+            return False, 0, ()
         return True, 0, ()
 
     selectors = profile.get("selectors") or {}
@@ -290,13 +354,13 @@ def _selector_match(
     hostname = str(context.get("hostname") or "")
     vendor = str(context.get("vendor") or "")
     realm = _norm(context.get("realm"))
+    realm_kind = _norm(context.get("realm_kind"))
+    realm_evidence = _norm(context.get("realm_evidence_state"))
     confidence = _norm(context.get("confidence")) or "unknown"
     services = _as_lower_set(context.get("services") or [])
+    target_classes = _as_lower_set(context.get("target_classes") or [])
 
-    asset_unknown = (
-        device_type in {"", "unknown"}
-        and os_family in {"", "unknown"}
-    )
+    asset_unknown = device_type in {"", "unknown"} and os_family in {"", "unknown"}
     allow_unknown = bool(selectors.get("allow_unknown", False))
     if asset_unknown and not allow_unknown:
         return False, 0, ()
@@ -316,6 +380,42 @@ def _selector_match(
                 return False, 0, ()
             score += 20
             matched.append(key)
+
+    profile_realm_name = _norm(profile.get("realm_name"))
+    if profile_realm_name:
+        if not realm or realm != profile_realm_name:
+            return False, 0, ()
+        score += 20
+        matched.append("realm_name")
+
+    expected_realm_kinds = _as_lower_set(selectors.get("realm_kinds"))
+    profile_realm_kind = _norm(profile.get("realm_kind"))
+    if profile_realm_kind:
+        expected_realm_kinds.add(profile_realm_kind)
+    if expected_realm_kinds:
+        if not realm_kind or realm_kind not in expected_realm_kinds:
+            return False, 0, ()
+        score += 10
+        matched.append("realm_kind")
+
+    expected_target_classes = _as_lower_set(selectors.get("target_classes"))
+    expected_target_classes.update(_as_lower_set(profile.get("target_classes")))
+    if expected_target_classes:
+        if not target_classes or not target_classes.intersection(expected_target_classes):
+            return False, 0, ()
+        score += 15
+        matched.append("target_classes")
+
+    required_realm_evidence = _norm(
+        profile.get("realm_evidence_min") or selectors.get("min_realm_evidence")
+    )
+    if required_realm_evidence:
+        required_rank = REALM_EVIDENCE_RANK.get(required_realm_evidence, 999)
+        actual_rank = REALM_EVIDENCE_RANK.get(realm_evidence, 0)
+        if actual_rank < required_rank:
+            return False, 0, ()
+        score += 5
+        matched.append("realm_evidence_min")
 
     expected_services = _as_lower_set(selectors.get("services"))
     if expected_services:
@@ -353,8 +453,13 @@ def _selector_match(
 
     return True, score, tuple(matched)
 
-
-def context_from_network_asset(asset: Mapping[str, Any], realm: Optional[str] = None) -> Dict[str, Any]:
+def context_from_network_asset(
+    asset: Mapping[str, Any],
+    realm: Optional[str] = None,
+    realm_kind: Optional[str] = None,
+    realm_evidence_state: Optional[str] = None,
+    target_classes: Optional[Sequence[str]] = None,
+) -> Dict[str, Any]:
     services = []
     for port in asset.get("open_ports", []) or []:
         if isinstance(port, Mapping):
@@ -362,16 +467,31 @@ def context_from_network_asset(asset: Mapping[str, Any], realm: Optional[str] = 
             if service:
                 services.append(service)
 
+    inferred_classes: List[str] = []
+    device_type = _norm(asset.get("device_type_guess"))
+    if "windows" in device_type:
+        inferred_classes.append("windows")
+    elif "linux" in device_type or "unix" in device_type:
+        inferred_classes.append("linux")
+    elif "router" in device_type or "gateway" in device_type:
+        inferred_classes.extend(["network_device", "router"])
+    elif "network" in device_type or "embedded" in device_type:
+        inferred_classes.append("network_device")
+
+    merged_classes = sorted(set(inferred_classes + list(target_classes or [])))
+
     return {
         "device_type": asset.get("device_type_guess"),
         "os_family": asset.get("os_guess"),
         "hostname": asset.get("hostname"),
         "vendor": asset.get("vendor"),
         "realm": realm,
+        "realm_kind": realm_kind,
+        "realm_evidence_state": realm_evidence_state,
+        "target_classes": merged_classes,
         "confidence": asset.get("confidence"),
         "services": sorted(set(services)),
     }
-
 
 def match_profiles(
     doc: Mapping[str, Any],
@@ -384,7 +504,7 @@ def match_profiles(
         raise ValueError("max_candidates must be between 1 and 5")
     target = ipaddress.ip_address(target_ip)
     if target.version != 4:
-        raise ValueError("Only IPv4 targets are supported in v0.4b.3")
+        raise ValueError("Only IPv4 targets are supported in v0.4b.6")
     protocol = protocol.strip().lower()
 
     matches: List[ProfileMatch] = []
@@ -450,7 +570,7 @@ if platform.system().lower() == "windows":
 
 def _require_windows() -> None:
     if platform.system().lower() != "windows":
-        raise SecretProviderError("wincred:// is available only on Windows in v0.4b.3")
+        raise SecretProviderError("wincred:// is available only on Windows in v0.4b.6")
 
 
 def wincred_store(target: str, username: str, secret: str) -> None:
@@ -552,12 +672,19 @@ def _safe_profile_view(profile: Mapping[str, Any]) -> Dict[str, Any]:
         "tags": profile.get("tags", []),
         "max_attempts_per_target": profile.get("max_attempts_per_target", 1),
         "failure_budget_per_job": profile.get("failure_budget_per_job", 2),
+        "realm_kind": profile.get("realm_kind"),
+        "realm_name": profile.get("realm_name"),
+        "target_classes": profile.get("target_classes", []),
+        "privilege_class": profile.get("privilege_class"),
+        "purposes": profile.get("purposes", []),
+        "realm_evidence_min": profile.get("realm_evidence_min"),
+        "high_privilege_acknowledged": profile.get("high_privilege_acknowledged", False),
         "selectors": profile.get("selectors", {}),
     }
 
 
 def cli(argv: Optional[Sequence[str]] = None) -> int:
-    parser = argparse.ArgumentParser(description="Orizon IT P01 Credential Manager v0.4b.3")
+    parser = argparse.ArgumentParser(description="Orizon IT P01 Credential Manager v0.4b.6")
     sub = parser.add_subparsers(dest="command", required=True)
 
     p_validate = sub.add_parser("validate", help="Validate credential profile file; never resolves secrets")
@@ -574,6 +701,9 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
     p_match.add_argument("--hostname")
     p_match.add_argument("--vendor")
     p_match.add_argument("--realm")
+    p_match.add_argument("--realm-kind")
+    p_match.add_argument("--realm-evidence-state")
+    p_match.add_argument("--target-class", action="append", default=[])
     p_match.add_argument("--confidence")
 
     p_check = sub.add_parser("check", help="Check referenced secret availability without printing secret values")
@@ -605,6 +735,9 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
             args.hostname,
             args.vendor,
             args.realm,
+            args.realm_kind,
+            args.realm_evidence_state,
+            args.target_class,
             args.confidence,
         ]):
             context = {
@@ -614,6 +747,9 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
                 "hostname": args.hostname,
                 "vendor": args.vendor,
                 "realm": args.realm,
+                "realm_kind": args.realm_kind,
+                "realm_evidence_state": args.realm_evidence_state,
+                "target_classes": args.target_class,
                 "confidence": args.confidence,
             }
         matches = match_profiles(doc, args.target, args.protocol, args.max_candidates, context=context)

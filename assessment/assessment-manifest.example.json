@@ -1,0 +1,31 @@
+{
+  "schema_version": "0.4b.6",
+  "assessment_id": "EXAMPLE-2026-001",
+  "environment_label": "Example Infrastructure Assessment",
+  "authorized_scopes": [
+    "192.0.2.0/24"
+  ],
+  "exclude_scopes": [],
+  "domains": [
+    {
+      "dns_domain": "corp.example.test",
+      "netbios_name": "CORP",
+      "forest": "corp.example.test",
+      "scopes": [
+        "192.0.2.0/24"
+      ],
+      "evidence_state": "declared"
+    }
+  ],
+  "allowed_protocols": [
+    "ssh",
+    "winrm"
+  ],
+  "discovery_nodes": [],
+  "safety_policy": {
+    "default_concurrency": 1,
+    "max_actions": 25,
+    "require_authorized_ack": true,
+    "auto_expand_scope": false
+  }
+}

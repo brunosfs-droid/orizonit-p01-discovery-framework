@@ -80,9 +80,21 @@
 - `transport` não penaliza credential health;
 - evidência agregada por job + referências por target;
 - dry-run obrigatório no primeiro LAB.
-- **Status:** CANDIDATE implementado; testes automatizados cobrem dry-run, profile drift, SHA256 binding e circuit-breaker semantics. Aguardando primeiro LAB dry-run com os cinco ativos do P01LAB.
+- **Status:** LAB VALIDATED em dry-run, AUTH-only e FULL nos cinco ativos do P01LAB.
 
-### v0.4b.6+ — próximos adapters
+### v0.4b.6 — Assessment Context & Credential Intake
+- Assessment Manifest persistente e não secreto;
+- domínios/realms declarados como hints, nunca como prova;
+- estados de evidência `declared`, `observed` e futuro `credentialed_confirmed`;
+- taxonomy independente para `realm_kind`, `target_classes`, `privilege_class`, `purposes` e protocolo;
+- intake wizard grava profile metadata + Secret Provider reference, nunca a senha;
+- perfis high-privilege exigem acknowledgement, failure budget 1 e uma tentativa;
+- planner v0.4b.3.2 consome manifest e só promove realm AD para `observed` quando houver evidência compatível;
+- conflito entre realm declarado e observado bloqueia planning em vez de escolher silenciosamente;
+- rich profiles não podem ser usados sem contexto.
+- **Status:** CANDIDATE em implementação/CI; próximo gate é LAB no P01LAB antes do Asset Resolver.
+
+### v0.4b.7+ — próximos adapters
 - SNMPv3/SNMPv2c;
 - Kerberos/HTTPS/certificate para WinRM;
 - WMI/DCOM fallback quando necessário;
