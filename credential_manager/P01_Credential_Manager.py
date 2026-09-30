@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Orizon IT P01 Credential Manager v0.4b.1.
+"""Orizon IT P01 Credential Manager v0.4b.3.
 
 Secure foundation for credential profile selection and secret resolution.
 
@@ -31,10 +31,21 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
 MANAGER_NAME = "P01-Credential-Manager"
-MANAGER_VERSION = "0.4b.1"
+MANAGER_VERSION = "0.4b.3"
 PROFILE_SCHEMA_VERSION = "0.4b"
 
 SUPPORTED_SECRET_SCHEMES = {"env", "prompt", "wincred"}
+CONFIDENCE_RANK = {"unknown": 0, "low": 1, "medium": 2, "high": 3}
+SUPPORTED_SELECTOR_KEYS = {
+    "device_types",
+    "os_families",
+    "services",
+    "hostname_patterns",
+    "vendor_patterns",
+    "realms",
+    "min_confidence",
+    "allow_unknown",
+}
 SENSITIVE_KEY_RE = re.compile(
     r"(^|_)(password|passwd|pwd|secret|token|community|passphrase|private_key)(_|$)",
     re.IGNORECASE,
@@ -54,6 +65,8 @@ class ProfileMatch:
     profile: Dict[str, Any]
     matched_scope: str
     prefix_length: int
+    selector_score: int = 0
+    matched_selectors: Tuple[str, ...] = ()
 
 
 def _load_json(path: Path) -> Dict[str, Any]:
@@ -110,7 +123,7 @@ def _parse_network(scope: str) -> ipaddress.IPv4Network:
     except ValueError as exc:
         raise CredentialConfigError(f"Invalid IPv4 scope '{scope}': {exc}") from exc
     if network.version != 4:
-        raise CredentialConfigError(f"Only IPv4 credential scopes are supported in v0.4b.1: {scope}")
+        raise CredentialConfigError(f"Only IPv4 credential scopes are supported in v0.4b.3: {scope}")
     return network
 
 
@@ -173,6 +186,35 @@ def validate_profile_document(doc: Mapping[str, Any]) -> Dict[str, Any]:
         if not isinstance(max_attempts, int) or max_attempts < 1 or max_attempts > 3:
             errors.append(f"{base}.max_attempts_per_target must be integer 1..3")
 
+        selectors = profile.get("selectors", {})
+        if selectors is None:
+            selectors = {}
+        if not isinstance(selectors, dict):
+            errors.append(f"{base}.selectors must be an object")
+            selectors = {}
+        else:
+            unknown_selector_keys = sorted(set(selectors) - SUPPORTED_SELECTOR_KEYS)
+            for key in unknown_selector_keys:
+                errors.append(f"{base}.selectors contains unsupported key: {key}")
+
+            for key in ("device_types", "os_families", "services", "hostname_patterns", "vendor_patterns", "realms"):
+                value = selectors.get(key)
+                if value is not None:
+                    if not isinstance(value, list) or not value or not all(isinstance(x, str) and x.strip() for x in value):
+                        errors.append(f"{base}.selectors.{key} must be a non-empty array of strings")
+
+            if "min_confidence" in selectors:
+                confidence = str(selectors.get("min_confidence") or "").strip().lower()
+                if confidence not in CONFIDENCE_RANK:
+                    errors.append(f"{base}.selectors.min_confidence must be one of Unknown, Low, Medium, High")
+
+            if "allow_unknown" in selectors and not isinstance(selectors.get("allow_unknown"), bool):
+                errors.append(f"{base}.selectors.allow_unknown must be boolean")
+
+        failure_budget = profile.get("failure_budget_per_job", 2)
+        if not isinstance(failure_budget, int) or failure_budget < 1 or failure_budget > 50:
+            errors.append(f"{base}.failure_budget_per_job must be integer 1..50")
+
         secret_refs = profile.get("secret_refs", {})
         if not isinstance(secret_refs, dict) or not secret_refs:
             errors.append(f"{base}.secret_refs must contain at least one secret reference")
@@ -208,17 +250,141 @@ def _best_scope_for_target(scopes: Iterable[str], target: ipaddress.IPv4Address)
     return matches[0]
 
 
+def _norm(value: Any) -> str:
+    return str(value or "").strip().lower()
+
+
+def _as_lower_set(values: Any) -> set[str]:
+    if not isinstance(values, (list, tuple, set)):
+        return set()
+    return {_norm(v) for v in values if _norm(v)}
+
+
+def _wildcard_match(value: Optional[str], patterns: Sequence[str]) -> bool:
+    import fnmatch
+    normalized = _norm(value)
+    if not normalized:
+        return False
+    return any(fnmatch.fnmatch(normalized, _norm(pattern)) for pattern in patterns)
+
+
+def _selector_match(
+    profile: Mapping[str, Any],
+    context: Optional[Mapping[str, Any]],
+) -> Tuple[bool, int, Tuple[str, ...]]:
+    """Evaluate optional contextual selectors.
+
+    Backward compatibility: when context is None, selectors are not evaluated.
+    Safety: when context is supplied and the asset is unknown, a profile is not
+    eligible unless selectors.allow_unknown is explicitly true.
+    """
+    if context is None:
+        return True, 0, ()
+
+    selectors = profile.get("selectors") or {}
+    if not isinstance(selectors, Mapping):
+        return False, 0, ()
+
+    device_type = _norm(context.get("device_type"))
+    os_family = _norm(context.get("os_family"))
+    hostname = str(context.get("hostname") or "")
+    vendor = str(context.get("vendor") or "")
+    realm = _norm(context.get("realm"))
+    confidence = _norm(context.get("confidence")) or "unknown"
+    services = _as_lower_set(context.get("services") or [])
+
+    asset_unknown = (
+        device_type in {"", "unknown"}
+        and os_family in {"", "unknown"}
+    )
+    allow_unknown = bool(selectors.get("allow_unknown", False))
+    if asset_unknown and not allow_unknown:
+        return False, 0, ()
+
+    score = 0
+    matched: List[str] = []
+
+    checks = [
+        ("device_types", device_type),
+        ("os_families", os_family),
+        ("realms", realm),
+    ]
+    for key, actual in checks:
+        expected = _as_lower_set(selectors.get(key))
+        if expected:
+            if not actual or actual not in expected:
+                return False, 0, ()
+            score += 20
+            matched.append(key)
+
+    expected_services = _as_lower_set(selectors.get("services"))
+    if expected_services:
+        if not services.intersection(expected_services):
+            return False, 0, ()
+        score += 15
+        matched.append("services")
+
+    hostname_patterns = selectors.get("hostname_patterns") or []
+    if hostname_patterns:
+        if not _wildcard_match(hostname, hostname_patterns):
+            return False, 0, ()
+        score += 10
+        matched.append("hostname_patterns")
+
+    vendor_patterns = selectors.get("vendor_patterns") or []
+    if vendor_patterns:
+        if not _wildcard_match(vendor, vendor_patterns):
+            return False, 0, ()
+        score += 10
+        matched.append("vendor_patterns")
+
+    min_confidence = selectors.get("min_confidence")
+    if min_confidence is not None:
+        required = CONFIDENCE_RANK[_norm(min_confidence)]
+        actual = CONFIDENCE_RANK.get(confidence, 0)
+        if actual < required:
+            return False, 0, ()
+        score += 5
+        matched.append("min_confidence")
+
+    if allow_unknown:
+        score += 1
+        matched.append("allow_unknown")
+
+    return True, score, tuple(matched)
+
+
+def context_from_network_asset(asset: Mapping[str, Any], realm: Optional[str] = None) -> Dict[str, Any]:
+    services = []
+    for port in asset.get("open_ports", []) or []:
+        if isinstance(port, Mapping):
+            service = _norm(port.get("service"))
+            if service:
+                services.append(service)
+
+    return {
+        "device_type": asset.get("device_type_guess"),
+        "os_family": asset.get("os_guess"),
+        "hostname": asset.get("hostname"),
+        "vendor": asset.get("vendor"),
+        "realm": realm,
+        "confidence": asset.get("confidence"),
+        "services": sorted(set(services)),
+    }
+
+
 def match_profiles(
     doc: Mapping[str, Any],
     target_ip: str,
     protocol: str,
     max_candidates: int = 2,
+    context: Optional[Mapping[str, Any]] = None,
 ) -> List[ProfileMatch]:
     if max_candidates < 1 or max_candidates > 5:
         raise ValueError("max_candidates must be between 1 and 5")
     target = ipaddress.ip_address(target_ip)
     if target.version != 4:
-        raise ValueError("Only IPv4 targets are supported in v0.4b.1")
+        raise ValueError("Only IPv4 targets are supported in v0.4b.3")
     protocol = protocol.strip().lower()
 
     matches: List[ProfileMatch] = []
@@ -230,11 +396,23 @@ def match_profiles(
         best = _best_scope_for_target(profile.get("scopes", []), target)
         if not best:
             continue
-        matches.append(ProfileMatch(profile=dict(profile), matched_scope=str(best), prefix_length=best.prefixlen))
+
+        eligible, selector_score, matched_selectors = _selector_match(profile, context)
+        if not eligible:
+            continue
+
+        matches.append(ProfileMatch(
+            profile=dict(profile),
+            matched_scope=str(best),
+            prefix_length=best.prefixlen,
+            selector_score=selector_score,
+            matched_selectors=matched_selectors,
+        ))
 
     matches.sort(
         key=lambda m: (
             int(m.profile.get("priority", 100)),
+            -m.selector_score,
             -m.prefix_length,
             str(m.profile.get("id", "")),
         )
@@ -272,7 +450,7 @@ if platform.system().lower() == "windows":
 
 def _require_windows() -> None:
     if platform.system().lower() != "windows":
-        raise SecretProviderError("wincred:// is available only on Windows in v0.4b.1")
+        raise SecretProviderError("wincred:// is available only on Windows in v0.4b.3")
 
 
 def wincred_store(target: str, username: str, secret: str) -> None:
@@ -373,11 +551,13 @@ def _safe_profile_view(profile: Mapping[str, Any]) -> Dict[str, Any]:
         "secret_ref_names": sorted((profile.get("secret_refs") or {}).keys()),
         "tags": profile.get("tags", []),
         "max_attempts_per_target": profile.get("max_attempts_per_target", 1),
+        "failure_budget_per_job": profile.get("failure_budget_per_job", 2),
+        "selectors": profile.get("selectors", {}),
     }
 
 
 def cli(argv: Optional[Sequence[str]] = None) -> int:
-    parser = argparse.ArgumentParser(description="Orizon IT P01 Credential Manager v0.4b.1")
+    parser = argparse.ArgumentParser(description="Orizon IT P01 Credential Manager v0.4b.3")
     sub = parser.add_subparsers(dest="command", required=True)
 
     p_validate = sub.add_parser("validate", help="Validate credential profile file; never resolves secrets")
@@ -388,6 +568,13 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
     p_match.add_argument("--target", required=True)
     p_match.add_argument("--protocol", required=True)
     p_match.add_argument("--max-candidates", type=int, default=2)
+    p_match.add_argument("--device-type")
+    p_match.add_argument("--os-family")
+    p_match.add_argument("--service", action="append", default=[])
+    p_match.add_argument("--hostname")
+    p_match.add_argument("--vendor")
+    p_match.add_argument("--realm")
+    p_match.add_argument("--confidence")
 
     p_check = sub.add_parser("check", help="Check referenced secret availability without printing secret values")
     p_check.add_argument("--profiles", required=True)
@@ -410,12 +597,33 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
 
     if args.command == "match":
         doc = load_profiles(Path(args.profiles))
-        matches = match_profiles(doc, args.target, args.protocol, args.max_candidates)
+        context = None
+        if any([
+            args.device_type,
+            args.os_family,
+            args.service,
+            args.hostname,
+            args.vendor,
+            args.realm,
+            args.confidence,
+        ]):
+            context = {
+                "device_type": args.device_type,
+                "os_family": args.os_family,
+                "services": args.service,
+                "hostname": args.hostname,
+                "vendor": args.vendor,
+                "realm": args.realm,
+                "confidence": args.confidence,
+            }
+        matches = match_profiles(doc, args.target, args.protocol, args.max_candidates, context=context)
         output = [
             {
                 "profile": _safe_profile_view(m.profile),
                 "matched_scope": m.matched_scope,
                 "scope_prefix_length": m.prefix_length,
+                "selector_score": m.selector_score,
+                "matched_selectors": list(m.matched_selectors),
             }
             for m in matches
         ]
