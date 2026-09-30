@@ -10,6 +10,18 @@ All notable changes to the P01 Discovery Framework are documented here.
 - Asset Resolver / deduplication (v0.4c)
 - Reporting Engine v0.1
 
+## [0.4b.3.1-positive-profile-gate] - 2026-09-30
+
+### Validated
+- Windows 11 workstation with WinRM and realm P01LAB matched exactly one dedicated workstation/domain profile
+- /32 scope, service, realm, hostname, device type, OS family and confidence selectors all matched
+- planner emitted `adapter_candidate`
+- planner still resolved no secret and made no authentication attempt
+- all five current LAB assets had exactly one adapter candidate
+
+### Configuration hygiene
+- latest plan exposed a placeholder username (`P01LAB\\SEU_USUARIO`) in the DC profile; this must be corrected before future multi-target execution
+
 ## [0.4b.4.1-candidate] - 2026-09-30
 
 ### Fixed
