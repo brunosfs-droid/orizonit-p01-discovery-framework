@@ -79,6 +79,31 @@ All notable changes to the P01 Discovery Framework are documented here.
 - health endpoint
 - unsupported content-type rejection
 
+## [0.5d.0-candidate] - 2026-09-30
+
+### Added
+- explicit `mtls` transport mode for Central Ingestion API
+- TLS 1.2+ server context with mandatory client-certificate verification
+- authenticated node identity derived from client certificate DNS SAN / CN fallback
+- `X-P01-Node-ID` binding to certificate identity
+- bundle `node_id` binding to authenticated node
+- authenticated-node scoping for bundle status lookup
+- Discovery Node HTTPS/mTLS uploader
+- upload receipt JSON + SHA256
+- bounded transport-only retries
+
+### Security
+- localhost mode remains loopback-only
+- non-loopback remote operation requires complete mTLS trust material
+- server certificate and hostname are verified by the uploader
+- TLS/auth/application validation failures are not retried automatically
+- no private key, Secret Provider value or customer credential is persisted in upload receipts
+- no server-initiated execution is introduced
+
+### Validation
+- unit coverage for transport configuration, certificate-node identity, node/bundle mismatch, status scoping, HTTPS-only uploader policy and retry semantics
+- next gate: real P01LAB mTLS upload using the existing validated `.p01bundle`
+
 ## [0.5c.1-lab-validated] - 2026-09-30
 
 ### Validated
