@@ -1,4 +1,4 @@
-# P01 Central Ingestion API — v0.5c.0
+# P01 Central Ingestion API — v0.5c.1
 
 The Central Ingestion API receives the same `.p01bundle` used by offline/manual import and delegates processing to the exact same v0.5b `import_bundle()` pipeline.
 
@@ -91,3 +91,8 @@ Expected second identical upload:
 ## Next
 
 v0.5d will add production connected-mode controls: TLS, authenticated Discovery Node enrollment, tenant/assessment authorization, retry/audit semantics and controlled remote bind.
+
+
+## v0.5c.1 connection hygiene
+
+Requests rejected before the upload body is consumed (for example missing/malformed SHA256 or oversized Content-Length) return `Connection: close` and terminate the HTTP/1.1 connection. This prevents unread request bytes from being interpreted as a follow-on HTTP request.
