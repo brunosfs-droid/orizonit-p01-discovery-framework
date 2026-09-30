@@ -27,3 +27,8 @@ python -m json.tool schemas/p01-discovery-schema-v0.3.json > /dev/null
 ## v0.5a contracts
 
 - p01-evidence-bundle-manifest-schema-v0.5a.json — portable connected/offline evidence transport manifest.
+
+
+## v0.5b contracts
+
+- `p01-offline-import-receipt-schema-v0.5b.json` — idempotent offline import receipt and server-side processing record.
