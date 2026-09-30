@@ -43,11 +43,23 @@
 - planner seguro que consome o JSON do Network Discovery e produz um plano sem resolver secrets;
 - orquestração por ativo com stop-after-success nas próximas integrações;
 - primeira validação corporativa no Discovery Node P01-MGMT01.
-- **Status:** candidate implementado; aguardando LAB com o dataset P01LAB.
+- **Status:** LAB VALIDATED para planning/matching com dataset P01LAB; circuit breaker permanece pendente do executor multi-target.
 
-### v0.4b.4+ — próximos adapters
+### v0.4b.4 — WinRM Credentialed Enrichment
+- WinRM HTTP/HTTPS;
+- password + NTLM na primeira iteração;
+- Context-aware Credential Profiles;
+- PowerShell/CIM read-only;
+- identity/domain/OS/network/firewall/hotfixes;
+- candidate networks sem auto-scan;
+- JSON + SHA256 sem secrets.
+- **Status:** candidate aguardando LAB Windows.
+
+### v0.4b.5+ — próximos adapters/executor
 - SNMPv3/SNMPv2c;
-- WinRM/WMI;
+- Kerberos/HTTPS/certificate para WinRM;
+- WMI/DCOM fallback quando necessário;
+- executor multi-target + shared-credential circuit breaker;
 - auditoria de autenticação multi-protocolo.
 
 ## v0.4c — Asset Resolver
