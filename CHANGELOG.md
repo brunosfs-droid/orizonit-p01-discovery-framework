@@ -62,6 +62,23 @@ All notable changes to the P01 Discovery Framework are documented here.
 ### Next
 - multi-target AUTH-only using the same reviewed plan and sidecar SHA256
 
+## [0.4b.5-auth-lab-validated] - 2026-09-30
+
+### Validated
+- multi-target executor AUTH-only against five planned P01LAB assets
+- deterministic serial execution with concurrency 1
+- 5/5 actions completed and authenticated successfully
+- zero preflight blocks, zero skips, zero authentication failures, zero open circuits
+- shared domain credential identity accumulated two successes across DC01 and W11
+- every target JSON matched its SHA256 sidecar and the digest recorded in the job
+- the reviewed Credential Plan digest was propagated to every target result
+- no secret values, secret refs, or credential locators were persisted to target outputs
+
+### Security
+- credential circuits remained closed because no authentication failure occurred
+- successful authentications did not consume credential failure budget
+- full enrichment remains a separate next-stage validation
+
 ## [0.4b.3.1-positive-profile-gate] - 2026-09-30
 
 ### Validated
