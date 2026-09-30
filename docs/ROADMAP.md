@@ -159,13 +159,18 @@ O LAB inicial usará P01-MGMT01 como Discovery Node por possuir acesso ao segmen
 - preservar assessment/run/node identity e component/schema versions;
 - no secret values or Secret Provider references;
 - formato transportável como `.p01bundle`.
-- **Status:** CANDIDATE implementado; próximo gate é criar e validar um bundle real do P01LAB contendo Network Discovery, 5 credentialed FULL results, Assessment Manifest e Asset Resolver R2.
+- **Status:** LAB VALIDATED no P01LAB. P01LAB-BUNDLE-R1 empacotou 8 artifacts, validou 9 inventory entries, outer SHA256, zero secret material e transport mode agnostic.
 
 ### v0.5b — Offline Export / Import
-- exportar bundle no Discovery Node;
-- importar manualmente no P01 Server;
-- validar integridade e schema antes do processamento;
-- pipeline posterior idêntico ao connected mode.
+- validar o bundle antes de materializar qualquer payload;
+- preservar o `.p01bundle` original como raw evidence;
+- safe materialization sem `extractall`;
+- import idempotente por bundle ID + SHA256;
+- receipt JSON + SHA256;
+- reexecutar Asset Resolver usando somente evidências importadas;
+- comparar semanticamente resultado server-side com o Asset Resolver edge embarcado;
+- segunda importação do mesmo bundle retorna `already_imported`.
+- **Status:** CANDIDATE implementado; próximo gate é importar P01LAB-BUNDLE-R1.p01bundle em store limpo e obter semantic match=true.
 
 ### v0.5c — Central Ingestion API
 - HTTPS ingestion;
