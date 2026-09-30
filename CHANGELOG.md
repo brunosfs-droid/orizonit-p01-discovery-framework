@@ -10,6 +10,35 @@ All notable changes to the P01 Discovery Framework are documented here.
 - Asset Resolver / deduplication (v0.4c)
 - Reporting Engine v0.1
 
+## [0.4b.4-candidate] - 2026-09-30
+
+### Added
+- Windows WinRM credentialed enrichment adapter
+- NTLM password transport for first LAB iteration
+- context-aware profile selection before secret resolution
+- fixed read-only PowerShell/CIM payload
+- Windows identity/domain/OS/hardware/network/DNS/firewall/hotfix collection
+- candidate-network generation with auto-scan disabled
+- WinRM JSON Schema and unit tests
+
+### Security
+- no WinRM enablement or firewall modification
+- no secret persistence
+- bounded profile attempts and stop-after-success
+- no secure-channel repair actions
+
+## [0.4b.3-lab-validated] - 2026-09-30
+
+### Validated
+- context-aware planner processed 4 P01LAB assets
+- Ubuntu and Rocky each matched only their dedicated /32 SSH profile
+- Windows assets received no credential profile before WinRM profiles existed
+- planner resolved no secrets and made no authentication attempts
+- JSON/SHA256 integrity
+
+### Remaining
+- multi-target runtime circuit breaker for shared credentials
+
 ## [0.4b.2.1-lab-validated] - 2026-09-30
 
 ### Fixed
