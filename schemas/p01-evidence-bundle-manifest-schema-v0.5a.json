@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://orizonit.example/schemas/p01-evidence-bundle-manifest-v0.5a.json",
+  "title": "Orizon IT P01 Evidence Bundle Manifest v0.5a",
+  "type": "object",
+  "required": [
+    "format",
+    "format_version",
+    "bundle_id",
+    "assessment_id",
+    "run_id",
+    "node_id",
+    "created_at_utc",
+    "created_by",
+    "transport",
+    "security",
+    "artifacts",
+    "limitations"
+  ],
+  "properties": {
+    "format": {
+      "const": "p01-evidence-bundle"
+    },
+    "format_version": {
+      "const": "0.5a"
+    },
+    "bundle_id": {
+      "type": "string",
+      "pattern": "^bnd-[0-9a-f]{20}$"
+    },
+    "assessment_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "node_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_at_utc": {
+      "type": "string",
+      "minLength": 1
+    },
+    "created_by": {
+      "type": "object",
+      "required": ["component", "version", "host"],
+      "properties": {
+        "component": {"const": "P01-Evidence-Bundle"},
+        "version": {"type": "string"},
+        "host": {"type": "string"}
+      },
+      "additionalProperties": false
+    },
+    "transport": {
+      "type": "object",
+      "required": [
+        "portable_offline_import_supported",
+        "connected_upload_supported_by_format",
+        "transport_selected_at_creation"
+      ],
+      "properties": {
+        "portable_offline_import_supported": {"const": true},
+        "connected_upload_supported_by_format": {"const": true},
+        "transport_selected_at_creation": {"const": "agnostic"}
+      },
+      "additionalProperties": false
+    },
+    "security": {
+      "type": "object",
+      "required": [
+        "contains_secret_values",
+        "contains_secret_provider_references",
+        "integrity_mode",
+        "digital_signature"
+      ],
+      "properties": {
+        "contains_secret_values": {"const": false},
+        "contains_secret_provider_references": {"const": false},
+        "integrity_mode": {"const": "sha256_inventory"},
+        "digital_signature": {"type": ["object", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "artifacts": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "required": [
+          "role",
+          "path",
+          "file_name",
+          "sha256",
+          "size_bytes",
+          "source_sidecar_verified",
+          "component"
+        ],
+        "properties": {
+          "role": {
+            "enum": [
+              "network_discovery",
+              "assessment_manifest",
+              "credentialed_evidence",
+              "asset_resolver"
+            ]
+          },
+          "path": {"type": "string", "minLength": 1},
+          "file_name": {"type": "string", "minLength": 1},
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "size_bytes": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "source_sidecar_verified": {
+            "type": ["boolean", "null"]
+          },
+          "component": {
+            "type": "object"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": {"type": "string"}
+    }
+  },
+  "additionalProperties": false
+}
