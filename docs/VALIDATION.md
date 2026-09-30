@@ -110,6 +110,33 @@ Validated through P01-MGMT01 Discovery Node against controlled Ubuntu and Rocky 
 
 Windows 11 was intentionally powered off during the discovery-node baseline and will be enabled for the future WinRM/WMI validation.
 
+
+
+## Context-aware Credential Resolver v0.4b.3
+
+Validated against the P01LAB Network Discovery dataset:
+- 4 assets processed;
+- Windows hosts with WinRM received no profile before WinRM credentials existed;
+- Ubuntu received only its own /32 SSH profile;
+- Rocky received only its own /32 SSH profile;
+- device type, OS family, service and confidence selectors matched;
+- planner resolved no secrets and performed no authentication;
+- JSON/SHA256 evidence matched.
+
+The declared `failure_budget_per_job` is not yet considered runtime-validated because the multi-target executor is not implemented.
+
+## WinRM Credentialed Enrichment v0.4b.4
+
+Candidate acceptance:
+- profile/context match before secret resolution;
+- auth-only first;
+- one bounded attempt and zero same-profile retries;
+- secrets absent from output;
+- fixed read-only PowerShell/CIM payload;
+- identity/domain/OS/network/DNS/firewall/hotfixes;
+- candidate networks with auto-scan disabled;
+- no automatic WinRM enablement or configuration changes.
+
 ## Read-only / non-destructive expectations
 
 Collectors must not modify system configuration. Network Discovery is allowed to generate authorized ICMP/TCP/SSDP probe traffic but must not:
