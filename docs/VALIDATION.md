@@ -273,11 +273,13 @@ Candidate acceptance:
 - semantic_match=true with equal edge/server semantic digests;
 - non-loopback bind 0.0.0.0 rejected.
 
-### Remaining negative gates
-- missing SHA256 header -> HTTP 400;
-- wrong SHA256 -> HTTP 422;
-- tampered bundle with matching outer SHA -> HTTP 422 during bundle validation;
-- oversized request -> HTTP 413 before processing;
-- invalid requests must not create committed imports.
+### Negative gates R2
+- missing/malformed SHA256 -> HTTP 400: PASS;
+- wrong SHA256 -> HTTP 422: PASS;
+- tampered bundle with recomputed outer SHA -> HTTP 422: PASS;
+- oversized request -> HTTP 413 before processing: PASS;
+- non-loopback bind -> rejected: PASS.
+
+The R2 server log exposed one HTTP connection-hygiene defect: pre-body 400/413 responses left request bytes unread on a persistent connection, causing follow-on parser noise (`Bad request version` / `414 URI Too Long`). v0.5c.1 closes the connection explicitly on pre-body rejection. Final runtime gate: rerun missing-SHA and oversized cases and confirm the primary 400/413 response occurs without a follow-on parser error.
 
 See `docs/LAB_CENTRAL_INGESTION_NEGATIVE_v0.5c.md`.
