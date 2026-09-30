@@ -10,7 +10,7 @@
 - **Analyzer / Rule Engine:** 0.2.0 — candidate, 19 regras determinísticas e rastreabilidade para a evidência de origem.
 - **Network Discovery Scanner:** 0.4.1 — LAB VALIDATED para o core não autenticado no cenário atual; produção/cobertura corporativa ainda em expansão, sem credenciais, criado para descoberta por múltiplos ranges antes do deep discovery.
 - **Credential Manager:** 0.4b.1 — LAB VALIDATED para a foundation de perfis, Secret Provider e seleção por escopo/protocolo; autenticação real entra na v0.4b.2.
-- **SSH Credentialed Enrichment:** 0.4b.2 — candidate, aguardando LAB real.
+- **SSH Credentialed Enrichment:** 0.4b.2.1 — LAB VALIDATED em Ubuntu e Rocky via P01-MGMT01; appliance SSH restrito também classificado corretamente.
 - **Reporting Engine:** planejado após Network Discovery + Asset Resolver.
 
 > Saídas reais de discovery devem ser tratadas como **CONFIDENCIAL — DADOS DO CLIENTE**.
@@ -156,7 +156,7 @@ O repositório preserva histórico por **commits, branches, tags e releases**. O
 
 1. fechar validação AD stale v0.3;
 2. validar Network Discovery v0.4a em rede doméstica/autorizada;
-3. v0.4b — Credential Manager + SNMP/SSH/WinRM;
+3. v0.4b.3 — Context-aware Credentialed Discovery; depois WinRM/WMI e SNMP;
 4. v0.4c — Asset Resolver e deduplicação;
 5. Reporting Engine v0.1;
 6. depois: CVE correlation, Patch Compliance, File Server Assessment e topologia.

@@ -32,7 +32,7 @@
 - interfaces, routes e IPv4 forwarding;
 - candidate networks sem scan automático;
 - JSON + SHA256.
-- **Status:** autenticação real validada contra Dropbear; o equipamento de teste aceitou SSH, mas não devolveu output no canal exec. v0.4b.2.1 passa a classificar explicitamente esse caso como `authenticated_no_exec_output`. Coleta completa ainda deve ser validada em Linux controlado.
+- **Status:** autenticação real validada contra Dropbear; o equipamento de teste aceitou SSH, mas não devolveu output no canal exec. v0.4b.2.1 passa a classificar explicitamente esse caso como `authenticated_no_exec_output`. Coleta completa foi validada em Ubuntu e Rocky através do P01-MGMT01, com hostname, OS/kernel, interfaces, rotas, IPv4 forwarding e candidate networks. **Status: LAB VALIDATED para Linux controlado.**
 
 ### v0.4b.3 — Context-aware Credentialed Discovery
 - combinar protocolo + scope + serviço detectado + fingerprint/device class;
