@@ -16,15 +16,28 @@
 
 ## v0.4b — Credentialed Enrichment
 
+### v0.4b.1 — Credential Manager Foundation
 - Credential Profile sem segredo em arquivo;
 - Secret Provider abstraction;
-- SNMPv3/SNMPv2c;
-- SSH;
-- WinRM/WMI;
 - prioridade e escopo por credencial;
 - tentativas limitadas e lockout protection;
-- auditoria de autenticação;
 - nenhum segredo em JSON/log.
+- **Status:** LAB VALIDATED no Windows.
+
+### v0.4b.2 — SSH Enrichment
+- password auth usando Secret Provider;
+- TOFU/strict host key policy;
+- allowlist fixa de comandos read-only;
+- hostname/kernel/platform;
+- interfaces, routes e IPv4 forwarding;
+- candidate networks sem scan automático;
+- JSON + SHA256.
+- **Status:** candidate aguardando LAB real.
+
+### v0.4b.3+ — próximos adapters
+- SNMPv3/SNMPv2c;
+- WinRM/WMI;
+- auditoria de autenticação multi-protocolo.
 
 ## v0.4c — Asset Resolver
 
