@@ -94,6 +94,22 @@ Record:
 
 Absence of response is not proof of absence. Mobile/sleeping devices and routed networks require special interpretation.
 
+
+## SSH Credentialed Enrichment v0.4b.2.1
+
+Validated through P01-MGMT01 Discovery Node against controlled Ubuntu and Rocky targets:
+
+- AUTH-only succeeded with exactly one matching /32 profile per host;
+- one attempt, zero same-profile retries;
+- secret values were not persisted to output;
+- full enrichment returned hostname, kernel/OS, IPv4 interfaces, routes and IPv4 forwarding;
+- SSH exec capability probe succeeded;
+- candidate network 192.168.100.0/24 was emitted with auto-scan disabled;
+- JSON/SHA256 evidence matched;
+- restricted appliance behavior is classified separately as authenticated_no_exec_output.
+
+Windows 11 was intentionally powered off during the discovery-node baseline and will be enabled for the future WinRM/WMI validation.
+
 ## Read-only / non-destructive expectations
 
 Collectors must not modify system configuration. Network Discovery is allowed to generate authorized ICMP/TCP/SSDP probe traffic but must not:
