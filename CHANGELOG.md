@@ -10,6 +10,20 @@ All notable changes to the P01 Discovery Framework are documented here.
 - Asset Resolver / deduplication (v0.4c)
 - Reporting Engine v0.1
 
+## [0.4b.4.3-windows-matrix-validated] - 2026-09-30
+
+### Validated
+- Windows 11 domain workstation matched one dedicated /32 WinRM profile
+- AUTH-only succeeded with one attempt and zero retries
+- full WinRM enrichment completed with all collection sections passing
+- secure channel was checked and healthy on the domain workstation
+- only one subnet-level candidate network was emitted and auto-scan remained disabled
+- no secret was persisted in AUTH or FULL evidence
+- Windows credentialed matrix now covers local server, domain controller and domain workstation
+
+### Next
+- v0.4b.5 multi-target credentialed executor with shared-credential circuit breaker
+
 ## [0.4b.3.1-positive-profile-gate] - 2026-09-30
 
 ### Validated
