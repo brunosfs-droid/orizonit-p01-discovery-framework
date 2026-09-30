@@ -92,7 +92,7 @@
 - planner v0.4b.3.2 consome manifest e só promove realm AD para `observed` quando houver evidência compatível;
 - conflito entre realm declarado e observado bloqueia planning em vez de escolher silenciosamente;
 - rich profiles não podem ser usados sem contexto.
-- **Status:** CANDIDATE em implementação/CI; próximo gate é LAB no P01LAB antes do Asset Resolver.
+- **Status:** LAB VALIDATED no P01LAB. Positive gate confirmou declared+observed -> adapter_candidate; negative gate confirmou declared-only -> not_planned, sem resolver secret ou autenticar.
 
 ### v0.4b.7+ — próximos adapters
 - SNMPv3/SNMPv2c;
@@ -102,16 +102,24 @@
 
 ## v0.4c — Asset Resolver
 
-Correlacionar:
+### v0.4c.0 — Offline correlation foundation
+- consumir Network Discovery + target results FULL de WinRM/SSH + Assessment Manifest opcional;
+- nunca auto-merge por IP isolado;
+- strong identifier exato ou namespace + network corroboration para auto-merge;
+- Network Discovery observations permanecem seeds independentes;
+- provenance por campo;
+- conflitos explícitos sem silent overwrite;
+- realm `observed` separado de `credentialed_confirmed`;
+- output determinístico JSON + SHA256;
+- zero network access, authentication ou secret resolution.
+- **Status:** CANDIDATE implementado; próximo gate é resolver o P01LAB real em exatamente cinco ativos lógicos.
 
-- IP/MAC;
-- hostname/FQDN;
-- AD computer object;
-- Windows Collector;
-- Linux Collector;
-- Network Discovery;
-- serial/UUID quando disponível;
-- SNMP sysName/sysObjectID futuramente.
+### Próximas iterações v0.4c
+- AD computer object / objectGUID / SID;
+- system UUID / SMBIOS UUID / service tag;
+- Windows Collector e Linux Collector locais;
+- registry persistente de asset IDs entre assessment runs;
+- SNMP sysName/sysObjectID e VMware identifiers futuramente.
 
 Objetivo: um ativo lógico, múltiplas fontes de evidência, sem duplicidade no relatório.
 
