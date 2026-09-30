@@ -18,7 +18,7 @@
 - **Asset Resolver:** 0.4c.0 — LAB VALIDATED; 5 Network Discovery + 5 FULL observations -> 5 logical assets, 0 unresolved, 0 ambiguous, 0 conflicts.
 - **Evidence Bundle:** 0.5a.0 — LAB VALIDATED; `.p01bundle` único para connected/offline transport, 8-artifact P01LAB bundle, SHA256 inventory e secret-material guard.
 - **Offline Import:** 0.5b.0 — LAB VALIDATED; import idempotente, raw evidence preservation, receipt JSON/SHA256 e server-side Asset Resolver replay com semantic_match=true.
-- **Central Ingestion API:** 0.5c.0 — positive path LAB PASS em localhost; health, imported, already_imported, status GET e non-loopback bind guard validados; negative transport gates pendentes.
+- **Central Ingestion API:** 0.5c.1 — LAB VALIDATED; localhost ingestion, idempotência, status lookup, semantic equivalence, negative gates e connection hygiene.non-loopback bind guard validados; negative transport gates pendentes.
 - **Reporting Engine:** planejado após Network Discovery + Asset Resolver.
 
 > Saídas reais de discovery devem ser tratadas como **CONFIDENCIAL — DADOS DO CLIENTE**.

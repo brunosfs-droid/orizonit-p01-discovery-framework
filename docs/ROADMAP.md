@@ -181,7 +181,7 @@ O LAB inicial usará P01-MGMT01 como Discovery Node por possuir acesso ao segmen
 - staging before validation/import;
 - GET status + health endpoint;
 - non-loopback bind rejected.
-- **Status:** positive path PASS e quatro negative gates PASS (400/422/422/413). v0.5c.1 corrige connection hygiene em rejeições antes do body ser consumido; falta somente rerun curto de missing-SHA e oversized para confirmar ausência de parser noise antes de promover para LAB VALIDATED.
+- **Status:** LAB VALIDATED. Positive path, idempotência, status lookup, semantic equivalence, bind loopback-only, negative gates 400/422/422/413 e connection hygiene v0.5c.1 foram validados no P01LAB.
 
 ### v0.5d — Connected Discovery Node Upload
 - upload outbound-only;

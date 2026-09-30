@@ -280,6 +280,6 @@ Candidate acceptance:
 - oversized request -> HTTP 413 before processing: PASS;
 - non-loopback bind -> rejected: PASS.
 
-The R2 server log exposed one HTTP connection-hygiene defect: pre-body 400/413 responses left request bytes unread on a persistent connection, causing follow-on parser noise (`Bad request version` / `414 URI Too Long`). v0.5c.1 closes the connection explicitly on pre-body rejection. Final runtime gate: rerun missing-SHA and oversized cases and confirm the primary 400/413 response occurs without a follow-on parser error.
+The R2 server log exposed one HTTP connection-hygiene defect: pre-body 400/413 responses left request bytes unread on a persistent connection. v0.5c.1 closes the connection explicitly on pre-body rejection. Final P01LAB rerun passed: missing-SHA returned 400 with `Connection: close`; oversized returned 413; no follow-on `Bad request version` or `414 URI Too Long` was observed. **Status: LAB VALIDATED.**
 
 See `docs/LAB_CENTRAL_INGESTION_NEGATIVE_v0.5c.md`.
