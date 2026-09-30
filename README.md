@@ -11,7 +11,7 @@
 - **Network Discovery Scanner:** 0.4.1 — LAB VALIDATED para o core não autenticado no cenário atual; produção/cobertura corporativa ainda em expansão, sem credenciais, criado para descoberta por múltiplos ranges antes do deep discovery.
 - **Credential Manager:** 0.4b.1 — LAB VALIDATED para a foundation de perfis, Secret Provider e seleção por escopo/protocolo; autenticação real entra na v0.4b.2.
 - **SSH Credentialed Enrichment:** 0.4b.2.1 — LAB VALIDATED em Ubuntu e Rocky via P01-MGMT01; appliance SSH restrito também classificado corretamente.
-- **Context-aware Credential Resolver / Planner:** 0.4b.3 — LAB VALIDATED para planning/matching; matching por protocolo, escopo, serviço, OS/device type, realm e confidence.
+- **Context-aware Credential Resolver / Planner:** 0.4b.3 — LAB VALIDATED para planning/matching; v0.4b.3.1 acrescenta `credentialed_action_status` e `skip_reasons` explícitos quando não há protocolo gerenciável ou profile elegível.
 - **WinRM Credentialed Enrichment:** 0.4b.4.2 — LAB VALIDATED em P01-MGMT01 (local realm) e P01-DC01 (domain realm); v0.4b.4.3 adiciona classificação transport/auth para futura proteção de credenciais compartilhadas.
 - **Reporting Engine:** planejado após Network Discovery + Asset Resolver.
 

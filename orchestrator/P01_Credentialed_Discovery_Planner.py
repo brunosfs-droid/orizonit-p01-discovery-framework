@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""P01 Credentialed Discovery Planner v0.4b.3.
+"""P01 Credentialed Discovery Planner v0.4b.3.1.
 
 Consumes Network Discovery evidence and Credential Profiles to produce a safe,
 non-secret execution plan. It does not resolve secrets and does not authenticate.
@@ -31,7 +31,7 @@ from P01_Credential_Manager import (  # noqa: E402
 )
 
 PLANNER_NAME = "P01-Credentialed-Discovery-Planner"
-PLANNER_VERSION = "0.4b.3"
+PLANNER_VERSION = "0.4b.3.1"
 
 SERVICE_TO_PROTOCOL = {
     "ssh": "ssh",
@@ -109,6 +109,17 @@ def build_plan(
                 "action": "adapter_candidate" if matches else "no_eligible_profile",
             })
 
+        has_candidate = any(p["action"] == "adapter_candidate" for p in protocol_plans)
+        if has_candidate:
+            action_status = "adapter_candidate"
+            skip_reasons = []
+        elif not protocols:
+            action_status = "not_planned"
+            skip_reasons = ["no_supported_management_protocol_detected"]
+        else:
+            action_status = "not_planned"
+            skip_reasons = ["no_eligible_profile_for_detected_protocols"]
+
         assets_out.append({
             "ip": ip,
             "hostname": asset.get("hostname"),
@@ -118,6 +129,8 @@ def build_plan(
             "realm": realm,
             "detected_protocols": protocols,
             "protocol_plans": protocol_plans,
+            "credentialed_action_status": action_status,
+            "skip_reasons": skip_reasons,
         })
 
     return {
@@ -143,6 +156,17 @@ def build_plan(
                 for p in a["protocol_plans"]
                 if p["action"] == "adapter_candidate"
             ),
+            "assets_with_adapter_candidates": sum(
+                1 for a in assets_out if a["credentialed_action_status"] == "adapter_candidate"
+            ),
+            "assets_skipped_no_protocol": sum(
+                1 for a in assets_out
+                if "no_supported_management_protocol_detected" in a["skip_reasons"]
+            ),
+            "assets_skipped_no_profile": sum(
+                1 for a in assets_out
+                if "no_eligible_profile_for_detected_protocols" in a["skip_reasons"]
+            ),
             "protocols": sorted({
                 p
                 for a in assets_out
@@ -166,7 +190,7 @@ def write_output(output_dir: Path, run_label: str, payload: Mapping[str, Any]) -
 
 
 def cli(argv: Optional[Sequence[str]] = None) -> int:
-    p = argparse.ArgumentParser(description="P01 Context-aware Credentialed Discovery Planner v0.4b.3")
+    p = argparse.ArgumentParser(description="P01 Context-aware Credentialed Discovery Planner v0.4b.3.1")
     p.add_argument("--discovery", required=True, help="Network Discovery JSON")
     p.add_argument("--profiles", required=True, help="Credential Profiles JSON")
     p.add_argument("--realm-map", help="Optional JSON object mapping IP -> realm")

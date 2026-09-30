@@ -118,6 +118,18 @@ class PlannerTests(unittest.TestCase):
         win = next(x for x in plan["assets"] if x["ip"] == "192.168.100.10")
         self.assertEqual(win["protocol_plans"][0]["eligible_profile_count"], 0)
 
+    def test_detected_protocol_without_profile_has_explicit_skip_reason(self):
+        plan = planner.build_plan(
+            self.discovery,
+            self.profiles,
+            realm_map={},
+            max_candidates=2,
+        )
+        win = next(x for x in plan["assets"] if x["ip"] == "192.168.100.10")
+        self.assertEqual(win["detected_protocols"], ["winrm"])
+        self.assertEqual(win["credentialed_action_status"], "not_planned")
+        self.assertEqual(win["skip_reasons"], ["no_eligible_profile_for_detected_protocols"])
+
     def test_domain_windows_without_winrm_has_no_adapter_candidate(self):
         discovery = {
             "metadata": {
@@ -148,7 +160,10 @@ class PlannerTests(unittest.TestCase):
         win = plan["assets"][0]
         self.assertEqual(win["detected_protocols"], [])
         self.assertEqual(win["protocol_plans"], [])
+        self.assertEqual(win["credentialed_action_status"], "not_planned")
+        self.assertEqual(win["skip_reasons"], ["no_supported_management_protocol_detected"])
         self.assertEqual(plan["summary"]["adapter_candidates"], 0)
+        self.assertEqual(plan["summary"]["assets_skipped_no_protocol"], 1)
 
 
 if __name__ == "__main__":
