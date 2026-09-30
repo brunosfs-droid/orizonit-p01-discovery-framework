@@ -80,7 +80,7 @@
 - `transport` não penaliza credential health;
 - evidência agregada por job + referências por target;
 - dry-run obrigatório no primeiro LAB.
-- **Status:** próxima implementação.
+- **Status:** CANDIDATE implementado; testes automatizados cobrem dry-run, profile drift, SHA256 binding e circuit-breaker semantics. Aguardando primeiro LAB dry-run com os cinco ativos do P01LAB.
 
 ### v0.4b.6+ — próximos adapters
 - SNMPv3/SNMPv2c;
