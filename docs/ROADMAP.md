@@ -43,7 +43,7 @@
 - planner seguro que consome o JSON do Network Discovery e produz um plano sem resolver secrets;
 - orquestração por ativo com stop-after-success nas próximas integrações;
 - primeira validação corporativa no Discovery Node P01-MGMT01.
-- **Status:** LAB VALIDATED para planning/matching com dataset P01LAB; circuit breaker permanece pendente do executor multi-target.
+- **Status:** LAB VALIDATED para planning/matching com dataset P01LAB. Windows 11 domain-joined sem WinRM também validado como cenário negativo: sem protocolo detectado, sem adapter candidate. Circuit breaker permanece pendente do executor multi-target.
 
 ### v0.4b.4 — WinRM Credentialed Enrichment
 - WinRM HTTP/HTTPS;
