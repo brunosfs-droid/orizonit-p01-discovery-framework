@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""P01 Credentialed Discovery Planner v0.4b.3.1.
+"""P01 Credentialed Discovery Planner v0.4b.3.2.
 
 Consumes Network Discovery evidence and Credential Profiles to produce a safe,
 non-secret execution plan. It does not resolve secrets and does not authenticate.
@@ -20,8 +20,11 @@ from typing import Any, Dict, List, Mapping, Optional, Sequence
 
 ROOT = Path(__file__).resolve().parents[1]
 CRED_DIR = ROOT / "credential_manager"
+ASSESSMENT_DIR = ROOT / "assessment"
 if str(CRED_DIR) not in sys.path:
     sys.path.insert(0, str(CRED_DIR))
+if str(ASSESSMENT_DIR) not in sys.path:
+    sys.path.insert(0, str(ASSESSMENT_DIR))
 
 from P01_Credential_Manager import (  # noqa: E402
     context_from_network_asset,
@@ -29,6 +32,7 @@ from P01_Credential_Manager import (  # noqa: E402
     match_profiles,
     _safe_profile_view,
 )
+from P01_Assessment_Context import load_manifest, manifest_context_for_asset  # noqa: E402
 
 PLANNER_NAME = "P01-Credentialed-Discovery-Planner"
 PLANNER_VERSION = "0.4b.3.1"
@@ -190,7 +194,7 @@ def write_output(output_dir: Path, run_label: str, payload: Mapping[str, Any]) -
 
 
 def cli(argv: Optional[Sequence[str]] = None) -> int:
-    p = argparse.ArgumentParser(description="P01 Context-aware Credentialed Discovery Planner v0.4b.3.1")
+    p = argparse.ArgumentParser(description="P01 Context-aware Credentialed Discovery Planner v0.4b.3.2")
     p.add_argument("--discovery", required=True, help="Network Discovery JSON")
     p.add_argument("--profiles", required=True, help="Credential Profiles JSON")
     p.add_argument("--realm-map", help="Optional JSON object mapping IP -> realm")
