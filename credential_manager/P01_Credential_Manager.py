@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Orizon IT P01 Credential Manager v0.4b.3.
+"""Orizon IT P01 Credential Manager v0.4b.6.
 
 Secure foundation for credential profile selection and secret resolution.
 
@@ -43,6 +43,9 @@ SUPPORTED_SELECTOR_KEYS = {
     "hostname_patterns",
     "vendor_patterns",
     "realms",
+    "target_classes",
+    "realm_kinds",
+    "min_realm_evidence",
     "min_confidence",
     "allow_unknown",
 }
@@ -123,7 +126,7 @@ def _parse_network(scope: str) -> ipaddress.IPv4Network:
     except ValueError as exc:
         raise CredentialConfigError(f"Invalid IPv4 scope '{scope}': {exc}") from exc
     if network.version != 4:
-        raise CredentialConfigError(f"Only IPv4 credential scopes are supported in v0.4b.3: {scope}")
+        raise CredentialConfigError(f"Only IPv4 credential scopes are supported in v0.4b.6: {scope}")
     return network
 
 
@@ -384,7 +387,7 @@ def match_profiles(
         raise ValueError("max_candidates must be between 1 and 5")
     target = ipaddress.ip_address(target_ip)
     if target.version != 4:
-        raise ValueError("Only IPv4 targets are supported in v0.4b.3")
+        raise ValueError("Only IPv4 targets are supported in v0.4b.6")
     protocol = protocol.strip().lower()
 
     matches: List[ProfileMatch] = []
@@ -450,7 +453,7 @@ if platform.system().lower() == "windows":
 
 def _require_windows() -> None:
     if platform.system().lower() != "windows":
-        raise SecretProviderError("wincred:// is available only on Windows in v0.4b.3")
+        raise SecretProviderError("wincred:// is available only on Windows in v0.4b.6")
 
 
 def wincred_store(target: str, username: str, secret: str) -> None:
@@ -557,7 +560,7 @@ def _safe_profile_view(profile: Mapping[str, Any]) -> Dict[str, Any]:
 
 
 def cli(argv: Optional[Sequence[str]] = None) -> int:
-    parser = argparse.ArgumentParser(description="Orizon IT P01 Credential Manager v0.4b.3")
+    parser = argparse.ArgumentParser(description="Orizon IT P01 Credential Manager v0.4b.6")
     sub = parser.add_subparsers(dest="command", required=True)
 
     p_validate = sub.add_parser("validate", help="Validate credential profile file; never resolves secrets")
