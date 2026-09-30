@@ -27,6 +27,8 @@ jobs:
           python -m py_compile credentialed_enrichment/P01_WinRM_Enricher.py
           python -m py_compile orchestrator/P01_Credentialed_Discovery_Planner.py
           python -m py_compile orchestrator/P01_Credentialed_Discovery_Executor.py
+          python -m py_compile asset_resolver/P01_Asset_Resolver.py
+          python -m py_compile evidence_bundle/P01_Evidence_Bundle.py
 
       - name: Validate JSON artifacts
         run: |
@@ -38,6 +40,9 @@ jobs:
           python -m json.tool schemas/p01-ssh-enrichment-schema-v0.4b.json > /dev/null
           python -m json.tool schemas/p01-winrm-enrichment-schema-v0.4b.json > /dev/null
           python -m json.tool schemas/p01-credentialed-job-schema-v0.4b.json > /dev/null
+          python -m json.tool schemas/p01-asset-resolver-schema-v0.4c.json > /dev/null
+          python -m json.tool schemas/p01-assessment-manifest-schema-v0.4b.6.json > /dev/null
+          python -m json.tool schemas/p01-evidence-bundle-manifest-schema-v0.5a.json > /dev/null
 
       - name: Unit tests
         run: python -m unittest discover -s tests -p "test_*.py" -v

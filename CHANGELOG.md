@@ -10,6 +10,35 @@ All notable changes to the P01 Discovery Framework are documented here.
 - Asset Resolver / deduplication (v0.4c)
 - Reporting Engine v0.1
 
+## [0.5a.0-candidate] - 2026-09-30
+
+### Added
+- portable .p01bundle creation
+- bundle manifest with deterministic logical bundle ID
+- SHA256 payload inventory
+- optional source sidecar verification before packaging
+- outer bundle SHA256 sidecar
+- transport-agnostic connected/offline metadata
+- bundle validation CLI
+
+### Security
+- Secret Provider references and secret-like JSON fields are rejected
+- duplicate ZIP entries, path traversal and symlink entries are rejected
+- file-count and uncompressed-size guards reduce archive abuse risk
+- no network access, authentication or secret resolution is performed
+- v0.5a explicitly does not claim publisher authenticity; digital signatures are a later stage
+
+### Tests
+- create + validate
+- expected bundle layout
+- tampered payload rejection
+- secret reference rejection
+- plaintext password-field rejection
+- required source sidecar enforcement
+- duplicate entry rejection
+- traversal rejection
+- stable logical bundle ID
+
 ## [0.4c.0-lab-validated] - 2026-09-30
 
 ### Validated
