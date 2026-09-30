@@ -10,6 +10,28 @@ All notable changes to the P01 Discovery Framework are documented here.
 - Asset Resolver / deduplication (v0.4c)
 - Reporting Engine v0.1
 
+## [0.4b.6-candidate] - 2026-09-30
+
+### Added
+- non-secret Assessment Manifest schema and CLI
+- credential onboarding wizard that writes profile metadata only
+- credential taxonomy for realm kind, realm name, target classes, privilege class, purposes and realm evidence
+- planner v0.4b.3.2 support for Assessment Manifest
+- declared/observed realm provenance and conflict recording
+- high-privilege profile acknowledgement and conservative budget validation
+- placeholder username linting
+
+### Security
+- declared domain context alone never becomes effective realm evidence
+- rich taxonomy profiles do not match when runtime context is absent
+- observed hostname/domain evidence is required by default for wizard-created AD profiles
+- conflicting realm evidence blocks planning rather than being silently reconciled
+- secrets remain outside manifest/profile files
+
+### Validation
+- unit tests cover manifest validation, declared-only gating, observed realm promotion, high-privilege policy and context conflicts
+- P01LAB Planner validation remains the next runtime gate
+
 ## [0.4b.5-candidate] - 2026-09-30
 
 ### Added
