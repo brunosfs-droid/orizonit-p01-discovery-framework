@@ -658,6 +658,13 @@ def _safe_profile_view(profile: Mapping[str, Any]) -> Dict[str, Any]:
         "tags": profile.get("tags", []),
         "max_attempts_per_target": profile.get("max_attempts_per_target", 1),
         "failure_budget_per_job": profile.get("failure_budget_per_job", 2),
+        "realm_kind": profile.get("realm_kind"),
+        "realm_name": profile.get("realm_name"),
+        "target_classes": profile.get("target_classes", []),
+        "privilege_class": profile.get("privilege_class"),
+        "purposes": profile.get("purposes", []),
+        "realm_evidence_min": profile.get("realm_evidence_min"),
+        "high_privilege_acknowledged": profile.get("high_privilege_acknowledged", False),
         "selectors": profile.get("selectors", {}),
     }
 
