@@ -79,6 +79,22 @@ All notable changes to the P01 Discovery Framework are documented here.
 - successful authentications did not consume credential failure budget
 - full enrichment remains a separate next-stage validation
 
+## [0.4b.5-full-lab-validated] - 2026-09-30
+
+### Validated
+- multi-target full enrichment completed across 5 planned assets
+- 5 actions ready, 5 completed, 5 authentication successes
+- WinRM full collection completed for DC01, MGMT01 and W11
+- SSH full collection completed for Ubuntu and Rocky
+- zero skipped actions, zero authentication failures and zero open circuits
+- target JSON/SHA256 evidence matched hashes recorded in the aggregate Job
+- shared domain credential identity recorded two successes with circuit remaining closed
+
+### Architecture
+- v0.4b.6 is proposed as Assessment Context & Credential Intake before Asset Resolver
+- operator-declared domain/realm and credential metadata remain policy/hints, never substitutes for discovered evidence
+- Secret Provider remains separated from Credential Profiles
+
 ## [0.4b.3.1-positive-profile-gate] - 2026-09-30
 
 ### Validated

@@ -170,3 +170,30 @@ Collectors must not modify system configuration. Network Discovery is allowed to
 - change services;
 - install software on targets;
 - create persistence.
+
+
+## Multi-target Credentialed Executor v0.4b.5
+
+Validated in P01LAB with five planned assets:
+
+- dry-run: 5 actions ready, zero secret resolution and zero authentication;
+- AUTH-only: 5/5 authentication success, zero skipped actions and zero open circuits;
+- full enrichment: 5/5 authentication success and 5/5 collection success;
+- SHA256 binding between Credential Plan, Job and per-target result evidence;
+- shared domain identity recognized across DC01 and W11;
+- execution remained sequential with concurrency=1;
+- no pivoting and no dynamic-scope expansion.
+
+This closes the current v0.4b SSH/WinRM orchestration baseline.
+
+## Assessment Context & Credential Intake v0.4b.6
+
+Planned validation must prove:
+
+- operator-declared domains/realms are stored as non-secret context;
+- declared context never creates a credential attempt by itself;
+- target class, protocol, realm kind, privilege class and scope remain independent policy dimensions;
+- high-privilege identities require explicit acknowledgement and conservative budgets;
+- runtime components consume a persisted manifest/profile configuration rather than interactive prompts;
+- Secret Provider remains the only location for secret values;
+- observed evidence can confirm or contradict declared context without being silently overwritten.
