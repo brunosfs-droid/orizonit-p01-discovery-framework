@@ -123,6 +123,11 @@ Validated against the P01LAB Network Discovery dataset:
 - planner resolved no secrets and performed no authentication;
 - JSON/SHA256 evidence matched.
 
+Windows workstation safety gates are also validated:
+- Windows/domain context with no WinRM detected -> no plan;
+- WinRM detected but no eligible profile -> no plan;
+- both cases resolve no secrets and make no authentication attempts.
+
 The declared `failure_budget_per_job` is not yet considered runtime-validated because the multi-target executor is not implemented.
 
 ## WinRM Credentialed Enrichment v0.4b.4
