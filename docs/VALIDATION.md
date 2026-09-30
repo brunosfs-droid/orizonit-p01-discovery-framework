@@ -224,3 +224,20 @@ LAB VALIDATED. Acceptance:
 - Network Discovery and credentialed evidence sidecars can be required and verified;
 - real P01LAB R2 resolved five Network Discovery assets plus five FULL credentialed observations into exactly five logical assets, with zero unresolved, zero ambiguous correlations and zero conflicts.
 - local authentication realm is preserved separately from canonical directory realm identity.
+
+## Evidence Bundle v0.5a.0
+
+Candidate acceptance:
+
+- create a .p01bundle from existing immutable P01 evidence;
+- optional input sidecar validation rejects missing or invalid evidence SHA256;
+- bundle contains Network Discovery + credentialed FULL evidence + Assessment Manifest + Asset Resolver result;
+- same bundle format is transport-agnostic for connected and offline modes;
+- every payload is covered by SHA256 inventory;
+- outer bundle SHA256 sidecar validates;
+- tampered payload is rejected;
+- duplicate ZIP entry, path traversal and symlink are rejected;
+- Secret Provider references and secret-like JSON keys are rejected;
+- bundle ID is stable for the same assessment/run/node/evidence inventory;
+- validation performs no network access, authentication or secret resolution;
+- real P01LAB gate should package 8 artifacts: 1 network + 5 credentialed + 1 manifest + 1 Asset Resolver.
