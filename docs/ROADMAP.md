@@ -32,9 +32,18 @@
 - interfaces, routes e IPv4 forwarding;
 - candidate networks sem scan automático;
 - JSON + SHA256.
-- **Status:** candidate aguardando LAB real.
+- **Status:** autenticação real validada contra Dropbear; o equipamento de teste aceitou SSH, mas não devolveu output no canal exec. v0.4b.2.1 passa a classificar explicitamente esse caso como `authenticated_no_exec_output`. Coleta completa ainda deve ser validada em Linux controlado.
 
-### v0.4b.3+ — próximos adapters
+### v0.4b.3 — Context-aware Credentialed Discovery
+- combinar protocolo + scope + serviço detectado + fingerprint/device class;
+- selectors opcionais de OS family, device type, hostname/vendor e realm;
+- perfis Windows domain e Windows local separados;
+- credentials compartilhadas com circuit breaker/failure budget;
+- nunca tentar credencial somente porque um IP foi descoberto;
+- orquestração por ativo com stop-after-success;
+- primeira validação corporativa no Discovery Node P01-MGMT01.
+
+### v0.4b.4+ — próximos adapters
 - SNMPv3/SNMPv2c;
 - WinRM/WMI;
 - auditoria de autenticação multi-protocolo.
@@ -66,6 +75,12 @@ Guardrails:
 - sem pivot/jump automático;
 - sem herança automática de credenciais;
 - redes sem alcance ficam registradas para futuro Remote Discovery Node/Sensor.
+
+## Discovery Nodes / Sensors
+
+O P01 deve suportar múltiplos Discovery Nodes em segmentos distintos. Um node escaneia apenas redes alcançáveis a partir dele e envia evidências para consolidação posterior. Não usar ativos arbitrários como pivots.
+
+O LAB inicial usará P01-MGMT01 como Discovery Node por possuir acesso ao segmento NAT e ao segmento interno do laboratório.
 
 ## Depois da v0.4
 
