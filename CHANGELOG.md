@@ -10,6 +10,20 @@ All notable changes to the P01 Discovery Framework are documented here.
 - Asset Resolver / deduplication (v0.4c)
 - Reporting Engine v0.1
 
+## [0.4b.2.1-lab-validated] - 2026-09-30
+
+### Fixed
+- classify SSH authentication that succeeds without usable exec-channel output as `authenticated_no_exec_output`
+- add harmless SSH exec capability probe before read-only enrichment
+
+### Validated
+- Ubuntu 26.04 SSH authentication and full read-only enrichment via P01-MGMT01
+- Rocky Linux 10.2 SSH authentication and full read-only enrichment via P01-MGMT01
+- one matching credential profile, one attempt, zero same-profile retries per host
+- hostname, OS/kernel, interfaces, routes, IPv4 forwarding and candidate networks
+- candidate networks remain unassessed and are never auto-scanned in v0.4b
+- JSON/SHA256 integrity and no secret persistence
+
 ## [0.4b.2-candidate] - 2026-09-30
 
 ### Added
