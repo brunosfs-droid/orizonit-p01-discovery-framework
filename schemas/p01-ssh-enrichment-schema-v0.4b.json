@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://orizonit.local/schemas/p01-ssh-enrichment-v0.4b.json",
+  "title": "P01 SSH Credentialed Enrichment v0.4b",
+  "type": "object",
+  "required": [
+    "metadata",
+    "target",
+    "credential_policy",
+    "authentication",
+    "summary",
+    "errors",
+    "limitations",
+    "warnings"
+  ],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": [
+        "enricher_name",
+        "enricher_version",
+        "schema_version",
+        "read_only_mode",
+        "credentialed",
+        "secret_values_persisted_to_output"
+      ],
+      "properties": {
+        "enricher_name": {
+          "const": "P01-SSH-Credentialed-Enrichment"
+        },
+        "schema_version": {
+          "const": "0.4b"
+        },
+        "read_only_mode": {
+          "const": true
+        },
+        "credentialed": {
+          "const": true
+        },
+        "secret_values_persisted_to_output": {
+          "const": false
+        }
+      },
+      "additionalProperties": true
+    },
+    "target": {
+      "type": "object"
+    },
+    "credential_policy": {
+      "type": "object"
+    },
+    "authentication": {
+      "type": "object"
+    },
+    "enrichment": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "summary": {
+      "type": "object"
+    },
+    "errors": {
+      "type": "array"
+    },
+    "limitations": {
+      "type": "array"
+    },
+    "warnings": {
+      "type": "array"
+    }
+  },
+  "additionalProperties": false
+}
