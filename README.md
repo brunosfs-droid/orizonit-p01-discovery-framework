@@ -9,11 +9,12 @@
 - **Linux Collector:** 0.3.0 — candidate, validado em LAB em Ubuntu e Rocky para SSH, FTP, Samba, password policy, serviços e plataforma.
 - **Analyzer / Rule Engine:** 0.2.0 — candidate, 19 regras determinísticas e rastreabilidade para a evidência de origem.
 - **Network Discovery Scanner:** 0.4.1 — LAB VALIDATED para o core não autenticado no cenário atual; produção/cobertura corporativa ainda em expansão, sem credenciais, criado para descoberta por múltiplos ranges antes do deep discovery.
-- **Credential Manager:** 0.4b.1 — LAB VALIDATED para a foundation de perfis, Secret Provider e seleção por escopo/protocolo; autenticação real entra na v0.4b.2.
+- **Credential Manager:** 0.4b.6 — mantém Secret Provider e matching compatível com v0.4b, acrescentando taxonomy de realm/target/privilege/purpose, evidence gates e lint de placeholders.
 - **SSH Credentialed Enrichment:** 0.4b.2.1 — LAB VALIDATED em Ubuntu e Rocky via P01-MGMT01; appliance SSH restrito também classificado corretamente.
-- **Context-aware Credential Resolver / Planner:** 0.4b.3.1 — LAB VALIDATED para planning/matching; Windows 11 validou tanto `no protocol` quanto `protocol available but no eligible profile`, sem resolução de secret ou tentativa de autenticação.
+- **Context-aware Credential Resolver / Planner:** 0.4b.3.2 — v0.4b.3.1 LAB VALIDATED; candidate passa a consumir Assessment Manifest, distinguir realm declarado/observado e bloquear conflito de contexto.
 - **WinRM Credentialed Enrichment:** 0.4b.4.3 — LAB VALIDATED em P01-MGMT01 (local realm), P01-DC01 (domain controller/domain realm) e P01-W11-01 (domain workstation); failure semantics transport/auth também validados em runtime.
-- **Multi-target Credentialed Executor:** 0.4b.5 — CANDIDATE; dry-run por padrão, plan SHA256 binding, profile-drift guard, execução sequencial e shared-credential circuit breaker.
+- **Multi-target Credentialed Executor:** 0.4b.5 — LAB VALIDATED em dry-run, AUTH-only e FULL nos cinco ativos P01LAB; SHA256 binding, profile-drift guard e shared-credential circuit breaker.
+- **Assessment Context & Credential Intake:** 0.4b.6 — CANDIDATE; manifest não secreto, intake estruturado de credenciais e evidence-state para realm antes do Asset Resolver.
 - **Reporting Engine:** planejado após Network Discovery + Asset Resolver.
 
 > Saídas reais de discovery devem ser tratadas como **CONFIDENCIAL — DADOS DO CLIENTE**.
@@ -162,11 +163,11 @@ O repositório preserva histórico por **commits, branches, tags e releases**. O
 
 1. fechar validação AD stale v0.3;
 2. validar Network Discovery v0.4a em rede doméstica/autorizada;
-3. v0.4b.5 — Multi-target Credentialed Executor + shared-credential circuit breaker;
-4. depois: SNMPv3/SNMPv2c e demais adapters;
-5. v0.4c — Asset Resolver e deduplicação;
-5. Reporting Engine v0.1;
-6. depois: CVE correlation, Patch Compliance, File Server Assessment e topologia.
+3. v0.4b.6 — validar Assessment Context & Credential Intake no P01LAB;
+4. v0.4c — Asset Resolver e deduplicação;
+5. depois: SNMPv3/SNMPv2c, VMware/network adapters e Dynamic Scope Expansion;
+6. Reporting Engine v0.1;
+7. depois: CVE correlation, Patch Compliance, File Server Assessment e topologia.
 
 Mais detalhes: [docs/ROADMAP.md](docs/ROADMAP.md).
 
