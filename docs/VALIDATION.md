@@ -208,7 +208,7 @@ Runtime P01LAB evidence validated both sides: declared+observed namespace eviden
 
 ## Asset Resolver v0.4c.0
 
-Candidate acceptance:
+LAB VALIDATED. Acceptance:
 
 - resolver is offline-only and performs zero network access/authentication/secret resolution;
 - Network Discovery observations seed independent logical assets;
@@ -222,4 +222,5 @@ Candidate acceptance:
 - credentialed Windows domain evidence may promote realm state to `credentialed_confirmed`;
 - output contains no secret-provider reference or secret-like field;
 - Network Discovery and credentialed evidence sidecars can be required and verified;
-- real P01LAB acceptance resolves five Network Discovery assets plus five FULL credentialed observations into exactly five logical assets, with zero unresolved and zero ambiguous correlations.
+- real P01LAB R2 resolved five Network Discovery assets plus five FULL credentialed observations into exactly five logical assets, with zero unresolved, zero ambiguous correlations and zero conflicts.
+- local authentication realm is preserved separately from canonical directory realm identity.
