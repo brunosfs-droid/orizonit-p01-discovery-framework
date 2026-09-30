@@ -254,6 +254,7 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
     p.add_argument("--discovery", required=True, help="Network Discovery JSON")
     p.add_argument("--profiles", required=True, help="Credential Profiles JSON")
     p.add_argument("--realm-map", help="Optional JSON object mapping IP -> realm")
+    p.add_argument("--manifest", help="Optional v0.4b.6 Assessment Manifest")
     p.add_argument("--max-candidates", type=int, default=2)
     p.add_argument("--run-label", default="credential-plan")
     p.add_argument("--output-dir", default="./output")
@@ -270,7 +271,22 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
         realm_doc = load_json(Path(args.realm_map))
         realm_map = {str(k): str(v) for k, v in realm_doc.items()}
 
-    payload = build_plan(discovery, profiles, realm_map=realm_map, max_candidates=args.max_candidates)
+    manifest = None
+    manifest_hash = None
+    if args.manifest:
+        manifest_path = Path(args.manifest)
+        manifest = load_manifest(manifest_path)
+        manifest_hash = hashlib.sha256(manifest_path.read_bytes()).hexdigest()
+
+    payload = build_plan(
+        discovery,
+        profiles,
+        realm_map=realm_map,
+        max_candidates=args.max_candidates,
+        manifest=manifest,
+    )
+    if manifest_hash:
+        payload["metadata"]["assessment_manifest_sha256"] = manifest_hash
     out, sha = write_output(Path(args.output_dir), args.run_label, payload)
 
     print("Credentialed discovery plan finalizado.")
