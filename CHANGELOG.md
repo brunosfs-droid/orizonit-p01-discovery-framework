@@ -48,6 +48,18 @@ A domain-joined Windows 11 host with WinRM stopped demonstrated that empty proto
 - reinforces the rule that asset discovery does not imply credential attempts
 - protocol availability remains a mandatory gate before credential profile selection
 
+## [0.4b.3.1-protocol-gate-validation] - 2026-09-30
+
+### Validated
+- the Windows 11 workstation was rescanned after WinRM was manually enabled as LAB preparation
+- Network Discovery detected TCP/5985 as `winrm-http`
+- the scanner still performed zero credential attempts
+- JSON/SHA256 integrity passed
+
+### Next safety gate
+- run the Planner before creating a workstation profile
+- expected result: WinRM detected but no eligible workstation profile -> `not_planned` with `no_eligible_profile_for_detected_protocols`
+
 ## [0.4b.3.1-lab-validated] - 2026-09-30
 
 ### Validated

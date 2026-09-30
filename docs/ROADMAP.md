@@ -43,7 +43,7 @@
 - planner seguro que consome o JSON do Network Discovery e produz um plano sem resolver secrets;
 - orquestração por ativo com stop-after-success nas próximas integrações;
 - primeira validação corporativa no Discovery Node P01-MGMT01.
-- **Status:** v0.4b.3 LAB VALIDATED para planning/matching. v0.4b.3.1 adiciona status/skip reasons explícitos para ativos sem protocolo gerenciável ou sem profile elegível, derivado do cenário Windows 11 domain-joined com WinRM parado. Circuit breaker permanece pendente do executor multi-target.
+- **Status:** v0.4b.3 LAB VALIDATED para planning/matching. v0.4b.3.1 adiciona status/skip reasons explícitos. O Windows 11 validou dois estágios do gate: (1) WinRM ausente -> no protocol; (2) após preparação manual do LAB, Network Discovery detectou 5985/winrm-http. Próximo teste: WinRM detectado porém sem profile elegível deve continuar `not_planned`. Circuit breaker permanece pendente do executor multi-target.
 
 ### v0.4b.4 — WinRM Credentialed Enrichment
 - WinRM HTTP/HTTPS;
