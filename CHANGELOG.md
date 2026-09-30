@@ -79,6 +79,21 @@ All notable changes to the P01 Discovery Framework are documented here.
 - health endpoint
 - unsupported content-type rejection
 
+## [0.5c.1-lab-validated] - 2026-09-30
+
+### Validated
+- localhost positive ingestion path and idempotent repeat upload
+- bundle status lookup and edge/server semantic equivalence
+- non-loopback bind rejection
+- missing/malformed SHA256 -> HTTP 400
+- wrong SHA256 -> HTTP 422
+- tampered bundle -> HTTP 422
+- oversized upload -> HTTP 413
+- pre-body rejection connection hygiene: no follow-on parser noise after 400/413
+
+### Result
+Central Ingestion API v0.5c.1 is LAB VALIDATED and v0.5d connected authenticated transport is next.
+
 ## [0.5c.1-candidate] - 2026-09-30
 
 ### Fixed
