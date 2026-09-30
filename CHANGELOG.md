@@ -79,6 +79,22 @@ All notable changes to the P01 Discovery Framework are documented here.
 - health endpoint
 - unsupported content-type rejection
 
+## [0.5c.1-candidate] - 2026-09-30
+
+### Fixed
+- close HTTP/1.1 connection on upload rejection detected before request-body consumption
+- prevent unread rejected body bytes from being parsed as a subsequent request
+- eliminate follow-on `Bad request version` / `414 URI Too Long` noise observed after missing-SHA and oversized-upload negative gates
+
+### Validation
+- P01LAB negative gates already confirmed expected primary responses:
+  - missing/malformed SHA256 -> HTTP 400
+  - wrong SHA256 -> HTTP 422
+  - tampered bundle -> HTTP 422
+  - oversized request -> HTTP 413
+- regression tests require `Connection: close` on missing-SHA and oversized pre-body rejections
+- final runtime rerun only needs to confirm no follow-on parser error after those early rejections
+
 ## [0.5c.0-positive-path-pass] - 2026-09-30
 
 ### Validated
