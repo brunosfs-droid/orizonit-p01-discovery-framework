@@ -48,6 +48,20 @@ All notable changes to the P01 Discovery Framework are documented here.
 ### Next
 - v0.4b.5 multi-target credentialed executor with shared-credential circuit breaker
 
+## [0.4b.5-dry-run-lab-validated] - 2026-09-30
+
+### Validated
+- reviewed Credential Plan integrity bound to executor job by SHA256
+- 5 planned actions, 5 ready, 0 blocked, 0 skipped
+- dry-run resolved no secrets and made no authentication attempts
+- deterministic order across DC01, MGMT01, W11, Ubuntu and Rocky
+- shared domain identity recognized between DC01 and W11
+- zero credential circuits open
+- concurrency fixed at 1
+
+### Next
+- multi-target AUTH-only using the same reviewed plan and sidecar SHA256
+
 ## [0.4b.3.1-positive-profile-gate] - 2026-09-30
 
 ### Validated
