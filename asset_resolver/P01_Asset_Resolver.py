@@ -535,6 +535,27 @@ def merge_observation(cluster: Dict[str, Any], obs: Mapping[str, Any], score: Op
     })
 
 
+def claim_values_conflict(field: str, values: Sequence[Any]) -> bool:
+    normalized = {str(v).strip().lower() for v in values if v is not None}
+    if len(normalized) <= 1:
+        return False
+
+    # Evidence-state values are monotonic refinements, not contradictory facts.
+    if field == "realm_evidence_state":
+        return False
+
+    # Device-class refinement is compatible with a broader family label.
+    if field == "device_class":
+        windows_family = {"windows host", "windows server", "windows workstation", "domain controller"}
+        if normalized.issubset(windows_family):
+            return False
+        linux_family = {"linux/unix host", "linux host", "linux server"}
+        if normalized.issubset(linux_family):
+            return False
+
+    return True
+
+
 def choose_claims(claims: Sequence[Mapping[str, Any]]) -> Tuple[Dict[str, Any], Dict[str, List[Dict[str, Any]]], List[Dict[str, Any]]]:
     by_field: Dict[str, List[Dict[str, Any]]] = {}
     for claim in claims:
@@ -567,7 +588,7 @@ def choose_claims(claims: Sequence[Mapping[str, Any]]) -> Tuple[Dict[str, Any], 
         distinct = {}
         for x in meaningful:
             distinct.setdefault(json.dumps(x.get("value"), sort_keys=True, ensure_ascii=False), []).append(x)
-        if len(distinct) > 1:
+        if len(distinct) > 1 and claim_values_conflict(field, [group[0].get("value") for group in distinct.values()]):
             conflicts.append({
                 "field": field,
                 "values": [group[0].get("value") for group in distinct.values()],

@@ -264,6 +264,24 @@ class AssetResolverTests(unittest.TestCase):
             windows_asset = next(a for a in result["assets"] if "192.168.100.30" in a["addresses"])
             self.assertEqual(windows_asset["identity"]["realm_evidence_state"], "credentialed_confirmed")
 
+    def test_realm_evidence_progression_is_not_conflict(self):
+        claims = [
+            mod.field_claim("realm_evidence_state", "observed", "src-a", "observed", "manifest"),
+            mod.field_claim("realm_evidence_state", "credentialed_confirmed", "src-b", "credentialed_confirmed", "winrm"),
+        ]
+        resolved, _, conflicts = mod.choose_claims(claims)
+        self.assertEqual(resolved["realm_evidence_state"], "credentialed_confirmed")
+        self.assertEqual(conflicts, [])
+
+    def test_windows_device_class_refinement_is_not_conflict(self):
+        claims = [
+            mod.field_claim("device_class", "Windows Host", "src-a", "medium", "network"),
+            mod.field_claim("device_class", "Domain Controller", "src-b", "credentialed_confirmed", "winrm"),
+        ]
+        resolved, _, conflicts = mod.choose_claims(claims)
+        self.assertEqual(resolved["device_class"], "Domain Controller")
+        self.assertEqual(conflicts, [])
+
     def test_conflicts_are_preserved(self):
         claims = [
             mod.field_claim("os_family", "Windows", "src-a", "medium", "a"),
