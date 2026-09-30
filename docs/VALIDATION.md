@@ -142,6 +142,24 @@ Candidate acceptance:
 - candidate networks with auto-scan disabled;
 - no automatic WinRM enablement or configuration changes.
 
+## Multi-target Credentialed Executor v0.4b.5
+
+Validated AUTH-only through P01-MGMT01 against five controlled P01LAB targets:
+
+- P01-DC01 via WinRM/domain profile;
+- P01-MGMT01 via WinRM/local profile;
+- P01-W11-01 via WinRM/domain workstation profile;
+- Ubuntu via SSH;
+- Rocky via SSH;
+- execution remained sequential with concurrency 1;
+- 5/5 authentication successes, zero failures, zero skips and zero open circuits;
+- DC01 and W11 shared one hashed credential identity and accumulated two successes;
+- every target JSON matched both its SHA256 sidecar and the digest recorded by the job;
+- plan SHA256 was propagated to every target result;
+- no secret values or secret references were persisted.
+
+Full enrichment multi-target remains a separate acceptance gate.
+
 ## Read-only / non-destructive expectations
 
 Collectors must not modify system configuration. Network Discovery is allowed to generate authorized ICMP/TCP/SSDP probe traffic but must not:
