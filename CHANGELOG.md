@@ -27,6 +27,16 @@ All notable changes to the P01 Discovery Framework are documented here.
 - WinRM/NTLM authentication succeeded against P01-MGMT01 with one bounded /32 profile attempt and zero retries
 - v0.4b.4 full collection failure reproduced and isolated to payload size, not credentials or WinRM connectivity
 
+## [0.4b.3.1-candidate] - 2026-09-30
+
+### Added
+- explicit per-asset `credentialed_action_status`
+- explicit `skip_reasons` for no supported management protocol or no eligible credential profile
+- summary counters for assets skipped by protocol/profile gating
+
+### Rationale
+A domain-joined Windows 11 host with WinRM stopped demonstrated that empty protocol plans are safe but not sufficiently explanatory for audit/reporting. The planner now records why no credentialed action is planned.
+
 ## [0.4b.3-validation] - 2026-09-30
 
 ### Validated
