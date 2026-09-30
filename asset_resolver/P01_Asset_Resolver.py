@@ -741,7 +741,8 @@ def resolve(
 def assert_no_secret_material(value: Any, path: str = "$") -> None:
     if isinstance(value, Mapping):
         for key, child in value.items():
-            if SENSITIVE_KEY_RE.search(str(key)):
+            safe_security_metadata = str(key) in {"secret_resolution", "secret_values_persisted_to_output"}
+            if SENSITIVE_KEY_RE.search(str(key)) and not safe_security_metadata:
                 raise ValueError(f"Sensitive key leaked into resolver output: {path}.{key}")
             assert_no_secret_material(child, f"{path}.{key}")
     elif isinstance(value, list):
