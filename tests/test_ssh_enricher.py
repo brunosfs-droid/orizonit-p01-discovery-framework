@@ -16,6 +16,23 @@ class CommandPolicyTests(unittest.TestCase):
         self.assertFalse(mod.command_is_read_only("rm -rf /tmp/foo"))
         self.assertFalse(mod.command_is_read_only("systemctl restart sshd"))
         self.assertTrue(mod.command_is_read_only("ip -j address"))
+        self.assertTrue(mod.command_is_read_only(mod.EXEC_PROBE_COMMAND))
+
+
+class ExecCapabilityTests(unittest.TestCase):
+    def test_probe_requires_expected_output(self):
+        self.assertTrue(mod.exec_probe_has_output({
+            "success": True,
+            "stdout": "P01_EXEC_PROBE"
+        }))
+        self.assertFalse(mod.exec_probe_has_output({
+            "success": True,
+            "stdout": ""
+        }))
+        self.assertFalse(mod.exec_probe_has_output({
+            "success": False,
+            "stdout": "P01_EXEC_PROBE"
+        }))
 
 
 class InterfaceParserTests(unittest.TestCase):
