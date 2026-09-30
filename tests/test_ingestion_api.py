@@ -157,6 +157,56 @@ class IngestionAPITests(unittest.TestCase):
                 server.server_close()
                 thread.join(timeout=3)
 
+    def test_http_missing_sha_closes_connection(self):
+        with tempfile.TemporaryDirectory() as td:
+            service = mod.IngestionService(pathlib.Path(td), process=False)
+            server = mod.P01HTTPServer(("127.0.0.1", 0), mod.P01IngestionHandler, service)
+            port = server.server_address[1]
+            thread = threading.Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+            try:
+                req = request.Request(
+                    f"http://127.0.0.1:{port}/api/v1/bundles",
+                    data=b"abc",
+                    method="POST",
+                    headers={"Content-Type": "application/octet-stream"},
+                )
+                with self.assertRaises(error.HTTPError) as ctx:
+                    request.urlopen(req, timeout=3)
+                self.assertEqual(ctx.exception.code, 400)
+                self.assertEqual(ctx.exception.headers.get("Connection"), "close")
+            finally:
+                server.shutdown()
+                server.server_close()
+                thread.join(timeout=3)
+
+    def test_http_oversized_upload_closes_connection(self):
+        with tempfile.TemporaryDirectory() as td:
+            service = mod.IngestionService(pathlib.Path(td), process=False, max_upload_bytes=4)
+            server = mod.P01HTTPServer(("127.0.0.1", 0), mod.P01IngestionHandler, service)
+            port = server.server_address[1]
+            thread = threading.Thread(target=server.serve_forever, daemon=True)
+            thread.start()
+            try:
+                data = b"12345"
+                req = request.Request(
+                    f"http://127.0.0.1:{port}/api/v1/bundles",
+                    data=data,
+                    method="POST",
+                    headers={
+                        "Content-Type": "application/octet-stream",
+                        "X-P01-Bundle-SHA256": hashlib.sha256(data).hexdigest(),
+                    },
+                )
+                with self.assertRaises(error.HTTPError) as ctx:
+                    request.urlopen(req, timeout=3)
+                self.assertEqual(ctx.exception.code, 413)
+                self.assertEqual(ctx.exception.headers.get("Connection"), "close")
+            finally:
+                server.shutdown()
+                server.server_close()
+                thread.join(timeout=3)
+
     def test_http_rejects_non_bundle_content_type(self):
         with tempfile.TemporaryDirectory() as td:
             service = mod.IngestionService(pathlib.Path(td), process=False)
