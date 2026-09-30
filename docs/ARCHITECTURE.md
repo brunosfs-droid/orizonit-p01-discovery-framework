@@ -35,6 +35,22 @@ Platform-specific read-only collectors for Windows/AD and Linux.
 ### Credentialed Enrichment
 v0.4b uses credential profiles and secret references. v0.4b.1 provides the Credential Manager foundation; v0.4b.2 adds SSH password authentication with bounded attempts, explicit TOFU/strict host-key policy and a fixed read-only command allowlist. SNMP and WinRM/WMI follow in later increments. Secrets must never be placed in source, JSON output or logs. Networks learned through authenticated interfaces/routes are emitted only as candidate evidence; recursive scanning remains disabled until the authorized Dynamic Scope Expansion stage.
 
+
+### Context-aware Credential Resolution
+Credential matching is not password propagation. A credential profile becomes eligible only after protocol/scope gates and may be further constrained by discovery context such as service, OS family, device type, vendor/hostname and authentication realm. More-specific profiles win. Shared/domain credentials require a job-level failure budget/circuit breaker to reduce lockout risk.
+
+Examples:
+- SSH + Linux fingerprint + lab subnet -> Linux SSH profile;
+- WinRM/WMI + Windows + P01LAB domain -> domain discovery profile;
+- WinRM/WMI + exact /32 + local realm -> host-specific local Windows profile;
+- SNMP + network-device fingerprint -> SNMP profile;
+- unknown device -> no credential unless an explicit profile allows unknown targets.
+
+### Discovery Nodes
+For multi-segment environments, the preferred architecture is a Discovery Node/Sensor placed where it has legitimate network reachability. The node scans its authorized reachable ranges and uses local secret providers. Results are later consolidated centrally. Devices discovered by the node are not silently converted into jump hosts/pivots.
+
+A dual-homed management server is therefore a valid LAB topology: P01-MGMT01 can act as the discovery origin for its directly reachable NAT/internal networks without exposing the personal workstation to the internal lab routing domain.
+
 ### Analyzer
 Deterministic rules consume normalized evidence and produce traceable findings. Analyzer logic stays outside collectors.
 
