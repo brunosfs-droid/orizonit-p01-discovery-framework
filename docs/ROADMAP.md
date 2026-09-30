@@ -38,10 +38,12 @@
 - combinar protocolo + scope + serviço detectado + fingerprint/device class;
 - selectors opcionais de OS family, device type, hostname/vendor e realm;
 - perfis Windows domain e Windows local separados;
-- credentials compartilhadas com circuit breaker/failure budget;
+- `failure_budget_per_job` declarado por profile para futura proteção de credenciais compartilhadas;
 - nunca tentar credencial somente porque um IP foi descoberto;
-- orquestração por ativo com stop-after-success;
+- planner seguro que consome o JSON do Network Discovery e produz um plano sem resolver secrets;
+- orquestração por ativo com stop-after-success nas próximas integrações;
 - primeira validação corporativa no Discovery Node P01-MGMT01.
+- **Status:** candidate implementado; aguardando LAB com o dataset P01LAB.
 
 ### v0.4b.4+ — próximos adapters
 - SNMPv3/SNMPv2c;
