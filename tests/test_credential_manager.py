@@ -105,7 +105,7 @@ class ContextAwareMatchTests(unittest.TestCase):
                     "protocol": "ssh",
                     "scopes": ["192.168.100.0/24"],
                     "priority": 100,
-                    "selectors": {"allow_unknown": True},
+                    "selectors": {"services": ["ssh"], "allow_unknown": True},
                     "secret_refs": {"password": "prompt://unknown"}
                 }
             ]
