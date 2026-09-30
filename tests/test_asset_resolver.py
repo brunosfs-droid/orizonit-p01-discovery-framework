@@ -264,6 +264,30 @@ class AssetResolverTests(unittest.TestCase):
             windows_asset = next(a for a in result["assets"] if "192.168.100.30" in a["addresses"])
             self.assertEqual(windows_asset["identity"]["realm_evidence_state"], "credentialed_confirmed")
 
+    def test_local_auth_realm_does_not_override_directory_realm(self):
+        with tempfile.TemporaryDirectory() as td:
+            td = pathlib.Path(td)
+            n = network_doc()
+            n["assets"] = [n["assets"][1]]
+            network = write_json(td / "network.json", n)
+            mgmt = windows_target(
+                "192.168.100.20",
+                "P01-MGMT01",
+                "P01-MGMT01.p01.lab.test",
+                3,
+                "MGMT-SERIAL",
+            )
+            mgmt["action"]["realm"] = "local"
+            evidence = write_json(td / "mgmt.json", mgmt)
+            manifest = write_json(td / "manifest.json", manifest_doc())
+            result = mod.resolve(network, [evidence], manifest)
+            asset = result["assets"][0]
+            self.assertEqual(asset["identity"]["authentication_realm"], "local")
+            self.assertEqual(asset["identity"]["realm_name"], "P01LAB")
+            self.assertEqual(asset["identity"]["realm_dns_domain"], "p01.lab.test")
+            self.assertEqual(asset["identity"]["realm_evidence_state"], "credentialed_confirmed")
+            self.assertFalse(any(x["field"] == "realm_name" for x in asset["conflicts"]))
+
     def test_realm_evidence_progression_is_not_conflict(self):
         claims = [
             mod.field_claim("realm_evidence_state", "observed", "src-a", "observed", "manifest"),
