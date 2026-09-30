@@ -43,7 +43,7 @@
 - planner seguro que consome o JSON do Network Discovery e produz um plano sem resolver secrets;
 - orquestração por ativo com stop-after-success nas próximas integrações;
 - primeira validação corporativa no Discovery Node P01-MGMT01.
-- **Status:** v0.4b.3 LAB VALIDATED para planning/matching. v0.4b.3.1 adiciona status/skip reasons explícitos. O Windows 11 validou dois estágios do gate: (1) WinRM ausente -> no protocol; (2) após preparação manual do LAB, Network Discovery detectou 5985/winrm-http. Esse segundo gate também foi validado: WinRM detectado + nenhum profile elegível permaneceu `not_planned` com `no_eligible_profile_for_detected_protocols`. Próximo teste: profile workstation/domain específico deve gerar `adapter_candidate` sem resolver secret. Circuit breaker permanece pendente do executor multi-target.
+- **Status:** v0.4b.3.1 LAB VALIDATED. O Windows 11 validou três gates: (1) sem WinRM -> `not_planned`; (2) WinRM disponível + sem profile -> `not_planned`; (3) WinRM + profile workstation/domain compatível -> `adapter_candidate`, ainda sem resolver secret. Circuit breaker permanece pendente do executor multi-target.
 
 ### v0.4b.4 — WinRM Credentialed Enrichment
 - WinRM HTTP/HTTPS;
@@ -68,13 +68,24 @@
 - separar falha de transporte de credencial inválida;
 - não consumir failure budget de credencial em ConnectTimeout/ConnectionError;
 - preparar o executor multi-target e circuit breaker.
-- **Status:** candidate; derivado de evidência real em que AUTH-only teve ConnectTimeout e a execução full subsequente autenticou com o mesmo profile.
+- **Status:** runtime validated. O comportamento foi exercitado em Domain Controller e workstation de domínio; falhas de transporte não são interpretadas como credencial inválida.
 
-### v0.4b.5+ — próximos adapters/executor
+### v0.4b.5 — Multi-target Credentialed Executor
+- consumir somente targets/protocolos marcados `adapter_candidate`;
+- revalidar profile/context antes de resolver secret;
+- dispatch controlado para SSH e WinRM;
+- concorrência conservadora e determinística;
+- shared-credential circuit breaker por job;
+- apenas `failure_category=authentication` consome failure budget;
+- `transport` não penaliza credential health;
+- evidência agregada por job + referências por target;
+- dry-run obrigatório no primeiro LAB.
+- **Status:** próxima implementação.
+
+### v0.4b.6+ — próximos adapters
 - SNMPv3/SNMPv2c;
 - Kerberos/HTTPS/certificate para WinRM;
 - WMI/DCOM fallback quando necessário;
-- executor multi-target + shared-credential circuit breaker;
 - auditoria de autenticação multi-protocolo.
 
 ## v0.4c — Asset Resolver
