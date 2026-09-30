@@ -43,6 +43,8 @@ SAFE_SECRET_METADATA_KEYS = {
     "secret_resolution",
     "secret_values_persisted_to_output",
     "secret_ref_names",
+    "contains_secret_values",
+    "contains_secret_provider_references",
 }
 SENSITIVE_KEY_RE = re.compile(
     r"(^|_)(password|passwd|pwd|secret|token|community|passphrase|private_key)(_|$)",
