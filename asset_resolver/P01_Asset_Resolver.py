@@ -457,6 +457,15 @@ def identity_match_score(obs: Mapping[str, Any], cluster: Mapping[str, Any]) -> 
     return score, reasons
 
 
+def corroborated_match(reasons: Sequence[str]) -> bool:
+    reason_set = set(reasons)
+    if "strong_identifier" in reason_set:
+        return True
+    namespace = bool(reason_set.intersection({"fqdn", "hostname"}))
+    network = bool(reason_set.intersection({"mac", "ip"}))
+    return namespace and network
+
+
 def seed_anchor(obs: Mapping[str, Any]) -> str:
     if obs.get("fqdn"):
         return "fqdn:" + str(obs["fqdn"]).lower()
@@ -633,7 +642,7 @@ def resolve(
         candidates: List[Tuple[int, str, List[str], Dict[str, Any]]] = []
         for cluster in clusters:
             score, reasons = identity_match_score(obs, cluster)
-            if score >= 55:
+            if corroborated_match(reasons):
                 candidates.append((score, cluster["asset_id"], reasons, cluster))
         candidates.sort(key=lambda x: (-x[0], x[1]))
 
