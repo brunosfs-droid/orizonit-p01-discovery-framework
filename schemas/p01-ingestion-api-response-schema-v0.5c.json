@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://orizonit.example/schemas/p01-ingestion-api-response-v0.5c.json",
+  "title": "Orizon IT P01 Ingestion API response v0.5c",
+  "type": "object",
+  "required": [
+    "api_version",
+    "status",
+    "bundle_id",
+    "assessment_id"
+  ],
+  "properties": {
+    "api_version": {
+      "const": "v1"
+    },
+    "status": {
+      "enum": [
+        "imported",
+        "already_imported"
+      ]
+    },
+    "bundle_id": {
+      "type": "string",
+      "pattern": "^bnd-[0-9a-f]{20}$"
+    },
+    "assessment_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "semantic_match": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "artifact_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "credentialed_evidence_count": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "verified_inventory_entries": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "outer_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "processing_requested": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": true
+}

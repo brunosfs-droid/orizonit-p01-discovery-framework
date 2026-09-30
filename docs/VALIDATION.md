@@ -241,3 +241,22 @@ Candidate acceptance:
 - bundle ID is stable for the same assessment/run/node/evidence inventory;
 - validation performs no network access, authentication or secret resolution;
 - real P01LAB gate should package 8 artifacts: 1 network + 5 credentialed + 1 manifest + 1 Asset Resolver.
+
+
+## Central Ingestion API v0.5c.0
+
+Candidate acceptance:
+
+- default bind is loopback-only;
+- non-loopback bind is rejected;
+- POST accepts raw `.p01bundle` only;
+- Content-Length is mandatory and bounded;
+- X-P01-Bundle-SHA256 is mandatory and verified before import;
+- caller-provided filesystem paths are not used;
+- optional Idempotency-Key must equal validated bundle_id;
+- the same v0.5b `import_bundle()` function performs ingestion;
+- first P01LAB API upload returns `imported` and semantic_match=true;
+- second identical upload returns `already_imported`;
+- GET bundle status reports semantic equivalence without exposing raw evidence;
+- no customer-network access, authentication, secret resolution or arbitrary payload execution;
+- malformed/tampered/oversized uploads are rejected.
