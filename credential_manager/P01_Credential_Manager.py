@@ -687,6 +687,9 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
     p_match.add_argument("--hostname")
     p_match.add_argument("--vendor")
     p_match.add_argument("--realm")
+    p_match.add_argument("--realm-kind")
+    p_match.add_argument("--realm-evidence-state")
+    p_match.add_argument("--target-class", action="append", default=[])
     p_match.add_argument("--confidence")
 
     p_check = sub.add_parser("check", help="Check referenced secret availability without printing secret values")
@@ -718,6 +721,9 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
             args.hostname,
             args.vendor,
             args.realm,
+            args.realm_kind,
+            args.realm_evidence_state,
+            args.target_class,
             args.confidence,
         ]):
             context = {
@@ -727,6 +733,9 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
                 "hostname": args.hostname,
                 "vendor": args.vendor,
                 "realm": args.realm,
+                "realm_kind": args.realm_kind,
+                "realm_evidence_state": args.realm_evidence_state,
+                "target_classes": args.target_class,
                 "confidence": args.confidence,
             }
         matches = match_profiles(doc, args.target, args.protocol, args.max_candidates, context=context)
