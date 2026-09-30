@@ -34,7 +34,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
 ENRICHER_NAME = "P01-SSH-Credentialed-Enrichment"
-ENRICHER_VERSION = "0.4b.2"
+ENRICHER_VERSION = "0.4b.2.1"
 SCHEMA_VERSION = "0.4b"
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -59,6 +59,8 @@ except ImportError:  # pragma: no cover - exercised by CLI preflight
 
 
 MAX_OUTPUT_CHARS = 65536
+EXEC_PROBE_COMMAND = "printf P01_EXEC_PROBE"
+EXEC_PROBE_TOKEN = "P01_EXEC_PROBE"
 
 SAFE_COMMAND_FAMILIES: Dict[str, List[str]] = {
     "hostname": [
@@ -92,7 +94,9 @@ SAFE_COMMAND_FAMILIES: Dict[str, List[str]] = {
 }
 
 def _normalized_allowed_commands() -> set[str]:
-    return {" ".join(command.split()) for commands in SAFE_COMMAND_FAMILIES.values() for command in commands}
+    commands = {" ".join(command.split()) for commands in SAFE_COMMAND_FAMILIES.values() for command in commands}
+    commands.add(" ".join(EXEC_PROBE_COMMAND.split()))
+    return commands
 
 
 
@@ -180,6 +184,23 @@ def _run_command(client: Any, command: str, timeout: float) -> Dict[str, Any]:
 
     result["duration_ms"] = int((time.monotonic() - started) * 1000)
     return result
+
+
+def exec_probe_has_output(result: Mapping[str, Any]) -> bool:
+    """Return True only when the SSH exec channel returns the expected probe data."""
+    return bool(
+        result.get("success")
+        and str(result.get("stdout") or "").strip() == EXEC_PROBE_TOKEN
+    )
+
+
+def probe_exec_capability(client: Any, timeout: float) -> Dict[str, Any]:
+    result = _run_command(client, EXEC_PROBE_COMMAND, timeout)
+    return {
+        "exec_request_succeeded": bool(result.get("success")),
+        "exec_output_available": exec_probe_has_output(result),
+        "probe": result,
+    }
 
 
 def run_first_success(client: Any, family: str, timeout: float) -> Dict[str, Any]:
@@ -691,17 +712,44 @@ def connect_with_profile(
             },
         })
 
-        enrichment = collect_read_only(client, command_timeout) if collect_commands else {
-            "identity": {},
-            "network": {
-                "interfaces": [],
-                "routes": [],
-                "ipv4_forwarding": None,
-                "candidate_networks": [],
-                "candidate_network_count": 0,
-            },
-            "command_evidence": [],
-        }
+        if collect_commands:
+            capability = probe_exec_capability(client, command_timeout)
+            if capability.get("exec_output_available"):
+                enrichment = collect_read_only(client, command_timeout)
+                enrichment["collection_status"] = "collected"
+                enrichment["ssh_capabilities"] = capability
+            else:
+                enrichment = {
+                    "collection_status": "authenticated_no_exec_output",
+                    "ssh_capabilities": capability,
+                    "identity": {},
+                    "network": {
+                        "interfaces": [],
+                        "routes": [],
+                        "ipv4_forwarding": None,
+                        "candidate_networks": [],
+                        "candidate_network_count": 0,
+                    },
+                    "command_evidence": [],
+                }
+        else:
+            enrichment = {
+                "collection_status": "auth_only",
+                "ssh_capabilities": {
+                    "exec_request_succeeded": None,
+                    "exec_output_available": None,
+                    "probe": None,
+                },
+                "identity": {},
+                "network": {
+                    "interfaces": [],
+                    "routes": [],
+                    "ipv4_forwarding": None,
+                    "candidate_networks": [],
+                    "candidate_network_count": 0,
+                },
+                "command_evidence": [],
+            }
         return attempt, enrichment
     except Exception as exc:
         attempt.update({
@@ -740,7 +788,7 @@ def write_output(output_dir: Path, run_label: str, payload: Dict[str, Any]) -> T
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
-    parser = argparse.ArgumentParser(description="Orizon IT P01 SSH Credentialed Enrichment v0.4b.2")
+    parser = argparse.ArgumentParser(description="Orizon IT P01 SSH Credentialed Enrichment v0.4b.2.1")
     parser.add_argument("--profiles", required=True, help="Credential profile JSON.")
     parser.add_argument("--target", required=True, help="Authorized IPv4 target.")
     parser.add_argument("--port", type=int, default=22)
@@ -832,8 +880,15 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         })
 
     candidate_network_count = 0
+    collection_status = None
     if enrichment:
         candidate_network_count = int(enrichment.get("network", {}).get("candidate_network_count", 0))
+        collection_status = enrichment.get("collection_status")
+        if auth_success and collection_status == "authenticated_no_exec_output":
+            warnings.append({
+                "section": "ssh_capability",
+                "message": "SSH authentication succeeded, but the target did not return output for a harmless exec-channel probe. Read-only enrichment was skipped; the device may expose a restricted or non-standard SSH shell."
+            })
 
     payload: Dict[str, Any] = {
         "metadata": {
@@ -872,6 +927,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         "enrichment": enrichment,
         "summary": {
             "authentication_success": auth_success,
+            "collection_status": collection_status,
             "candidate_networks_discovered": candidate_network_count,
         },
         "errors": errors,
