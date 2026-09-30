@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-'''Orizon IT P01 WinRM Credentialed Enrichment v0.4b.4.2.
+'''Orizon IT P01 WinRM Credentialed Enrichment v0.4b.4.3.
 
 Read-only Windows enrichment over WinRM with modular PowerShell collection.
 '''
@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
 
 ADAPTER_NAME="P01-WinRM-Credentialed-Enrichment"
-ADAPTER_VERSION="0.4b.4.2"
+ADAPTER_VERSION="0.4b.4.3"
 SCHEMA_VERSION="0.4b"
 ROOT=Path(__file__).resolve().parents[1]
 CRED_DIR=ROOT/"credential_manager"
@@ -104,6 +104,19 @@ def safe_error(exc):
     text=re.sub(r"(?i)://[^/@:\s]+:[^/@\s]+@","://<redacted>@",text)
     return text[:500] or type(exc).__name__
 def powershell_is_read_only(script): return MUTATING_POWERSHELL_RE.search(script) is None
+def classify_attempt_failure(error_type, error_message, status_code=None):
+    """Classify a failed WinRM attempt for safe credential-budget handling."""
+    et=(error_type or "").lower()
+    msg=(error_message or "").lower()
+    transport_tokens=("timeout","connecttimeout","readtimeout","connectionerror","newconnectionerror","maxretryerror")
+    transport_msg=("timed out","connection refused","max retries exceeded","no route to host","name or service not known","temporary failure in name resolution")
+    auth_msg=("unauthorized","invalid credential","invalidcredentials","access is denied","401","0x8009030c","logon failure")
+    if any(t in et for t in transport_tokens) or any(t in msg for t in transport_msg):
+        return {"failure_category":"transport","counts_against_credential_budget":False}
+    if status_code==401 or any(t in msg for t in auth_msg):
+        return {"failure_category":"authentication","counts_against_credential_budget":True}
+    return {"failure_category":"remote_execution_or_unknown","counts_against_credential_budget":False}
+
 def validate_scripts():
     for name,script in {"auth_probe":POWERSHELL_AUTH_PROBE,**POWERSHELL_SECTIONS}.items():
         if not powershell_is_read_only(script): raise RuntimeError(f"Mutating PowerShell verb detected in {name}")
@@ -177,7 +190,7 @@ def create_session(target,port,scheme,username,password,transport,server_cert_va
     return winrm.Session(f"{scheme}://{target}:{port}/wsman",**kwargs)
 def attempt_profile(profile_match,target,port,scheme,transport,server_cert_validation,auth_only):
     profile=profile_match.profile;profile_id=str(profile.get("id") or "");username=str(profile.get("username") or "").strip();password_ref=(profile.get("secret_refs") or {}).get("password")
-    attempt={"profile_id":profile_id,"protocol":"winrm","username":username or None,"matched_scope":profile_match.matched_scope,"scope_prefix_length":profile_match.prefix_length,"selector_score":profile_match.selector_score,"matched_selectors":list(profile_match.matched_selectors),"transport":transport,"scheme":scheme,"success":False}
+    attempt={"profile_id":profile_id,"protocol":"winrm","username":username or None,"matched_scope":profile_match.matched_scope,"scope_prefix_length":profile_match.prefix_length,"selector_score":profile_match.selector_score,"matched_selectors":list(profile_match.matched_selectors),"transport":transport,"scheme":scheme,"success":False,"failure_category":None,"counts_against_credential_budget":False}
     if str(profile.get("auth_type") or "").lower()!="password":attempt["result"]="unsupported_auth_type";return attempt,None
     if not username or not password_ref:attempt["result"]="profile_incomplete";return attempt,None
     try:password=resolve_secret(str(password_ref),prompt_label=f"WinRM secret for {profile_id}: ")
@@ -186,11 +199,15 @@ def attempt_profile(profile_match,target,port,scheme,transport,server_cert_valid
         session=create_session(target,port,scheme,username,password,transport,server_cert_validation)
         probe=run_ps(session,POWERSHELL_AUTH_PROBE)
         if not probe.get("success") or probe.get("stdout")!="P01_WINRM_AUTH_PROBE":
-            attempt.update({"result":"authentication_or_remote_execution_failed","probe_status_code":probe.get("status_code"),"error":probe.get("error") or probe.get("stderr") or "WinRM auth probe failed","error_type":probe.get("error_type")});return attempt,None
-        attempt.update({"success":True,"result":"authenticated","probe_status_code":probe.get("status_code")})
+            failure_error=probe.get("error") or probe.get("stderr") or "WinRM auth probe failed"
+            failure=classify_attempt_failure(probe.get("error_type"),failure_error,probe.get("status_code"))
+            attempt.update({"result":"authentication_or_remote_execution_failed","probe_status_code":probe.get("status_code"),"error":failure_error,"error_type":probe.get("error_type"),**failure});return attempt,None
+        attempt.update({"success":True,"result":"authenticated","probe_status_code":probe.get("status_code"),"failure_category":None,"counts_against_credential_budget":False})
         if auth_only:return attempt,{"collection_status":"auth_only","identity":{},"network":{"interfaces":[],"routes":[],"dns":[],"candidate_networks":[],"candidate_network_count":0}}
         values,evidence=collect_sections(session);payload=assemble_collection(values,evidence);candidates=build_candidate_networks(payload);payload["network"]["candidate_networks"]=candidates;payload["network"]["candidate_network_count"]=len(candidates);return attempt,payload
-    except Exception as exc:attempt.update({"result":"authentication_or_connection_failed","error_type":type(exc).__name__,"error":safe_error(exc)});return attempt,None
+    except Exception as exc:
+        err=safe_error(exc);failure=classify_attempt_failure(type(exc).__name__,err,None)
+        attempt.update({"result":"authentication_or_connection_failed","error_type":type(exc).__name__,"error":err,**failure});return attempt,None
     finally:password=None
 def write_output(output_dir,run_label,payload):
     output_dir.mkdir(parents=True,exist_ok=True);ts=dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ");out=output_dir/f"P01-WinRM-Enrichment_{ts}_{safe_label(run_label)}.json";out.write_text(json.dumps(payload,indent=2,ensure_ascii=False)+"\n",encoding="utf-8");digest=hashlib.sha256(out.read_bytes()).hexdigest();sha=out.with_suffix(out.suffix+".sha256");sha.write_text(f"{digest}  {out.name}\n",encoding="utf-8");return out,sha

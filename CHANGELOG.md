@@ -27,6 +27,21 @@ All notable changes to the P01 Discovery Framework are documented here.
 - WinRM/NTLM authentication succeeded against P01-MGMT01 with one bounded /32 profile attempt and zero retries
 - v0.4b.4 full collection failure reproduced and isolated to payload size, not credentials or WinRM connectivity
 
+## [0.4b.4.3-candidate] - 2026-09-30
+
+### Fixed
+- classify WinRM failures as transport, authentication, or remote-execution/unknown
+- transport timeouts no longer count against a credential failure budget
+- successful authentication explicitly clears failure classification
+
+### Validated from DC01 R1 evidence
+- an AUTH-only run hit a transient ConnectTimeout
+- a later full run with the same profile authenticated successfully and collected all sections
+- therefore the timeout is transport evidence, not proof of invalid credentials
+
+### Security
+- this classification is required before the future multi-target circuit breaker so connectivity faults do not poison shared credential health
+
 ## [0.4b.4.2-lab-validated] - 2026-09-30
 
 ### Validated
