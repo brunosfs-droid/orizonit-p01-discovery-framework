@@ -10,6 +10,51 @@ All notable changes to the P01 Discovery Framework are documented here.
 - Asset Resolver / deduplication (v0.4c)
 - Reporting Engine v0.1
 
+## [0.4c.0-candidate] - 2026-09-30
+
+### Added
+- offline Asset Resolver foundation
+- Network Discovery + WinRM/SSH credentialed evidence correlation
+- optional Assessment Manifest realm provenance
+- field-level provenance and evidence strength
+- explicit conflict records
+- deterministic asset IDs from seed identity anchors
+- JSON + SHA256 output
+- evidence-directory/run-label selection for executor target bundles
+
+### Safety
+- IP alone never auto-merges assets
+- MAC alone never auto-merges Network Discovery observations
+- medium identity requires namespace + network corroboration
+- exact strong identifiers may auto-correlate
+- no network access, secret resolution, authentication, pivoting or scope expansion
+- secret-provider references are rejected from resolver output
+
+### Tests
+- five-asset P01LAB synthetic correlation
+- IP-only negative merge
+- FQDN-only negative merge
+- hostname+IP positive merge
+- same-MAC Network Discovery preservation
+- realm provenance semantics
+- conflict preservation
+- deterministic asset IDs
+- secret-material guard
+- SHA256 sidecar requirement
+
+### Next
+- run v0.4c.0 against the real P01LAB Network Discovery R2 + Multi-target FULL R1 evidence
+
+## [0.4b.6-lab-validated] - 2026-09-30
+
+### Validated
+- interactive Assessment Manifest creation and validation
+- structured rich credential profile intake without secret values
+- compatible declared + observed namespace evidence produced one workstation adapter candidate
+- declared-only realm with incompatible observed FQDN produced zero adapter candidates
+- both planner gates retained secret_resolution=false and authentication_attempts=false
+- manifest/profile/plan integrity evidence archived
+
 ## [0.4b.6-candidate] - 2026-09-30
 
 ### Added
