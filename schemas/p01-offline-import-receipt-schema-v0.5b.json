@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://orizonit.example/schemas/p01-offline-import-receipt-v0.5b.json",
+  "title": "Orizon IT P01 Offline Import Receipt v0.5b",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "importer_name",
+    "importer_version",
+    "status",
+    "bundle_id",
+    "bundle_sha256",
+    "assessment_id",
+    "format_version",
+    "artifact_count",
+    "verified_inventory_entries",
+    "credentialed_evidence_count",
+    "processing",
+    "security"
+  ],
+  "properties": {
+    "schema_version": {"const": "0.5b"},
+    "importer_name": {"const": "P01-Offline-Import"},
+    "importer_version": {"type": "string"},
+    "status": {"enum": ["imported"]},
+    "imported_at_utc": {"type": "string"},
+    "import_host": {"type": "string"},
+    "bundle_id": {"type": "string", "pattern": "^bnd-[0-9a-f]{20}$"},
+    "bundle_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "outer_sha256_verified": {"type": ["boolean", "null"]},
+    "assessment_id": {"type": "string"},
+    "run_id": {"type": ["string", "null"]},
+    "node_id": {"type": ["string", "null"]},
+    "format_version": {"type": "string"},
+    "artifact_count": {"type": "integer", "minimum": 1},
+    "verified_inventory_entries": {"type": "integer", "minimum": 1},
+    "credentialed_evidence_count": {"type": "integer", "minimum": 1},
+    "raw_bundle": {"type": "string"},
+    "raw_bundle_sidecar": {"type": ["string", "null"]},
+    "payload_root": {"type": "string"},
+    "processing": {
+      "type": "object",
+      "required": [
+        "requested",
+        "asset_resolver_executed",
+        "semantic_match",
+        "edge_semantic_sha256",
+        "server_semantic_sha256"
+      ],
+      "properties": {
+        "requested": {"type": "boolean"},
+        "asset_resolver_executed": {"type": "boolean"},
+        "semantic_match": {"type": ["boolean", "null"]},
+        "edge_semantic_sha256": {"type": ["string", "null"]},
+        "server_semantic_sha256": {"type": ["string", "null"]},
+        "server_asset_resolver_json": {"type": ["string", "null"]},
+        "server_asset_resolver_sha256": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "security": {
+      "type": "object",
+      "required": [
+        "offline_only",
+        "read_only_input",
+        "secret_resolution",
+        "authentication_attempts",
+        "network_access_performed",
+        "arbitrary_payload_execution"
+      ],
+      "properties": {
+        "offline_only": {"const": true},
+        "read_only_input": {"const": true},
+        "secret_resolution": {"const": false},
+        "authentication_attempts": {"const": false},
+        "network_access_performed": {"const": false},
+        "arbitrary_payload_execution": {"const": false}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

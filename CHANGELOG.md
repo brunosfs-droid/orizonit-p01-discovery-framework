@@ -10,6 +10,45 @@ All notable changes to the P01 Discovery Framework are documented here.
 - Asset Resolver / deduplication (v0.4c)
 - Reporting Engine v0.1
 
+## [0.5b.0-candidate] - 2026-09-30
+
+### Added
+- offline `.p01bundle` import into a server/local evidence store
+- validate-before-materialize flow
+- safe manual archive materialization without `extractall`
+- immutable raw bundle preservation
+- deterministic import location by assessment + bundle ID
+- import receipt JSON + SHA256
+- idempotent repeated import handling
+- optional server-side Asset Resolver replay using only imported evidence
+- semantic edge/server Asset Resolver comparison
+
+### Security
+- payload files are never executed
+- no network access, authentication or secret resolution during import/reprocessing
+- outer bundle SHA256 can be mandatory for offline transfer
+- bundle ID collision with different bytes is rejected
+
+### Tests
+- server-side semantic replay match
+- idempotent second import
+- required outer sidecar
+- raw bundle preservation
+
+### Next
+- validate P01LAB-BUNDLE-R1 as the first real offline import
+
+## [0.5a.0-lab-validated] - 2026-09-30
+
+### Validated
+- P01LAB-BUNDLE-R1 created and validated successfully
+- bundle ID bnd-de6f9f2af21fc179ae1f
+- 8 artifacts and 5 credentialed evidence files
+- 9 SHA256 inventory entries verified
+- outer bundle SHA256 verified
+- no Secret Provider references or secret-like payload fields
+- transport remains agnostic between offline/manual and future connected upload
+
 ## [0.5a.0-candidate] - 2026-09-30
 
 ### Added
