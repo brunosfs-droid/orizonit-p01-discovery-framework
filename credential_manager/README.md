@@ -1,6 +1,6 @@
-# Credential Manager — v0.4b.3
+# Credential Manager — v0.4b.6
 
-The Credential Manager is the secure profile/secret-resolution foundation for credentialed discovery.
+The Credential Manager is the secure profile/secret-resolution foundation for credentialed discovery. v0.4b.6 adds structured credential taxonomy while keeping the profile schema backward compatible with existing v0.4b files.
 
 ## What is stored where?
 
@@ -135,3 +135,23 @@ Optional contextual gates:
 - minimum discovery confidence.
 
 The future orchestrator will combine these decisions with a per-job failure budget/circuit breaker before invoking protocol adapters.
+
+
+## v0.4b.6 credential taxonomy
+
+Rich profiles may declare:
+
+- `realm_kind` and `realm_name`;
+- `target_classes`;
+- `privilege_class`;
+- `purposes`;
+- `realm_evidence_min`;
+- `high_privilege_acknowledged`.
+
+Wizard-created AD profiles default to `realm_evidence_min=observed`. A declared domain alone is therefore insufficient.
+
+High-privilege classes (`domain_admin`, `platform_admin`, `network_admin`) require explicit acknowledgement and are limited to one attempt with failure budget 1.
+
+A rich v0.4b.6 profile is intentionally **not eligible when runtime context is absent**. Use the Context-aware Planner + Executor for these profiles.
+
+The `validate` command also warns about suspicious placeholder usernames such as `SEU_USUARIO`, `CHANGEME` or `REPLACE_ME`.
