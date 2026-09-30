@@ -24,6 +24,7 @@ jobs:
           python -m py_compile network_discovery/P01_Network_Discovery_Scanner.py
           python -m py_compile credential_manager/P01_Credential_Manager.py
           python -m py_compile credentialed_enrichment/P01_SSH_Enricher.py
+          python -m py_compile orchestrator/P01_Credentialed_Discovery_Planner.py
 
       - name: Validate JSON artifacts
         run: |
