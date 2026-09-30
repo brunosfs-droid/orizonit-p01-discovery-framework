@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Orizon IT P01 Central Ingestion API v0.5c.0.
+"""Orizon IT P01 Central Ingestion API v0.5c.1.
 
 Localhost-only HTTP ingestion foundation for .p01bundle.
 
@@ -40,7 +40,7 @@ from typing import Any, Dict, Mapping, Optional, Sequence
 from urllib.parse import unquote, urlparse
 
 NAME = "P01-Central-Ingestion-API"
-VERSION = "0.5c.0"
+VERSION = "0.5c.1"
 API_VERSION = "v1"
 
 DEFAULT_BIND = "127.0.0.1"
@@ -304,24 +304,43 @@ class P01IngestionHandler(http.server.BaseHTTPRequestHandler):
     def service(self) -> IngestionService:
         return self.server.service  # type: ignore[attr-defined]
 
-    def _send_json(self, status: int, payload: Mapping[str, Any]) -> None:
+    def _send_json(
+        self,
+        status: int,
+        payload: Mapping[str, Any],
+        *,
+        close_connection: bool = False,
+    ) -> None:
         raw = json_bytes(payload)
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(raw)))
         self.send_header("Cache-Control", "no-store")
         self.send_header("X-Content-Type-Options", "nosniff")
+        if close_connection:
+            self.send_header("Connection", "close")
+            self.close_connection = True
         self.end_headers()
         self.wfile.write(raw)
 
-    def _send_error_json(self, status: int, message: str) -> None:
-        self._send_json(status, {
-            "api_version": API_VERSION,
-            "error": {
-                "status": status,
-                "message": message,
+    def _send_error_json(
+        self,
+        status: int,
+        message: str,
+        *,
+        close_connection: bool = False,
+    ) -> None:
+        self._send_json(
+            status,
+            {
+                "api_version": API_VERSION,
+                "error": {
+                    "status": status,
+                    "message": message,
+                },
             },
-        })
+            close_connection=close_connection,
+        )
 
     def do_GET(self) -> None:
         parsed = urlparse(self.path)
@@ -357,21 +376,50 @@ class P01IngestionHandler(http.server.BaseHTTPRequestHandler):
 
         content_type = (self.headers.get("Content-Type") or "").split(";", 1)[0].strip().lower()
         if content_type not in {"application/octet-stream", "application/vnd.orizon.p01bundle"}:
-            self._send_error_json(415, "Content-Type must be application/octet-stream")
+            self._send_error_json(
+                415,
+                "Content-Type must be application/octet-stream",
+                close_connection=True,
+            )
             return
 
         raw_length = self.headers.get("Content-Length")
         if not raw_length:
-            self._send_error_json(411, "Content-Length is required")
+            self._send_error_json(411, "Content-Length is required", close_connection=True)
             return
         try:
             content_length = int(raw_length)
         except ValueError:
-            self._send_error_json(400, "invalid Content-Length")
+            self._send_error_json(400, "invalid Content-Length", close_connection=True)
             return
 
         supplied_sha = (self.headers.get("X-P01-Bundle-SHA256") or "").strip()
         idem = self.headers.get("Idempotency-Key")
+
+        # Reject conditions detected before request-body consumption with an
+        # explicit connection close. Otherwise unread body bytes on a
+        # persistent HTTP/1.1 connection can be parsed as a second request.
+        if content_length < 1:
+            self._send_error_json(
+                411,
+                "Content-Length must be positive",
+                close_connection=True,
+            )
+            return
+        if content_length > self.service.max_upload_bytes:
+            self._send_error_json(
+                413,
+                f"upload exceeds maximum allowed size: {content_length} > {self.service.max_upload_bytes}",
+                close_connection=True,
+            )
+            return
+        if not SHA256_RE.fullmatch(supplied_sha):
+            self._send_error_json(
+                400,
+                "X-P01-Bundle-SHA256 must be a 64-character hex SHA256",
+                close_connection=True,
+            )
+            return
 
         try:
             result = self.service.ingest_stream(
