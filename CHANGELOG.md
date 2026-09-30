@@ -48,6 +48,16 @@ A domain-joined Windows 11 host with WinRM stopped demonstrated that empty proto
 - reinforces the rule that asset discovery does not imply credential attempts
 - protocol availability remains a mandatory gate before credential profile selection
 
+## [0.4b.3.1-lab-validated] - 2026-09-30
+
+### Validated
+- Windows 11 negative WinRM credential gate using real Network Discovery evidence
+- Windows workstation was classified with High confidence while WinRM was unavailable
+- Planner emitted `credentialed_action_status=not_planned`
+- Planner emitted `skip_reasons=["no_supported_management_protocol_detected"]`
+- no secret was resolved and no authentication was attempted
+- domain, local-Windows and Linux profiles remained isolated by protocol/context
+
 ## [0.4b.4.3-candidate] - 2026-09-30
 
 ### Fixed
