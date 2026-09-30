@@ -10,6 +10,26 @@ All notable changes to the P01 Discovery Framework are documented here.
 - Asset Resolver / deduplication (v0.4c)
 - Reporting Engine v0.1
 
+## [0.4b.2-candidate] - 2026-09-30
+
+### Added
+- SSH credentialed enrichment adapter
+- Credential Manager profile integration
+- password authentication with bounded profile attempts
+- TOFU and strict SSH host-key policies
+- SHA256 host-key fingerprint evidence
+- fixed read-only remote-command allowlist
+- interface, route and IPv4-forwarding enrichment
+- candidate-network generation with auto-scan disabled
+- SSH enrichment JSON Schema and unit tests
+
+### Security
+- no secret value persisted to output
+- no SSH agent or implicit local key use for password profiles
+- no sudo/configuration commands
+- no recursive scanning or pivoting
+- one authentication attempt per matched profile
+
 ## [0.4.1-candidate] - 2026-09-29
 
 ### Fixed

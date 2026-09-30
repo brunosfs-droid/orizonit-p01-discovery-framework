@@ -42,3 +42,15 @@ Use SHA-256 for collected artifacts. Hashes detect accidental or post-collection
 ## Vulnerability reporting
 
 Do not disclose repository or customer vulnerabilities in public issues. Use private communication approved by Orizon IT.
+
+
+## SSH credentialed enrichment
+
+- use only credential profiles matched to the target/protocol scope;
+- use at most bounded profile candidates and never repeat the same password automatically;
+- disable implicit SSH agent/local-key fallback for password profiles;
+- execute only the hard-coded read-only command allowlist;
+- do not use sudo or configuration commands;
+- default lab policy may use TOFU; strict host-key validation is preferred when trusted host keys are available;
+- host-key changes after TOFU enrollment must be treated as a security failure;
+- networks learned from remote interfaces/routes are evidence only and must not trigger recursive scanning automatically.

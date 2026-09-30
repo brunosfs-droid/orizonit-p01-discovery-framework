@@ -33,7 +33,7 @@ Future v0.4c component that correlates IP, MAC, hostname, AD object, collector i
 Platform-specific read-only collectors for Windows/AD and Linux.
 
 ### Credentialed Enrichment
-Future v0.4b layer for SNMP, SSH and WinRM/WMI using credential profiles and secret references. Secrets must never be placed in source, JSON output or logs.
+v0.4b uses credential profiles and secret references. v0.4b.1 provides the Credential Manager foundation; v0.4b.2 adds SSH password authentication with bounded attempts, explicit TOFU/strict host-key policy and a fixed read-only command allowlist. SNMP and WinRM/WMI follow in later increments. Secrets must never be placed in source, JSON output or logs. Networks learned through authenticated interfaces/routes are emitted only as candidate evidence; recursive scanning remains disabled until the authorized Dynamic Scope Expansion stage.
 
 ### Analyzer
 Deterministic rules consume normalized evidence and produce traceable findings. Analyzer logic stays outside collectors.

@@ -23,6 +23,7 @@ jobs:
           python -m py_compile analyzer/P01_Discovery_Analyzer.py
           python -m py_compile network_discovery/P01_Network_Discovery_Scanner.py
           python -m py_compile credential_manager/P01_Credential_Manager.py
+          python -m py_compile credentialed_enrichment/P01_SSH_Enricher.py
 
       - name: Validate JSON artifacts
         run: |
@@ -31,6 +32,7 @@ jobs:
           python -m json.tool schemas/p01-discovery-schema-v0.3.json > /dev/null
           python -m json.tool credential_manager/credentials.example.json > /dev/null
           python -m json.tool schemas/p01-credential-profiles-schema-v0.4b.json > /dev/null
+          python -m json.tool schemas/p01-ssh-enrichment-schema-v0.4b.json > /dev/null
 
       - name: Unit tests
         run: python -m unittest discover -s tests -p "test_*.py" -v
