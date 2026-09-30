@@ -369,7 +369,13 @@ def build_credential_profile(
     realm_evidence_min: str,
     high_privilege_acknowledged: bool,
 ) -> Dict[str, Any]:
-    defaults = _target_class_defaults(target_classes)
+    normalized_target_classes = list(dict.fromkeys(str(x).strip().lower() for x in target_classes if str(x).strip()))
+    if set(normalized_target_classes).intersection({"windows_server", "windows_workstation", "domain_controller"}) and "windows" not in normalized_target_classes:
+        normalized_target_classes.insert(0, "windows")
+    if set(normalized_target_classes).intersection({"switch", "router", "firewall"}) and "network_device" not in normalized_target_classes:
+        normalized_target_classes.insert(0, "network_device")
+
+    defaults = _target_class_defaults(normalized_target_classes)
     selectors: Dict[str, Any] = {
         "services": [service],
         "min_confidence": "High" if protocol == "winrm" else "Medium",
@@ -395,12 +401,12 @@ def build_credential_profile(
         "username": username or None,
         "secret_refs": {"password": secret_ref},
         "max_attempts_per_target": 1,
-        "tags": ["assessment-intake"] + list(target_classes),
+        "tags": ["assessment-intake"] + normalized_target_classes,
         "selectors": selectors,
         "failure_budget_per_job": 1 if high else 2,
         "realm_kind": realm_kind,
         "realm_name": realm_name,
-        "target_classes": list(target_classes),
+        "target_classes": normalized_target_classes,
         "privilege_class": privilege_class,
         "purposes": list(purposes),
         "realm_evidence_min": realm_evidence_min,
