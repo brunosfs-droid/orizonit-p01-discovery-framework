@@ -188,12 +188,20 @@ This closes the current v0.4b SSH/WinRM orchestration baseline.
 
 ## Assessment Context & Credential Intake v0.4b.6
 
-Planned validation must prove:
+Candidate acceptance:
 
 - operator-declared domains/realms are stored as non-secret context;
-- declared context never creates a credential attempt by itself;
-- target class, protocol, realm kind, privilege class and scope remain independent policy dimensions;
-- high-privilege identities require explicit acknowledgement and conservative budgets;
-- runtime components consume a persisted manifest/profile configuration rather than interactive prompts;
-- Secret Provider remains the only location for secret values;
-- observed evidence can confirm or contradict declared context without being silently overwritten.
+- manifest validation rejects plaintext secret-like fields;
+- declared realm candidates do not become effective realm evidence by declaration alone;
+- an observed FQDN suffix matching a declared scoped AD domain may promote realm state to `observed`;
+- `realm_evidence_min=observed` blocks a domain profile when only declared context exists;
+- `realm_evidence_min=credentialed_confirmed` remains blocked until credentialed evidence exists;
+- target class, protocol, realm kind, privilege class, purpose and scope remain independent policy dimensions;
+- high-privilege identities require explicit acknowledgement, one attempt and failure budget 1;
+- suspicious placeholder usernames are surfaced as warnings;
+- conflicting realm-map and observed domain context blocks planning;
+- rich v0.4b.6 profiles do not match when context is absent;
+- runtime components consume persisted manifest/profile configuration rather than interactive prompts;
+- Secret Provider remains the only location for secret values.
+
+LAB validation should use the existing P01LAB network dataset and first run Planner-only. No new authentication is required to validate declared-vs-observed gating.
