@@ -16,7 +16,8 @@
 - **Multi-target Credentialed Executor:** 0.4b.5 — LAB VALIDATED em dry-run, AUTH-only e FULL nos cinco ativos P01LAB; SHA256 binding, profile-drift guard e shared-credential circuit breaker.
 - **Assessment Context & Credential Intake:** 0.4b.6 — LAB VALIDATED; manifest não secreto, intake estruturado, declared/observed realm gating e high-privilege guardrails.
 - **Asset Resolver:** 0.4c.0 — LAB VALIDATED; 5 Network Discovery + 5 FULL observations -> 5 logical assets, 0 unresolved, 0 ambiguous, 0 conflicts.
-- **Evidence Bundle:** 0.5a.0 — CANDIDATE; formato `.p01bundle` único para connected upload e offline/manual import, com SHA256 inventory e secret-material guard.
+- **Evidence Bundle:** 0.5a.0 — LAB VALIDATED; `.p01bundle` único para connected/offline transport, 8-artifact P01LAB bundle, SHA256 inventory e secret-material guard.
+- **Offline Import:** 0.5b.0 — CANDIDATE; import idempotente, raw evidence preservation e server-side Asset Resolver replay/semantic comparison.
 - **Reporting Engine:** planejado após Network Discovery + Asset Resolver.
 
 > Saídas reais de discovery devem ser tratadas como **CONFIDENCIAL — DADOS DO CLIENTE**.
@@ -61,6 +62,12 @@ O scanner **descobre**. Os collectors **aprofundam**. O Asset Resolver **dedupli
 │   └── README.md
 ├── asset_resolver/
 │   ├── P01_Asset_Resolver.py
+│   └── README.md
+├── ingestion/
+│   ├── P01_Offline_Import.py
+│   └── README.md
+├── evidence_bundle/
+│   ├── P01_Evidence_Bundle.py
 │   └── README.md
 ├── network_discovery/
 │   ├── P01_Network_Discovery_Scanner.py
@@ -168,7 +175,7 @@ O repositório preserva histórico por **commits, branches, tags e releases**. O
 
 1. fechar validação AD stale v0.3;
 2. validar Network Discovery v0.4a em rede doméstica/autorizada;
-3. v0.5a — definir e validar o Evidence Bundle Format para transporte online/offline;
+3. v0.5b — validar Offline Import + server-side replay usando apenas o `.p01bundle`;
 4. v0.4c — evoluir identidade persistente, conflito e adapters adicionais;
 5. depois: SNMPv3/SNMPv2c, VMware/network adapters e Dynamic Scope Expansion;
 6. Reporting Engine v0.1;
