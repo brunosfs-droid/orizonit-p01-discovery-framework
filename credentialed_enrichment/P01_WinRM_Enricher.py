@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-'''Orizon IT P01 WinRM Credentialed Enrichment v0.4b.4.1.
+'''Orizon IT P01 WinRM Credentialed Enrichment v0.4b.4.2.
 
 Read-only Windows enrichment over WinRM with modular PowerShell collection.
 '''
@@ -33,37 +33,41 @@ POWERSHELL_SECTIONS={
 "identity":r'''
 $ErrorActionPreference='SilentlyContinue'
 $cs=Get-CimInstance Win32_ComputerSystem;$bios=Get-CimInstance Win32_BIOS
-[pscustomobject]@{computer_name=[string]$env:COMPUTERNAME;fqdn=(try{[System.Net.Dns]::GetHostEntry($env:COMPUTERNAME).HostName}catch{$null});manufacturer=[string]$cs.Manufacturer;model=[string]$cs.Model;serial_number=[string]$bios.SerialNumber;domain=[string]$cs.Domain;part_of_domain=[bool]$cs.PartOfDomain;domain_role=[int]$cs.DomainRole;current_user=[string]$env:USERNAME}|ConvertTo-Json -Compress
+$fqdn=$null;try{$fqdn=[System.Net.Dns]::GetHostEntry($env:COMPUTERNAME).HostName}catch{}
+[pscustomobject]@{computer_name=[string]$env:COMPUTERNAME;fqdn=[string]$fqdn;manufacturer=[string]$cs.Manufacturer;model=[string]$cs.Model;serial_number=[string]$bios.SerialNumber;domain=[string]$cs.Domain;part_of_domain=[bool]$cs.PartOfDomain;domain_role=[int]$cs.DomainRole;current_user=[string]$env:USERNAME}|ConvertTo-Json -Compress
 '''.strip(),
 "operating_system":r'''
 $ErrorActionPreference='SilentlyContinue'
 $os=Get-CimInstance Win32_OperatingSystem
-[pscustomobject]@{caption=[string]$os.Caption;version=[string]$os.Version;build_number=[string]$os.BuildNumber;architecture=[string]$os.OSArchitecture;last_boot_up_time=(if($os.LastBootUpTime){$os.LastBootUpTime.ToString('o')}else{$null});install_date=(if($os.InstallDate){$os.InstallDate.ToString('o')}else{$null})}|ConvertTo-Json -Compress
+$lastBoot=$null;if($os.LastBootUpTime){$lastBoot=$os.LastBootUpTime.ToString('o')}
+$installDate=$null;if($os.InstallDate){$installDate=$os.InstallDate.ToString('o')}
+[pscustomobject]@{caption=[string]$os.Caption;version=[string]$os.Version;build_number=[string]$os.BuildNumber;architecture=[string]$os.OSArchitecture;last_boot_up_time=$lastBoot;install_date=$installDate}|ConvertTo-Json -Compress
 '''.strip(),
 "hardware":r'''
 $ErrorActionPreference='SilentlyContinue'
 $cs=Get-CimInstance Win32_ComputerSystem;$cpu=Get-CimInstance Win32_Processor|Select-Object -First 1
-[pscustomobject]@{logical_processors=[int]$cs.NumberOfLogicalProcessors;total_physical_memory_bytes=[UInt64]$cs.TotalPhysicalMemory;cpu_name=(if($cpu){[string]$cpu.Name}else{$null})}|ConvertTo-Json -Compress
+$cpuName=$null;if($cpu){$cpuName=[string]$cpu.Name}
+[pscustomobject]@{logical_processors=[int]$cs.NumberOfLogicalProcessors;total_physical_memory_bytes=[UInt64]$cs.TotalPhysicalMemory;cpu_name=$cpuName}|ConvertTo-Json -Compress
 '''.strip(),
 "interfaces":r'''
 $ErrorActionPreference='SilentlyContinue';$r=@()
 Get-NetIPConfiguration|ForEach-Object{$c=$_;$a=@();@($c.IPv4Address)|ForEach-Object{if($_.IPAddress){$a+=[pscustomobject]@{address=[string]$_.IPAddress;prefix_length=[int]$_.PrefixLength}}};$g=@();@($c.IPv4DefaultGateway)|ForEach-Object{if($_.NextHop){$g+=[string]$_.NextHop}};$r+=[pscustomobject]@{interface_alias=[string]$c.InterfaceAlias;interface_index=[int]$c.InterfaceIndex;ipv4=$a;ipv4_gateways=$g}}
-@($r)|ConvertTo-Json -Depth 5 -Compress
+ConvertTo-Json -InputObject @($r) -Depth 5 -Compress
 '''.strip(),
 "routes":r'''
 $ErrorActionPreference='SilentlyContinue';$r=@()
 Get-NetRoute -AddressFamily IPv4|ForEach-Object{$r+=[pscustomobject]@{destination_prefix=[string]$_.DestinationPrefix;next_hop=[string]$_.NextHop;interface_index=[int]$_.InterfaceIndex;route_metric=[int]$_.RouteMetric;protocol=[string]$_.Protocol;state=[string]$_.State}}
-@($r)|ConvertTo-Json -Depth 4 -Compress
+ConvertTo-Json -InputObject @($r) -Depth 4 -Compress
 '''.strip(),
 "dns":r'''
 $ErrorActionPreference='SilentlyContinue';$r=@()
 Get-DnsClientServerAddress -AddressFamily IPv4|ForEach-Object{$r+=[pscustomobject]@{interface_alias=[string]$_.InterfaceAlias;interface_index=[int]$_.InterfaceIndex;server_addresses=@($_.ServerAddresses|ForEach-Object{[string]$_})}}
-@($r)|ConvertTo-Json -Depth 4 -Compress
+ConvertTo-Json -InputObject @($r) -Depth 4 -Compress
 '''.strip(),
 "firewall":r'''
 $ErrorActionPreference='SilentlyContinue';$r=@()
 Get-NetFirewallProfile|ForEach-Object{$r+=[pscustomobject]@{name=[string]$_.Name;enabled=[bool]$_.Enabled;default_inbound_action=[string]$_.DefaultInboundAction;default_outbound_action=[string]$_.DefaultOutboundAction}}
-@($r)|ConvertTo-Json -Depth 3 -Compress
+ConvertTo-Json -InputObject @($r) -Depth 3 -Compress
 '''.strip(),
 "secure_channel":r'''
 $ErrorActionPreference='SilentlyContinue';$cs=Get-CimInstance Win32_ComputerSystem;$checked=$false;$healthy=$null
@@ -73,12 +77,12 @@ if($cs.PartOfDomain -and [int]$cs.DomainRole -lt 4){$checked=$true;try{$healthy=
 "local_administrators":r'''
 $ErrorActionPreference='SilentlyContinue';$r=@()
 if(Get-Command Get-LocalGroupMember -ErrorAction SilentlyContinue){try{$g=Get-LocalGroup -SID 'S-1-5-32-544' -ErrorAction Stop;Get-LocalGroupMember -Group $g.Name -ErrorAction Stop|ForEach-Object{$r+=[pscustomobject]@{name=[string]$_.Name;object_class=[string]$_.ObjectClass;principal_source=[string]$_.PrincipalSource}}}catch{}}
-@($r)|ConvertTo-Json -Depth 3 -Compress
+ConvertTo-Json -InputObject @($r) -Depth 3 -Compress
 '''.strip(),
 "hotfixes":r'''
 $ErrorActionPreference='SilentlyContinue';$r=@()
-Get-HotFix|Sort-Object InstalledOn -Descending|Select-Object -First 20|ForEach-Object{$r+=[pscustomobject]@{hotfix_id=[string]$_.HotFixID;description=[string]$_.Description;installed_on=(if($_.InstalledOn){$_.InstalledOn.ToString('o')}else{$null})}}
-@($r)|ConvertTo-Json -Depth 3 -Compress
+Get-HotFix|Sort-Object InstalledOn -Descending|Select-Object -First 20|ForEach-Object{$installed=$null;if($_.InstalledOn){$installed=$_.InstalledOn.ToString('o')};$r+=[pscustomobject]@{hotfix_id=[string]$_.HotFixID;description=[string]$_.Description;installed_on=$installed}}
+ConvertTo-Json -InputObject @($r) -Depth 3 -Compress
 '''.strip(),
 "winrm_service":r'''
 $ErrorActionPreference='SilentlyContinue';$s=Get-Service -Name WinRM -ErrorAction SilentlyContinue
@@ -87,7 +91,7 @@ if($s){[pscustomobject]@{status=[string]$s.Status;start_type=[string]$s.StartTyp
 "roles":r'''
 $ErrorActionPreference='SilentlyContinue';$r=@()
 if(Get-Command Get-WindowsFeature -ErrorAction SilentlyContinue){Get-WindowsFeature|Where-Object{$_.Installed}|ForEach-Object{$r+=[pscustomobject]@{name=[string]$_.Name;display_name=[string]$_.DisplayName}}}
-@($r)|ConvertTo-Json -Depth 3 -Compress
+ConvertTo-Json -InputObject @($r) -Depth 3 -Compress
 '''.strip(),
 }
 
@@ -198,7 +202,7 @@ def main(argv=None):
     try:
         doc=load_profiles(Path(args.profiles));context=build_context(args.scheme,args.device_type,args.os_family,args.hostname,args.vendor,args.realm,args.confidence);matches=match_profiles(doc,str(target),"winrm",args.max_candidates,context=context)
     except (CredentialConfigError,OSError,ValueError) as exc:print(f"Credential profile error: {safe_error(exc)}",file=sys.stderr);return 2
-    errors=[];limitations=[{"section":"transport","message":"v0.4b.4.1 validates password authentication using NTLM transport first; Kerberos/certificate/CredSSP are later increments."},{"section":"dynamic_scope","message":"Candidate networks are evidence only and are never automatically scanned by this adapter."}];warnings=[]
+    errors=[];limitations=[{"section":"transport","message":"v0.4b.4.2 validates password authentication using NTLM transport first; Kerberos/certificate/CredSSP are later increments."},{"section":"dynamic_scope","message":"Candidate networks are evidence only and are never automatically scanned by this adapter."}];warnings=[]
     if not matches:warnings.append({"section":"credentials","message":"No eligible WinRM credential profile matched the target context."})
     attempts=[];enrichment=None;selected=None
     for match in matches:
