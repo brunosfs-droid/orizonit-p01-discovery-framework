@@ -283,3 +283,23 @@ Candidate acceptance:
 The R2 server log exposed one HTTP connection-hygiene defect: pre-body 400/413 responses left request bytes unread on a persistent connection. v0.5c.1 closes the connection explicitly on pre-body rejection. Final P01LAB rerun passed: missing-SHA returned 400 with `Connection: close`; oversized returned 413; no follow-on `Bad request version` or `414 URI Too Long` was observed. **Status: LAB VALIDATED.**
 
 See `docs/LAB_CENTRAL_INGESTION_NEGATIVE_v0.5c.md`.
+
+## Connected Discovery Node Upload v0.5d.0
+
+Candidate acceptance:
+
+- remote transport uses HTTPS only;
+- server mTLS mode fails closed without server cert, key and trusted client CA;
+- TLS minimum is 1.2;
+- valid client certificate is required before HTTP ingestion;
+- `X-P01-Node-ID` must match authenticated certificate identity;
+- validated bundle `node_id` must match authenticated node identity;
+- status lookup is scoped to the authenticated node;
+- Discovery Node validates server certificate and hostname;
+- client private key remains local and is never stored in bundle/upload receipt;
+- valid upload preserves the same v0.5b/v0.5c semantic result;
+- repeated valid upload remains idempotent;
+- missing/untrusted client certificate is rejected at TLS handshake;
+- node header/certificate mismatch is rejected with HTTP 403;
+- retries are bounded and limited to transport failures only;
+- no server-initiated discovery, customer authentication or arbitrary command execution.
