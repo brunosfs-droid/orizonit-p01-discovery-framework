@@ -49,6 +49,45 @@ All notable changes to the P01 Discovery Framework are documented here.
 - no Secret Provider references or secret-like payload fields
 - transport remains agnostic between offline/manual and future connected upload
 
+## [0.5c.0-candidate] - 2026-09-30
+
+### Added
+- localhost-only Central Ingestion API
+- POST /api/v1/bundles raw evidence-bundle upload
+- GET /api/v1/bundles/{bundle_id} receipt/status summary
+- health endpoint
+- bounded streaming upload with mandatory Content-Length
+- mandatory X-P01-Bundle-SHA256 validation
+- optional Idempotency-Key bound to validated bundle_id
+- delegation to the same v0.5b offline importer
+
+### Security
+- non-loopback bind rejected in v0.5c
+- no caller-controlled storage path
+- staging before validation/import
+- oversized and hash-mismatched uploads rejected
+- no network discovery, customer authentication, secret resolution or arbitrary payload execution
+- TLS/node authentication intentionally deferred to v0.5d
+
+### Tests
+- loopback-only bind policy
+- hash mismatch
+- upload size guard
+- common importer delegation
+- idempotency-key mismatch
+- safe status projection
+- health endpoint
+- unsupported content-type rejection
+
+## [0.5b.0-functional-pass] - 2026-09-30
+
+### Validated
+- first offline import returned imported
+- server-side Asset Resolver replay produced 5 logical assets, 0 unresolved, 0 ambiguous and 0 conflicts
+- edge/server semantic digest matched
+- second identical import returned already_imported
+- receipt file-pair independent SHA256 verification remains pending upload
+
 ## [0.5a.0-candidate] - 2026-09-30
 
 ### Added
