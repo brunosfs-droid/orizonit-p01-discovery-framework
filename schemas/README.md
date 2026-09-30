@@ -22,3 +22,8 @@ python -m json.tool schemas/p01-discovery-schema-v0.3.json > /dev/null
 ## v0.4c contracts
 
 - `p01-asset-resolver-schema-v0.4c.json` — canonical logical asset, provenance, conflict and correlation output contract.
+
+
+## v0.5a contracts
+
+- p01-evidence-bundle-manifest-schema-v0.5a.json — portable connected/offline evidence transport manifest.
