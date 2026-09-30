@@ -335,16 +335,15 @@ def credentialed_observation(path: Path, doc: Mapping[str, Any]) -> Dict[str, An
     if caption:
         claims.append(field_claim("operating_system", caption, src["source_id"], "credentialed_confirmed", "credentialed_os_collection"))
 
+    auth_realm = norm_text(action.get("realm"))
+    if auth_realm:
+        claims.append(field_claim("authentication_realm", auth_realm, src["source_id"], "observed", "credential_profile_context"))
+
     domain = norm_hostname(identity.get("domain"))
     part_of_domain = identity.get("part_of_domain")
     if part_of_domain is True and domain:
         claims.append(field_claim("realm_dns_domain", domain, src["source_id"], "credentialed_confirmed", "credentialed_domain_membership"))
-        realm_name = norm_text(action.get("realm"))
-        if realm_name:
-            claims.append(field_claim("realm_name", realm_name, src["source_id"], "credentialed_confirmed", "credentialed_domain_membership"))
         claims.append(field_claim("realm_evidence_state", "credentialed_confirmed", src["source_id"], "credentialed_confirmed", "credentialed_domain_membership"))
-    elif action.get("realm"):
-        claims.append(field_claim("realm_name", action.get("realm"), src["source_id"], "observed", "planned_target_context"))
 
     role = identity.get("domain_role")
     if isinstance(role, int):
@@ -614,6 +613,7 @@ def final_asset(cluster: Mapping[str, Any]) -> Dict[str, Any]:
             "device_class": resolved.get("device_class"),
             "os_family": resolved.get("os_family"),
             "operating_system": resolved.get("operating_system"),
+            "authentication_realm": resolved.get("authentication_realm"),
         },
         "identifiers": sorted(cluster.get("strong_ids", []), key=lambda x: (str(x.get("type")), str(x.get("value")))),
         "addresses": sorted(set(cluster.get("addresses", [])), key=lambda x: tuple(int(p) for p in x.split("."))),
