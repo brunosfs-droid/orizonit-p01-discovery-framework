@@ -189,6 +189,40 @@ def validate_profile_document(doc: Mapping[str, Any]) -> Dict[str, Any]:
         if not isinstance(max_attempts, int) or max_attempts < 1 or max_attempts > 3:
             errors.append(f"{base}.max_attempts_per_target must be integer 1..3")
 
+        username = str(profile.get("username") or "")
+        if username and SUSPICIOUS_PLACEHOLDER_RE.search(username):
+            warnings.append(f"{base}.username looks like a placeholder: {username}")
+
+        realm_kind = profile.get("realm_kind")
+        if realm_kind is not None and _norm(realm_kind) not in REALM_KINDS:
+            errors.append(f"{base}.realm_kind is unsupported: {realm_kind}")
+
+        realm_name = profile.get("realm_name")
+        if realm_name is not None and not str(realm_name).strip():
+            errors.append(f"{base}.realm_name must be a non-empty string when provided")
+
+        target_classes = profile.get("target_classes")
+        if target_classes is not None:
+            if not isinstance(target_classes, list) or not target_classes:
+                errors.append(f"{base}.target_classes must be a non-empty array")
+            elif any(_norm(x) not in TARGET_CLASSES for x in target_classes):
+                errors.append(f"{base}.target_classes contains unsupported values")
+
+        privilege_class = profile.get("privilege_class")
+        if privilege_class is not None and _norm(privilege_class) not in PRIVILEGE_CLASSES:
+            errors.append(f"{base}.privilege_class is unsupported: {privilege_class}")
+
+        purposes = profile.get("purposes")
+        if purposes is not None:
+            if not isinstance(purposes, list) or not purposes:
+                errors.append(f"{base}.purposes must be a non-empty array")
+            elif any(_norm(x) not in PURPOSES for x in purposes):
+                errors.append(f"{base}.purposes contains unsupported values")
+
+        realm_evidence_min = profile.get("realm_evidence_min")
+        if realm_evidence_min is not None and _norm(realm_evidence_min) not in REALM_EVIDENCE_RANK:
+            errors.append(f"{base}.realm_evidence_min must be declared, observed, or credentialed_confirmed")
+
         selectors = profile.get("selectors", {})
         if selectors is None:
             selectors = {}
@@ -200,7 +234,7 @@ def validate_profile_document(doc: Mapping[str, Any]) -> Dict[str, Any]:
             for key in unknown_selector_keys:
                 errors.append(f"{base}.selectors contains unsupported key: {key}")
 
-            for key in ("device_types", "os_families", "services", "hostname_patterns", "vendor_patterns", "realms"):
+            for key in ("device_types", "os_families", "services", "hostname_patterns", "vendor_patterns", "realms", "target_classes", "realm_kinds"):
                 value = selectors.get(key)
                 if value is not None:
                     if not isinstance(value, list) or not value or not all(isinstance(x, str) and x.strip() for x in value):
@@ -211,12 +245,26 @@ def validate_profile_document(doc: Mapping[str, Any]) -> Dict[str, Any]:
                 if confidence not in CONFIDENCE_RANK:
                     errors.append(f"{base}.selectors.min_confidence must be one of Unknown, Low, Medium, High")
 
+            if "min_realm_evidence" in selectors:
+                state = _norm(selectors.get("min_realm_evidence"))
+                if state not in REALM_EVIDENCE_RANK:
+                    errors.append(f"{base}.selectors.min_realm_evidence must be declared, observed, or credentialed_confirmed")
+
             if "allow_unknown" in selectors and not isinstance(selectors.get("allow_unknown"), bool):
                 errors.append(f"{base}.selectors.allow_unknown must be boolean")
 
         failure_budget = profile.get("failure_budget_per_job", 2)
         if not isinstance(failure_budget, int) or failure_budget < 1 or failure_budget > 50:
             errors.append(f"{base}.failure_budget_per_job must be integer 1..50")
+
+        high_privilege = _norm(privilege_class) in HIGH_PRIVILEGE_CLASSES if privilege_class is not None else False
+        if high_privilege:
+            if profile.get("high_privilege_acknowledged") is not True:
+                errors.append(f"{base}.high_privilege_acknowledged must be true for {privilege_class}")
+            if failure_budget != 1:
+                errors.append(f"{base}.failure_budget_per_job must be 1 for high-privilege profiles")
+            if max_attempts != 1:
+                errors.append(f"{base}.max_attempts_per_target must be 1 for high-privilege profiles")
 
         secret_refs = profile.get("secret_refs", {})
         if not isinstance(secret_refs, dict) or not secret_refs:
