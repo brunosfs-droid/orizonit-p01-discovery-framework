@@ -10,6 +10,19 @@ All notable changes to the P01 Discovery Framework are documented here.
 - Asset Resolver / deduplication (v0.4c)
 - Reporting Engine v0.1
 
+## [0.4c.0-lab-validated] - 2026-09-30
+
+### Validated
+- 5 Network Discovery assets + 5 credentialed FULL observations -> 5 logical assets
+- 0 unresolved observations
+- 0 ambiguous correlations
+- 0 conflicts after separating authentication realm from directory realm identity
+- offline-only, no network access, authentication or secret resolution
+- JSON/SHA256 evidence integrity verified
+
+### Fixed
+- management host local authentication context is preserved as `authentication_realm=local` and no longer overrides directory identity `P01LAB / p01.lab.test`
+
 ## [0.4c.0-candidate] - 2026-09-30
 
 ### Added

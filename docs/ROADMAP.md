@@ -112,7 +112,7 @@
 - realm `observed` separado de `credentialed_confirmed`;
 - output determinístico JSON + SHA256;
 - zero network access, authentication ou secret resolution.
-- **Status:** CANDIDATE implementado; próximo gate é resolver o P01LAB real em exatamente cinco ativos lógicos.
+- **Status:** LAB VALIDATED. O P01LAB real resolveu 5 Network Discovery assets + 5 FULL observations em 5 logical assets, 0 unresolved, 0 ambiguous e 0 conflicts. O realm de autenticação foi separado da identidade de diretório.
 
 ### Próximas iterações v0.4c
 - AD computer object / objectGUID / SID;
@@ -149,3 +149,36 @@ O LAB inicial usará P01-MGMT01 como Discovery Node por possuir acesso ao segmen
 - plugins de fabricantes/controladoras;
 - remote discovery nodes/sensors;
 - CVE correlation e Patch Compliance.
+
+
+## v0.5 — Discovery Node / Evidence Bundle / Central Ingestion
+
+### v0.5a — Evidence Bundle Format
+- formato portátil único para connected upload e offline/manual import;
+- bundle manifest + evidence inventory + SHA256;
+- preservar assessment/run/node identity e component/schema versions;
+- no secret values or Secret Provider references;
+- formato transportável como `.p01bundle`.
+
+### v0.5b — Offline Export / Import
+- exportar bundle no Discovery Node;
+- importar manualmente no P01 Server;
+- validar integridade e schema antes do processamento;
+- pipeline posterior idêntico ao connected mode.
+
+### v0.5c — Central Ingestion API
+- HTTPS ingestion;
+- idempotency key;
+- tenant/customer/assessment binding;
+- raw evidence immutable storage;
+- reject/quarantine tampered or incompatible bundles.
+
+### v0.5d — Connected Discovery Node Upload
+- upload outbound-only;
+- retry queue;
+- mTLS or short-lived enrollment credentials;
+- no server-initiated arbitrary execution.
+
+### v0.5e — Optional Installed Service
+- portable remains default for one-shot assessments;
+- optional Windows/Linux service for recurring assessments.
