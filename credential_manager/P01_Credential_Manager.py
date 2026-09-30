@@ -31,8 +31,16 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
 MANAGER_NAME = "P01-Credential-Manager"
-MANAGER_VERSION = "0.4b.3"
+MANAGER_VERSION = "0.4b.6"
 PROFILE_SCHEMA_VERSION = "0.4b"
+
+REALM_EVIDENCE_RANK = {"declared": 1, "observed": 2, "credentialed_confirmed": 3}
+REALM_KINDS = {"ad_domain", "local_host", "linux_local", "vcenter_sso", "network_aaa", "device_local", "other"}
+TARGET_CLASSES = {"windows", "windows_server", "windows_workstation", "domain_controller", "linux", "vcenter", "esxi", "network_device", "switch", "router", "firewall", "storage", "appliance", "other"}
+PRIVILEGE_CLASSES = {"read_only", "inventory", "operator", "local_admin", "domain_admin", "platform_admin", "network_admin"}
+PURPOSES = {"discovery", "inventory", "configuration_audit", "patch_assessment", "topology"}
+HIGH_PRIVILEGE_CLASSES = {"domain_admin", "platform_admin", "network_admin"}
+SUSPICIOUS_PLACEHOLDER_RE = re.compile(r"(?i)(SEU[_ -]?USUARIO|CHANGE[_ -]?ME|REPLACE[_ -]?ME|EXAMPLE[_ -]?USER|YOUR[_ -]?USER)")
 
 SUPPORTED_SECRET_SCHEMES = {"env", "prompt", "wincred"}
 CONFIDENCE_RANK = {"unknown": 0, "low": 1, "medium": 2, "high": 3}
