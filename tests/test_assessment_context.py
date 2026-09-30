@@ -102,6 +102,21 @@ class CredentialTaxonomyTests(unittest.TestCase):
         self.assertFalse(result["valid"])
         self.assertTrue(any("high_privilege_acknowledged" in x for x in result["errors"]))
 
+    def test_rich_profile_does_not_match_without_context(self):
+        profile = assessment.build_credential_profile(
+            "w11-no-context", "winrm", ["192.168.100.30/32"], "P01LAB\\svc",
+            "prompt://w11-no-context", "ad_domain", "P01LAB", ["windows_workstation"],
+            "inventory", ["inventory"], "winrm-http", ["P01-W11-*"],
+            "observed", False,
+        )
+        matches = cred.match_profiles(
+            {"schema_version": "0.4b", "profiles": [profile]},
+            "192.168.100.30",
+            "winrm",
+            context=None,
+        )
+        self.assertEqual(matches, [])
+
     def test_placeholder_username_warns(self):
         doc = {
             "schema_version": "0.4b",
