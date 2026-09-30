@@ -32,3 +32,5 @@ python -m json.tool schemas/p01-discovery-schema-v0.3.json > /dev/null
 ## v0.5b contracts
 
 - `p01-offline-import-receipt-schema-v0.5b.json` — idempotent offline import receipt and server-side processing record.
+
+- `p01-ingestion-api-response-schema-v0.5c.json` — Central Ingestion API upload response contract.
