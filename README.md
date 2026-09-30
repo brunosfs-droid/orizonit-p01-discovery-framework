@@ -12,7 +12,7 @@
 - **Credential Manager:** 0.4b.1 — LAB VALIDATED para a foundation de perfis, Secret Provider e seleção por escopo/protocolo; autenticação real entra na v0.4b.2.
 - **SSH Credentialed Enrichment:** 0.4b.2.1 — LAB VALIDATED em Ubuntu e Rocky via P01-MGMT01; appliance SSH restrito também classificado corretamente.
 - **Context-aware Credential Resolver / Planner:** 0.4b.3.1 — LAB VALIDATED para planning/matching; Windows 11 validou tanto `no protocol` quanto `protocol available but no eligible profile`, sem resolução de secret ou tentativa de autenticação.
-- **WinRM Credentialed Enrichment:** 0.4b.4.2 — LAB VALIDATED em P01-MGMT01 (local realm) e P01-DC01 (domain realm); v0.4b.4.3 adiciona classificação transport/auth para futura proteção de credenciais compartilhadas.
+- **WinRM Credentialed Enrichment:** 0.4b.4.3 — LAB VALIDATED em P01-MGMT01 (local realm), P01-DC01 (domain controller/domain realm) e P01-W11-01 (domain workstation); failure semantics transport/auth também validados em runtime.
 - **Reporting Engine:** planejado após Network Discovery + Asset Resolver.
 
 > Saídas reais de discovery devem ser tratadas como **CONFIDENCIAL — DADOS DO CLIENTE**.
@@ -161,8 +161,9 @@ O repositório preserva histórico por **commits, branches, tags e releases**. O
 
 1. fechar validação AD stale v0.3;
 2. validar Network Discovery v0.4a em rede doméstica/autorizada;
-3. v0.4b.3 — Context-aware Credentialed Discovery; depois WinRM/WMI e SNMP;
-4. v0.4c — Asset Resolver e deduplicação;
+3. v0.4b.5 — Multi-target Credentialed Executor + shared-credential circuit breaker;
+4. depois: SNMPv3/SNMPv2c e demais adapters;
+5. v0.4c — Asset Resolver e deduplicação;
 5. Reporting Engine v0.1;
 6. depois: CVE correlation, Patch Compliance, File Server Assessment e topologia.
 
