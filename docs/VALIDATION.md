@@ -188,7 +188,7 @@ This closes the current v0.4b SSH/WinRM orchestration baseline.
 
 ## Assessment Context & Credential Intake v0.4b.6
 
-Candidate acceptance:
+LAB VALIDATED. Acceptance:
 
 - operator-declared domains/realms are stored as non-secret context;
 - manifest validation rejects plaintext secret-like fields;
@@ -204,4 +204,22 @@ Candidate acceptance:
 - runtime components consume persisted manifest/profile configuration rather than interactive prompts;
 - Secret Provider remains the only location for secret values.
 
-LAB validation should use the existing P01LAB network dataset and first run Planner-only. No new authentication is required to validate declared-vs-observed gating.
+Runtime P01LAB evidence validated both sides: declared+observed namespace evidence produced an adapter candidate, while declared-only context with no compatible observed FQDN produced `not_planned`. Both paths resolved no secrets and attempted no authentication.
+
+## Asset Resolver v0.4c.0
+
+Candidate acceptance:
+
+- resolver is offline-only and performs zero network access/authentication/secret resolution;
+- Network Discovery observations seed independent logical assets;
+- IP alone never auto-merges;
+- MAC alone does not pre-merge separate Network Discovery observations;
+- strong identifier exact match may correlate;
+- otherwise auto-merge requires namespace evidence plus network evidence;
+- field-level provenance is preserved;
+- medium-or-strong disagreements are recorded as conflicts;
+- `observed` realm evidence is not treated as confirmed domain membership;
+- credentialed Windows domain evidence may promote realm state to `credentialed_confirmed`;
+- output contains no secret-provider reference or secret-like field;
+- Network Discovery and credentialed evidence sidecars can be required and verified;
+- real P01LAB acceptance resolves five Network Discovery assets plus five FULL credentialed observations into exactly five logical assets, with zero unresolved and zero ambiguous correlations.

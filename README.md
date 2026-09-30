@@ -14,7 +14,8 @@
 - **Context-aware Credential Resolver / Planner:** 0.4b.3.2 — v0.4b.3.1 LAB VALIDATED; candidate passa a consumir Assessment Manifest, distinguir realm declarado/observado e bloquear conflito de contexto.
 - **WinRM Credentialed Enrichment:** 0.4b.4.3 — LAB VALIDATED em P01-MGMT01 (local realm), P01-DC01 (domain controller/domain realm) e P01-W11-01 (domain workstation); failure semantics transport/auth também validados em runtime.
 - **Multi-target Credentialed Executor:** 0.4b.5 — LAB VALIDATED em dry-run, AUTH-only e FULL nos cinco ativos P01LAB; SHA256 binding, profile-drift guard e shared-credential circuit breaker.
-- **Assessment Context & Credential Intake:** 0.4b.6 — CANDIDATE; manifest não secreto, intake estruturado de credenciais e evidence-state para realm antes do Asset Resolver.
+- **Assessment Context & Credential Intake:** 0.4b.6 — LAB VALIDATED; manifest não secreto, intake estruturado, declared/observed realm gating e high-privilege guardrails.
+- **Asset Resolver:** 0.4c.0 — CANDIDATE; correlação offline com provenance, conflitos explícitos e proibição de merge por IP isolado.
 - **Reporting Engine:** planejado após Network Discovery + Asset Resolver.
 
 > Saídas reais de discovery devem ser tratadas como **CONFIDENCIAL — DADOS DO CLIENTE**.
@@ -56,6 +57,9 @@ O scanner **descobre**. Os collectors **aprofundam**. O Asset Resolver **dedupli
 │   ├── P01_WinRM_Enricher.py
 │   ├── requirements-winrm.txt
 │   ├── README-WINRM.md
+│   └── README.md
+├── asset_resolver/
+│   ├── P01_Asset_Resolver.py
 │   └── README.md
 ├── network_discovery/
 │   ├── P01_Network_Discovery_Scanner.py
@@ -163,8 +167,8 @@ O repositório preserva histórico por **commits, branches, tags e releases**. O
 
 1. fechar validação AD stale v0.3;
 2. validar Network Discovery v0.4a em rede doméstica/autorizada;
-3. v0.4b.6 — validar Assessment Context & Credential Intake no P01LAB;
-4. v0.4c — Asset Resolver e deduplicação;
+3. v0.4c.0 — validar Asset Resolver no dataset P01LAB de cinco ativos;
+4. v0.4c — evoluir identidade persistente, conflito e adapters adicionais;
 5. depois: SNMPv3/SNMPv2c, VMware/network adapters e Dynamic Scope Expansion;
 6. Reporting Engine v0.1;
 7. depois: CVE correlation, Patch Compliance, File Server Assessment e topologia.

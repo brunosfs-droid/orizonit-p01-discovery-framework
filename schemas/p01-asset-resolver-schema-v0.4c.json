@@ -1,0 +1,153 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://orizonit.example/schemas/p01-asset-resolver-v0.4c.json",
+  "title": "Orizon IT P01 Asset Resolver v0.4c",
+  "type": "object",
+  "required": [
+    "metadata",
+    "inputs",
+    "summary",
+    "assets",
+    "unresolved_observations",
+    "ambiguous_correlations",
+    "limitations"
+  ],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": [
+        "resolver_name",
+        "resolver_version",
+        "schema_version",
+        "offline_only",
+        "read_only_mode",
+        "secret_resolution",
+        "authentication_attempts",
+        "network_access_performed"
+      ],
+      "properties": {
+        "resolver_name": {
+          "const": "P01-Asset-Resolver"
+        },
+        "schema_version": {
+          "const": "0.4c"
+        },
+        "offline_only": {
+          "const": true
+        },
+        "read_only_mode": {
+          "const": true
+        },
+        "secret_resolution": {
+          "const": false
+        },
+        "authentication_attempts": {
+          "const": false
+        },
+        "network_access_performed": {
+          "const": false
+        }
+      },
+      "additionalProperties": true
+    },
+    "inputs": {
+      "type": "object"
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "network_assets_seen",
+        "credentialed_observations_seen",
+        "logical_assets_resolved",
+        "unresolved_observations",
+        "ambiguous_correlations",
+        "assets_with_conflicts",
+        "assets_with_strong_identifiers"
+      ]
+    },
+    "assets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "asset_id",
+          "identity",
+          "identifiers",
+          "addresses",
+          "mac_addresses",
+          "services",
+          "sources",
+          "field_provenance",
+          "conflicts",
+          "correlations",
+          "confidence"
+        ],
+        "properties": {
+          "asset_id": {
+            "type": "string",
+            "pattern": "^ast-[0-9a-f]{16}$"
+          },
+          "identity": {
+            "type": "object"
+          },
+          "identifiers": {
+            "type": "array"
+          },
+          "addresses": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "mac_addresses": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "services": {
+            "type": "array"
+          },
+          "network_interfaces": {
+            "type": "array"
+          },
+          "sources": {
+            "type": "array",
+            "minItems": 1
+          },
+          "field_provenance": {
+            "type": "object"
+          },
+          "conflicts": {
+            "type": "array"
+          },
+          "correlations": {
+            "type": "array",
+            "minItems": 1
+          },
+          "confidence": {
+            "enum": [
+              "Low",
+              "Medium",
+              "High"
+            ]
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "unresolved_observations": {
+      "type": "array"
+    },
+    "ambiguous_correlations": {
+      "type": "array"
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": false
+}
