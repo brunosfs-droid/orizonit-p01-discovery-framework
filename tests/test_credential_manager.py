@@ -151,7 +151,7 @@ class ContextAwareMatchTests(unittest.TestCase):
             "confidence": "High",
         }
         matches = mod.match_profiles(self.doc, "192.168.100.40", "ssh", 3, context=ctx)
-        self.assertEqual([m.profile["id"] for m in matches], ["unknown-explicit"])
+        self.assertEqual(matches, [])
 
     def test_context_from_network_asset(self):
         asset = {
