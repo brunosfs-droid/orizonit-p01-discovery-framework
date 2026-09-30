@@ -27,6 +27,22 @@ All notable changes to the P01 Discovery Framework are documented here.
 - WinRM/NTLM authentication succeeded against P01-MGMT01 with one bounded /32 profile attempt and zero retries
 - v0.4b.4 full collection failure reproduced and isolated to payload size, not credentials or WinRM connectivity
 
+## [0.4b.4.2-candidate] - 2026-09-30
+
+### Fixed
+- Windows PowerShell 5.1 compatibility in identity, OS, hardware and hotfix sections
+- empty-array JSON serialization uses `ConvertTo-Json -InputObject`
+- route-derived /32 host/broadcast entries are no longer emitted as candidate networks
+
+### Validated in R2
+- WinRM/NTLM authentication and context-aware /32 local profile selection
+- modular collection preserved successful sections after partial failures
+- interfaces, routes, DNS, firewall, secure channel, local administrators, WinRM service and server roles were collected
+- P01-MGMT01 exposed the intended connected networks while auto-scan remained disabled
+
+### Remaining
+- rerun P01-MGMT01 with v0.4b.4.2 to close the four PowerShell 5.1 section failures
+
 ## [0.4b.4-candidate] - 2026-09-30
 
 ### Added

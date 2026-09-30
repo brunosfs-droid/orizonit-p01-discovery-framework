@@ -8,6 +8,14 @@ class ReadOnlyTests(unittest.TestCase):
     def test_mutating_rejected(self):
         self.assertFalse(mod.powershell_is_read_only("Set-Service -Name WinRM -StartupType Automatic"))
 
+    def test_no_parenthesized_if_try_for_ps51(self):
+        # Windows PowerShell 5.1 does not accept statement keywords wrapped
+        # as parenthesized expressions inside hashtable values.
+        for name, script in mod.POWERSHELL_SECTIONS.items():
+            compact = script.replace(" ", "").lower()
+            self.assertNotIn("=(if(", compact, name)
+            self.assertNotIn("=(try{", compact, name)
+
 class SizeRegressionTests(unittest.TestCase):
     def test_each_section_small(self):
         for name,script in mod.POWERSHELL_SECTIONS.items():
@@ -28,5 +36,18 @@ class NetworkTests(unittest.TestCase):
         result=mod.build_candidate_networks(payload)
         self.assertEqual([x["network"] for x in result],["172.31.0.0/16","192.168.100.0/24"])
         self.assertTrue(all(x["auto_scan"] is False for x in result))
+
+    def test_route_host_prefixes_not_candidates(self):
+        payload = {"network": {
+            "interfaces": [],
+            "routes": [
+                {"destination_prefix": "192.168.100.20/32", "next_hop": "0.0.0.0", "interface_index": 4},
+                {"destination_prefix": "192.168.100.255/32", "next_hop": "0.0.0.0", "interface_index": 4},
+                {"destination_prefix": "255.255.255.255/32", "next_hop": "0.0.0.0", "interface_index": 4},
+                {"destination_prefix": "10.20.30.0/24", "next_hop": "10.0.0.1", "interface_index": 8},
+            ],
+        }}
+        result = mod.build_candidate_networks(payload)
+        self.assertEqual([x["network"] for x in result], ["10.20.30.0/24"])
 
 if __name__=="__main__":unittest.main()
