@@ -13,6 +13,7 @@
 - **SSH Credentialed Enrichment:** 0.4b.2.1 — LAB VALIDATED em Ubuntu e Rocky via P01-MGMT01; appliance SSH restrito também classificado corretamente.
 - **Context-aware Credential Resolver / Planner:** 0.4b.3.1 — LAB VALIDATED para planning/matching; Windows 11 validou tanto `no protocol` quanto `protocol available but no eligible profile`, sem resolução de secret ou tentativa de autenticação.
 - **WinRM Credentialed Enrichment:** 0.4b.4.3 — LAB VALIDATED em P01-MGMT01 (local realm), P01-DC01 (domain controller/domain realm) e P01-W11-01 (domain workstation); failure semantics transport/auth também validados em runtime.
+- **Multi-target Credentialed Executor:** 0.4b.5 — CANDIDATE; dry-run por padrão, plan SHA256 binding, profile-drift guard, execução sequencial e shared-credential circuit breaker.
 - **Reporting Engine:** planejado após Network Discovery + Asset Resolver.
 
 > Saídas reais de discovery devem ser tratadas como **CONFIDENCIAL — DADOS DO CLIENTE**.

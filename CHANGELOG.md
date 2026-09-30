@@ -10,6 +10,30 @@ All notable changes to the P01 Discovery Framework are documented here.
 - Asset Resolver / deduplication (v0.4c)
 - Reporting Engine v0.1
 
+## [0.4b.5-candidate] - 2026-09-30
+
+### Added
+- multi-target Credentialed Executor
+- dry-run mode with zero secret resolution/authentication
+- reviewed-plan SHA256 verification before execute mode
+- profile snapshot drift guard
+- hashed credential identity IDs without persisting raw secret refs
+- shared-credential failure budget and circuit breaker
+- SSH failure classification aligned with WinRM semantics
+- per-target evidence JSON/SHA256
+- aggregate job JSON/SHA256
+- sequential execution only in the first candidate
+
+### Security
+- `not_planned` assets are never dispatched
+- only authentication failures consume shared credential budget
+- transport failures do not poison credential health
+- execute mode requires explicit authorization acknowledgement
+- no pivoting or dynamic-scope expansion
+
+### Validation pending
+- five-asset P01LAB dry-run before any multi-target authentication
+
 ## [0.4b.4.3-windows-matrix-validated] - 2026-09-30
 
 ### Validated
