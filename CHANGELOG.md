@@ -79,6 +79,31 @@ All notable changes to the P01 Discovery Framework are documented here.
 - health endpoint
 - unsupported content-type rejection
 
+## [0.5c.0-positive-path-pass] - 2026-09-30
+
+### Validated
+- API 0.5c.0 served on 127.0.0.1:8088
+- health endpoint returned HTTP 200
+- first bundle upload returned imported / HTTP 201
+- repeated upload returned already_imported / HTTP 200
+- GET bundle status returned HTTP 200
+- semantic_match=true and edge/server semantic digests matched
+- non-loopback bind 0.0.0.0 was rejected
+
+### Remaining
+- negative transport gates: missing SHA256, wrong SHA256, tampered bundle and oversized request
+
+## [0.5b.0-lab-validated] - 2026-09-30
+
+### Validated
+- import receipt JSON/SHA256 independently verified
+- receipt SHA256 9907e79835be9ae6b96d84155a6cd35f06d5f60340a8ecabe85d1c36e66b3de0
+- outer bundle SHA256 verified
+- 8 artifacts and 9 inventory entries preserved
+- server-side Asset Resolver semantic digest matched edge result
+- second import returned already_imported
+- no network access, authentication, secret resolution or arbitrary payload execution
+
 ## [0.5b.0-functional-pass] - 2026-09-30
 
 ### Validated

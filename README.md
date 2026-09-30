@@ -17,7 +17,8 @@
 - **Assessment Context & Credential Intake:** 0.4b.6 — LAB VALIDATED; manifest não secreto, intake estruturado, declared/observed realm gating e high-privilege guardrails.
 - **Asset Resolver:** 0.4c.0 — LAB VALIDATED; 5 Network Discovery + 5 FULL observations -> 5 logical assets, 0 unresolved, 0 ambiguous, 0 conflicts.
 - **Evidence Bundle:** 0.5a.0 — LAB VALIDATED; `.p01bundle` único para connected/offline transport, 8-artifact P01LAB bundle, SHA256 inventory e secret-material guard.
-- **Offline Import:** 0.5b.0 — CANDIDATE; import idempotente, raw evidence preservation e server-side Asset Resolver replay/semantic comparison.
+- **Offline Import:** 0.5b.0 — LAB VALIDATED; import idempotente, raw evidence preservation, receipt JSON/SHA256 e server-side Asset Resolver replay com semantic_match=true.
+- **Central Ingestion API:** 0.5c.0 — positive path LAB PASS em localhost; health, imported, already_imported, status GET e non-loopback bind guard validados; negative transport gates pendentes.
 - **Reporting Engine:** planejado após Network Discovery + Asset Resolver.
 
 > Saídas reais de discovery devem ser tratadas como **CONFIDENCIAL — DADOS DO CLIENTE**.
@@ -175,8 +176,9 @@ O repositório preserva histórico por **commits, branches, tags e releases**. O
 
 1. fechar validação AD stale v0.3;
 2. validar Network Discovery v0.4a em rede doméstica/autorizada;
-3. v0.5b — validar Offline Import + server-side replay usando apenas o `.p01bundle`;
-4. v0.4c — evoluir identidade persistente, conflito e adapters adicionais;
+3. v0.5c — fechar negative transport gates da Central Ingestion API em localhost;
+4. v0.5d — Connected Discovery Node Upload com TLS/node authentication após v0.5c;
+5. v0.4c — evoluir identidade persistente, conflito e adapters adicionais;
 5. depois: SNMPv3/SNMPv2c, VMware/network adapters e Dynamic Scope Expansion;
 6. Reporting Engine v0.1;
 7. depois: CVE correlation, Patch Compliance, File Server Assessment e topologia.

@@ -170,14 +170,18 @@ O LAB inicial usará P01-MGMT01 como Discovery Node por possuir acesso ao segmen
 - reexecutar Asset Resolver usando somente evidências importadas;
 - comparar semanticamente resultado server-side com o Asset Resolver edge embarcado;
 - segunda importação do mesmo bundle retorna `already_imported`.
-- **Status:** CANDIDATE implementado; próximo gate é importar P01LAB-BUNDLE-R1.p01bundle em store limpo e obter semantic match=true.
+- **Status:** LAB VALIDATED. P01LAB-BUNDLE-R1 foi importado em store limpo; server-side Asset Resolver reproduziu 5 logical assets, 0 unresolved, 0 ambiguous, 0 conflicts, semantic_match=true; segunda importação retornou already_imported; receipt JSON/SHA256 validado.
 
 ### v0.5c — Central Ingestion API
-- HTTPS ingestion;
+- localhost-only HTTP ingestion foundation;
+- mesmo `import_bundle()` da v0.5b;
+- mandatory Content-Length + X-P01-Bundle-SHA256;
 - idempotency key;
-- tenant/customer/assessment binding;
-- raw evidence immutable storage;
-- reject/quarantine tampered or incompatible bundles.
+- upload-size guard;
+- staging before validation/import;
+- GET status + health endpoint;
+- non-loopback bind rejected.
+- **Status:** positive path LAB PASS: health 200, primeiro POST imported/201, segundo POST already_imported/200, GET status 200, semantic_match=true e bind 0.0.0.0 rejeitado. Negative gates pendentes: missing hash, wrong hash, tampered bundle e oversized request.
 
 ### v0.5d — Connected Discovery Node Upload
 - upload outbound-only;

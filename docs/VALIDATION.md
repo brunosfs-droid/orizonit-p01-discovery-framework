@@ -260,3 +260,24 @@ Candidate acceptance:
 - GET bundle status reports semantic equivalence without exposing raw evidence;
 - no customer-network access, authentication, secret resolution or arbitrary payload execution;
 - malformed/tampered/oversized uploads are rejected.
+
+
+## Central Ingestion API v0.5c.0 — P01LAB runtime status
+
+### P01LAB positive runtime status
+- localhost API started on 127.0.0.1:8088;
+- health endpoint returned HTTP 200;
+- first upload returned imported / HTTP 201;
+- repeat upload returned already_imported / HTTP 200;
+- bundle status GET returned HTTP 200;
+- semantic_match=true with equal edge/server semantic digests;
+- non-loopback bind 0.0.0.0 rejected.
+
+### Remaining negative gates
+- missing SHA256 header -> HTTP 400;
+- wrong SHA256 -> HTTP 422;
+- tampered bundle with matching outer SHA -> HTTP 422 during bundle validation;
+- oversized request -> HTTP 413 before processing;
+- invalid requests must not create committed imports.
+
+See `docs/LAB_CENTRAL_INGESTION_NEGATIVE_v0.5c.md`.
