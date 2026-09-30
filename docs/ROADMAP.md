@@ -55,12 +55,20 @@
 - JSON + SHA256 sem secrets.
 - **Status:** AUTH/NTLM validado no P01-MGMT01. A coleta full v0.4b.4 encontrou o limite `The command line is too long.`.
 
-### v0.4b.4.1 — Modular WinRM Collection
+### v0.4b.4.1 / v0.4b.4.2 — Modular WinRM Collection
 - divide a coleta em seções PowerShell pequenas e independentes;
 - preserva seções bem-sucedidas em falhas parciais;
+- compatibilidade Windows PowerShell 5.1;
+- filtra /32 locais de candidate networks;
 - registra `collection_sections` e `failed_section_count`;
 - mantém candidate networks sem auto-scan.
-- **Status:** candidate aguardando repetição do full enrichment no P01-MGMT01.
+- **Status:** LAB VALIDATED no P01-MGMT01 e no P01-DC01, incluindo profile local e profile de domínio.
+
+### v0.4b.4.3 — WinRM Failure Semantics
+- separar falha de transporte de credencial inválida;
+- não consumir failure budget de credencial em ConnectTimeout/ConnectionError;
+- preparar o executor multi-target e circuit breaker.
+- **Status:** candidate; derivado de evidência real em que AUTH-only teve ConnectTimeout e a execução full subsequente autenticou com o mesmo profile.
 
 ### v0.4b.5+ — próximos adapters/executor
 - SNMPv3/SNMPv2c;
