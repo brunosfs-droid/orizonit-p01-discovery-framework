@@ -27,6 +27,17 @@ All notable changes to the P01 Discovery Framework are documented here.
 - WinRM/NTLM authentication succeeded against P01-MGMT01 with one bounded /32 profile attempt and zero retries
 - v0.4b.4 full collection failure reproduced and isolated to payload size, not credentials or WinRM connectivity
 
+## [0.4b.3-validation] - 2026-09-30
+
+### Validated
+- domain-joined Windows 11 workstation was discovered with High confidence while WinRM was stopped
+- scanner found Windows-associated ports but no 5985/5986
+- planner regression test now guarantees that a Windows/domain context alone does not create a WinRM adapter candidate when no WinRM service was discovered
+
+### Security
+- reinforces the rule that asset discovery does not imply credential attempts
+- protocol availability remains a mandatory gate before credential profile selection
+
 ## [0.4b.4.3-candidate] - 2026-09-30
 
 ### Fixed

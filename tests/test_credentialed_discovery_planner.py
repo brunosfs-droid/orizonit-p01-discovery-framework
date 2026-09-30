@@ -118,6 +118,38 @@ class PlannerTests(unittest.TestCase):
         win = next(x for x in plan["assets"] if x["ip"] == "192.168.100.10")
         self.assertEqual(win["protocol_plans"][0]["eligible_profile_count"], 0)
 
+    def test_domain_windows_without_winrm_has_no_adapter_candidate(self):
+        discovery = {
+            "metadata": {
+                "scanner_name": "P01-Network-Discovery-Scanner",
+                "scanner_version": "0.4.1",
+                "run_label": "w11-negative-gate",
+            },
+            "assets": [{
+                "ip": "192.168.100.30",
+                "hostname": "P01-W11-01.p01.lab.test",
+                "device_type_guess": "Windows Host",
+                "os_guess": "Windows",
+                "confidence": "High",
+                "open_ports": [
+                    {"port": 135, "service": "msrpc"},
+                    {"port": 139, "service": "netbios-ssn"},
+                    {"port": 445, "service": "microsoft-ds"},
+                    {"port": 3389, "service": "rdp"},
+                ],
+            }],
+        }
+        plan = planner.build_plan(
+            discovery,
+            self.profiles,
+            realm_map={"192.168.100.30": "P01LAB"},
+            max_candidates=2,
+        )
+        win = plan["assets"][0]
+        self.assertEqual(win["detected_protocols"], [])
+        self.assertEqual(win["protocol_plans"], [])
+        self.assertEqual(plan["summary"]["adapter_candidates"], 0)
+
 
 if __name__ == "__main__":
     unittest.main()
