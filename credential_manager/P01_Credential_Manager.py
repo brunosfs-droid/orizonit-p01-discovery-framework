@@ -329,6 +329,12 @@ def _selector_match(
     behavior. New taxonomy fields become hard gates only when explicitly set.
     """
     if context is None:
+        taxonomy_requires_context = any(
+            profile.get(key) not in (None, [], "")
+            for key in ("realm_kind", "realm_name", "target_classes", "realm_evidence_min")
+        )
+        if taxonomy_requires_context:
+            return False, 0, ()
         return True, 0, ()
 
     selectors = profile.get("selectors") or {}
