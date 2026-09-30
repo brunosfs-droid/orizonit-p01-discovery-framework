@@ -18,7 +18,8 @@
 - **Asset Resolver:** 0.4c.0 — LAB VALIDATED; 5 Network Discovery + 5 FULL observations -> 5 logical assets, 0 unresolved, 0 ambiguous, 0 conflicts.
 - **Evidence Bundle:** 0.5a.0 — LAB VALIDATED; `.p01bundle` único para connected/offline transport, 8-artifact P01LAB bundle, SHA256 inventory e secret-material guard.
 - **Offline Import:** 0.5b.0 — LAB VALIDATED; import idempotente, raw evidence preservation, receipt JSON/SHA256 e server-side Asset Resolver replay com semantic_match=true.
-- **Central Ingestion API:** 0.5c.1 — LAB VALIDATED; localhost ingestion, idempotência, status lookup, semantic equivalence, negative gates e connection hygiene.non-loopback bind guard validados; negative transport gates pendentes.
+- **Central Ingestion API:** 0.5c.1 — LAB VALIDATED; localhost ingestion, idempotência, status lookup, semantic equivalence, negative gates e connection hygiene.
+- **Connected Discovery Node Upload:** 0.5d.0 — CANDIDATE; HTTPS/mTLS, identidade do node ligada ao certificado e ao bundle, upload outbound e retry somente para falha de transporte.
 - **Reporting Engine:** planejado após Network Discovery + Asset Resolver.
 
 > Saídas reais de discovery devem ser tratadas como **CONFIDENCIAL — DADOS DO CLIENTE**.
@@ -54,6 +55,9 @@ O scanner **descobre**. Os collectors **aprofundam**. O Asset Resolver **dedupli
 │   │   └── P01_Linux_Discovery_Collector.py
 │   └── windows/
 │       └── P01_Windows_AD_Discovery_Collector.ps1
+├── connected/
+│   ├── P01_Discovery_Node_Uploader.py
+│   └── README.md
 ├── credentialed_enrichment/
 │   ├── P01_SSH_Enricher.py
 │   ├── requirements-ssh.txt
@@ -176,8 +180,8 @@ O repositório preserva histórico por **commits, branches, tags e releases**. O
 
 1. fechar validação AD stale v0.3;
 2. validar Network Discovery v0.4a em rede doméstica/autorizada;
-3. v0.5c — fechar negative transport gates da Central Ingestion API em localhost;
-4. v0.5d — Connected Discovery Node Upload com TLS/node authentication após v0.5c;
+3. v0.5d.0 — validar Connected Discovery Node Upload via mTLS no P01LAB;
+4. v0.5d — separar client/server em hosts distintos após o gate local;
 5. v0.4c — evoluir identidade persistente, conflito e adapters adicionais;
 5. depois: SNMPv3/SNMPv2c, VMware/network adapters e Dynamic Scope Expansion;
 6. Reporting Engine v0.1;

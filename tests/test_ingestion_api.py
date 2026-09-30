@@ -207,6 +207,71 @@ class IngestionAPITests(unittest.TestCase):
                 server.server_close()
                 thread.join(timeout=3)
 
+    def test_mtls_transport_requires_complete_material(self):
+        with self.assertRaises(ValueError):
+            mod.validate_transport_config("0.0.0.0", "mtls")
+
+    def test_localhost_transport_rejects_remote_bind(self):
+        with self.assertRaises(ValueError):
+            mod.validate_transport_config("0.0.0.0", "localhost")
+
+    def test_certificate_node_id_prefers_san_dns(self):
+        cert = {
+            "subjectAltName": (("DNS", "P01-MGMT01"),),
+            "subject": ((("commonName", "ignored-cn"),),),
+        }
+        self.assertEqual(mod.certificate_node_id(cert), "P01-MGMT01")
+
+    @mock.patch.object(mod, "_bundle_manifest_from_validated_file")
+    @mock.patch.object(mod, "validate_bundle")
+    def test_authenticated_node_must_match_bundle_node(self, validate, manifest):
+        validate.return_value = {
+            "bundle_id": "bnd-0123456789abcdef0123",
+            "artifact_count": 8,
+            "credentialed_evidence_count": 5,
+            "verified_inventory_entries": 9,
+        }
+        manifest.return_value = {
+            "bundle_id": "bnd-0123456789abcdef0123",
+            "assessment_id": "P01LAB-CTX-R1",
+            "node_id": "P01-MGMT01",
+        }
+        data = b"synthetic-bundle-bytes"
+        sha = hashlib.sha256(data).hexdigest()
+        with tempfile.TemporaryDirectory() as td:
+            service = mod.IngestionService(pathlib.Path(td), transport_mode="mtls")
+            with self.assertRaises(mod.IngestionError) as ctx:
+                service.ingest_stream(
+                    io.BytesIO(data),
+                    len(data),
+                    sha,
+                    authenticated_node_id="OTHER-NODE",
+                )
+            self.assertEqual(ctx.exception.status_code, 403)
+
+    def test_lookup_is_scoped_to_authenticated_node(self):
+        bundle_id = "bnd-0123456789abcdef0123"
+        with tempfile.TemporaryDirectory() as td:
+            store = pathlib.Path(td)
+            receipt = store / "assessments" / "P01LAB-CTX-R1" / "imports" / bundle_id / "receipt" / "import-receipt.json"
+            receipt.parent.mkdir(parents=True)
+            receipt.write_text(json.dumps({
+                "status": "imported",
+                "bundle_id": bundle_id,
+                "assessment_id": "P01LAB-CTX-R1",
+                "run_id": "R1",
+                "node_id": "P01-MGMT01",
+                "outer_sha256_verified": True,
+                "artifact_count": 8,
+                "credentialed_evidence_count": 5,
+                "verified_inventory_entries": 9,
+                "processing": {},
+            }), encoding="utf-8")
+            service = mod.IngestionService(store, transport_mode="mtls")
+            with self.assertRaises(mod.IngestionError) as ctx:
+                service.lookup(bundle_id, authenticated_node_id="OTHER-NODE")
+            self.assertEqual(ctx.exception.status_code, 403)
+
     def test_http_rejects_non_bundle_content_type(self):
         with tempfile.TemporaryDirectory() as td:
             service = mod.IngestionService(pathlib.Path(td), process=False)

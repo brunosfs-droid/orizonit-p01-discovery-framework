@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://orizonit.example/schemas/p01-connected-upload-receipt-v0.5d.json",
+  "title": "Orizon IT P01 Connected Upload Receipt v0.5d",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "uploader_name",
+    "uploader_version",
+    "created_at_utc",
+    "node_id",
+    "bundle_id",
+    "assessment_id",
+    "bundle_sha256",
+    "bundle_size_bytes",
+    "server_url",
+    "tls_server_verification",
+    "mtls_client_certificate_used",
+    "secret_values_persisted",
+    "result"
+  ],
+  "properties": {
+    "schema_version": {"const": "0.5d"},
+    "uploader_name": {"const": "P01-Discovery-Node-Uploader"},
+    "node_id": {"type": "string", "minLength": 1},
+    "bundle_id": {"type": "string", "pattern": "^bnd-[0-9a-f]{20}$"},
+    "assessment_id": {"type": "string", "minLength": 1},
+    "bundle_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "bundle_size_bytes": {"type": "integer", "minimum": 1},
+    "server_url": {"type": "string", "pattern": "^https://"},
+    "tls_server_verification": {"const": true},
+    "mtls_client_certificate_used": {"const": true},
+    "secret_values_persisted": {"const": false},
+    "result": {
+      "type": "object",
+      "required": ["status", "http_status", "attempts", "server_response"],
+      "properties": {
+        "status": {"const": "success"},
+        "http_status": {"type": "integer", "minimum": 200, "maximum": 299},
+        "attempts": {"type": "integer", "minimum": 1},
+        "server_response": {"type": "object"}
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}
