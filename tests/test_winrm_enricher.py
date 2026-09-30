@@ -16,6 +16,27 @@ class ReadOnlyTests(unittest.TestCase):
             self.assertNotIn("=(if(", compact, name)
             self.assertNotIn("=(try{", compact, name)
 
+class FailureClassificationTests(unittest.TestCase):
+    def test_connect_timeout_does_not_burn_credential_budget(self):
+        r=mod.classify_attempt_failure(
+            "ConnectTimeout",
+            "Connection to 192.0.2.10 timed out. (connect timeout=30)",
+            None,
+        )
+        self.assertEqual(r["failure_category"],"transport")
+        self.assertFalse(r["counts_against_credential_budget"])
+
+    def test_http_401_counts_as_authentication_failure(self):
+        r=mod.classify_attempt_failure(None,"HTTP 401 Unauthorized",401)
+        self.assertEqual(r["failure_category"],"authentication")
+        self.assertTrue(r["counts_against_credential_budget"])
+
+    def test_unknown_remote_failure_is_conservative(self):
+        r=mod.classify_attempt_failure(None,"remote script failed",500)
+        self.assertEqual(r["failure_category"],"remote_execution_or_unknown")
+        self.assertFalse(r["counts_against_credential_budget"])
+
+
 class SizeRegressionTests(unittest.TestCase):
     def test_each_section_small(self):
         for name,script in mod.POWERSHELL_SECTIONS.items():
