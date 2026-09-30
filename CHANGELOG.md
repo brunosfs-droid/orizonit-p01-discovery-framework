@@ -10,6 +10,23 @@ All notable changes to the P01 Discovery Framework are documented here.
 - Asset Resolver / deduplication (v0.4c)
 - Reporting Engine v0.1
 
+## [0.4b.4.1-candidate] - 2026-09-30
+
+### Fixed
+- split WinRM full collection into small independent PowerShell sections
+- avoid the v0.4b.4 `The command line is too long.` failure caused by one oversized encoded run_ps payload
+- preserve successful sections when another section fails
+
+### Added
+- per-section collection evidence
+- `failed_section_count`
+- `collected_with_section_failures` status
+- unit regression test that keeps every PowerShell section below the configured size bound
+
+### Validated
+- WinRM/NTLM authentication succeeded against P01-MGMT01 with one bounded /32 profile attempt and zero retries
+- v0.4b.4 full collection failure reproduced and isolated to payload size, not credentials or WinRM connectivity
+
 ## [0.4b.4-candidate] - 2026-09-30
 
 ### Added
