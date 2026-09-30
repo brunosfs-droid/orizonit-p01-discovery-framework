@@ -184,10 +184,18 @@ O LAB inicial usará P01-MGMT01 como Discovery Node por possuir acesso ao segmen
 - **Status:** LAB VALIDATED. Positive path, idempotência, status lookup, semantic equivalence, bind loopback-only, negative gates 400/422/422/413 e connection hygiene v0.5c.1 foram validados no P01LAB.
 
 ### v0.5d — Connected Discovery Node Upload
-- upload outbound-only;
-- retry queue;
-- mTLS or short-lived enrollment credentials;
+- upload outbound-only do Discovery Node para o servidor;
+- HTTPS com TLS 1.2+;
+- mTLS na primeira iteração;
+- server certificate validation no Node;
+- client certificate validation no servidor;
+- `X-P01-Node-ID` ligado à identidade DNS SAN/CN do certificado cliente;
+- bundle `node_id` deve coincidir com o node autenticado;
+- status lookup escopado ao node autenticado;
+- retries limitados apenas a falhas de transporte;
+- nenhum retry automático de 4xx/TLS-auth failures;
 - no server-initiated arbitrary execution.
+- **Status:** CANDIDATE implementado; primeiro gate será mTLS local usando o bundle P01LAB já homologado, seguido por client/server em hosts distintos.
 
 ### v0.5e — Optional Installed Service
 - portable remains default for one-shot assessments;
