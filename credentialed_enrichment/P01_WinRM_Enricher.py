@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
 
 ADAPTER_NAME="P01-WinRM-Credentialed-Enrichment"
-ADAPTER_VERSION="0.4b.4.1"
+ADAPTER_VERSION="0.4b.4.2"
 SCHEMA_VERSION="0.4b"
 ROOT=Path(__file__).resolve().parents[1]
 CRED_DIR=ROOT/"credential_manager"
@@ -164,7 +164,7 @@ def build_candidate_networks(collection):
         if not prefix or prefix=="0.0.0.0/0":continue
         try:net=ipaddress.ip_network(prefix,strict=False)
         except ValueError:continue
-        if net.version!=4 or net.is_loopback or net.is_link_local or net.is_multicast:continue
+        if net.version!=4 or net.prefixlen==32 or net.is_loopback or net.is_link_local or net.is_multicast:continue
         item=candidates.setdefault(str(net),{"network":str(net),"is_private":net.is_private,"authorization_status":"unassessed","auto_scan":False,"sources":[]})
         item["sources"].append({"evidence":"route_table","interface_index":route.get("interface_index"),"next_hop":route.get("next_hop")})
     result=list(candidates.values());result.sort(key=lambda x:(int(ipaddress.ip_network(x["network"]).network_address),ipaddress.ip_network(x["network"]).prefixlen));return result
@@ -195,7 +195,7 @@ def attempt_profile(profile_match,target,port,scheme,transport,server_cert_valid
 def write_output(output_dir,run_label,payload):
     output_dir.mkdir(parents=True,exist_ok=True);ts=dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ");out=output_dir/f"P01-WinRM-Enrichment_{ts}_{safe_label(run_label)}.json";out.write_text(json.dumps(payload,indent=2,ensure_ascii=False)+"\n",encoding="utf-8");digest=hashlib.sha256(out.read_bytes()).hexdigest();sha=out.with_suffix(out.suffix+".sha256");sha.write_text(f"{digest}  {out.name}\n",encoding="utf-8");return out,sha
 def main(argv=None):
-    p=argparse.ArgumentParser(description="P01 WinRM Credentialed Enrichment v0.4b.4.1")
+    p=argparse.ArgumentParser(description="P01 WinRM Credentialed Enrichment v0.4b.4.2")
     p.add_argument("--profiles",required=True);p.add_argument("--target",required=True);p.add_argument("--scheme",choices=["http","https"],default="http");p.add_argument("--port",type=int);p.add_argument("--transport",choices=["ntlm"],default="ntlm");p.add_argument("--server-cert-validation",choices=["validate","ignore"],default="validate");p.add_argument("--realm");p.add_argument("--hostname");p.add_argument("--vendor");p.add_argument("--device-type",default="Windows Host");p.add_argument("--os-family",default="Windows");p.add_argument("--confidence",default="High");p.add_argument("--max-candidates",type=int,default=1);p.add_argument("--auth-only",action="store_true");p.add_argument("--output-dir",default="./output");p.add_argument("--run-label",default="winrm-enrichment");p.add_argument("--ack-authorized-access",action="store_true");args=p.parse_args(argv)
     if not args.ack_authorized_access:p.error("--ack-authorized-access is required.")
     target=ipaddress.ip_address(args.target);port=args.port if args.port is not None else (5986 if args.scheme=="https" else 5985);validate_scripts()
