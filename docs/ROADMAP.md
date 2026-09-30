@@ -159,6 +159,7 @@ O LAB inicial usará P01-MGMT01 como Discovery Node por possuir acesso ao segmen
 - preservar assessment/run/node identity e component/schema versions;
 - no secret values or Secret Provider references;
 - formato transportável como `.p01bundle`.
+- **Status:** CANDIDATE implementado; próximo gate é criar e validar um bundle real do P01LAB contendo Network Discovery, 5 credentialed FULL results, Assessment Manifest e Asset Resolver R2.
 
 ### v0.5b — Offline Export / Import
 - exportar bundle no Discovery Node;
