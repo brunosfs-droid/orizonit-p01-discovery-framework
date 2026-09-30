@@ -53,7 +53,14 @@
 - identity/domain/OS/network/firewall/hotfixes;
 - candidate networks sem auto-scan;
 - JSON + SHA256 sem secrets.
-- **Status:** candidate aguardando LAB Windows.
+- **Status:** AUTH/NTLM validado no P01-MGMT01. A coleta full v0.4b.4 encontrou o limite `The command line is too long.`.
+
+### v0.4b.4.1 — Modular WinRM Collection
+- divide a coleta em seções PowerShell pequenas e independentes;
+- preserva seções bem-sucedidas em falhas parciais;
+- registra `collection_sections` e `failed_section_count`;
+- mantém candidate networks sem auto-scan.
+- **Status:** candidate aguardando repetição do full enrichment no P01-MGMT01.
 
 ### v0.4b.5+ — próximos adapters/executor
 - SNMPv3/SNMPv2c;
