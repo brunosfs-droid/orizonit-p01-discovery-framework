@@ -69,7 +69,7 @@
         "secret_provider_references_persisted": { "const": false },
         "private_key_material_persisted": { "const": false },
         "server_initiated_remote_execution": { "const": false },
-        "active_discovery_managed_in_this_version": { "const": false }
+        "active_discovery_managed_in_this_version": { "type": "boolean" }
       },
       "additionalProperties": false
     },
