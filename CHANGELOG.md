@@ -1,5 +1,10 @@
 ## [Unreleased]
 
+### Validated
+- Portable runtime v0.5e.6 end-to-end P01LAB flow through mTLS upload: HTTP 201/imported, semantic match, authenticated node binding, receipt/state completion, zero-input no-second-upload resume and forced-resend transport gate.
+
+## [Unreleased]
+
 ### Added
 - Portable runtime v0.5e.6 zero-input safe resume for completed connected uploads: after the first explicit mTLS upload, `upload --workspace ...` returns `already_complete` without transport parameters or network activity.
 
