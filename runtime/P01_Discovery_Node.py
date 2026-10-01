@@ -2277,6 +2277,12 @@ def _workspace_bundle_inputs(
         raise RuntimeErrorSafe(
             "Asset Resolver artifact is not bound to the current FULL job"
         )
+    resolver_target_hashes = resolver_info.get("source_full_target_sha256")
+    if resolver_target_hashes:
+        if sorted(str(x).lower() for x in resolver_target_hashes) != sorted(target_hashes):
+            raise RuntimeErrorSafe(
+                "Asset Resolver artifact is not bound to the current FULL target set"
+            )
 
     manifest_path: Optional[Path] = None
     manifest_sha: Optional[str] = None
