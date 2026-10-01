@@ -1,6 +1,6 @@
 # Cancã v0.5f.0 — Optional Agent foundation
 
-Date: 2026-10-01. Status: CANDIDATE; partial Windows P01LAB evidence reviewed.
+Date: 2026-10-01. Status: LAB VALIDATED for Windows P01LAB R1; Linux CI coverage only.
 Baseline main: c35b3c27364dba4fb5c1e95ce3d5e29fbcd12d11, portable v0.5e.6 LAB VALIDATED.
 Foundation merged in PR #84: b85746a38295def054a3822fb152086fae9ef3b2.
 Tracking: Issue #83. Runtime engine version/schema remain v0.5e.6 / v0.5e.
@@ -32,7 +32,7 @@ prove real connectivity or OS service lifecycle.
 
 ## Real LAB evidence and remaining acceptance
 
-[25 Windows screenshots reviewed](validation/OPTIONAL_AGENT_P01LAB_R1_v0.5f.0.md):
+[27 Windows screenshots reviewed](validation/OPTIONAL_AGENT_P01LAB_R1_v0.5f.0.md):
 offline doctor/status, completed-resume with unchanged state and two matching
 journal hashes; default-deny; one-stage progression through discovery, planning,
 dry-run, AUTH, FULL, resolver and export; separate AUTH/FULL/upload grants;
@@ -54,17 +54,22 @@ zero runtime dispatch, state/config unchanged, policy restored, lock released an
 intent retained. Journal contract audit passed for 17/17 completed-run journals
 and 4/4 negative-run journals, including hashes, fixed fields/enums, UUID, UTC
 timestamps and digests. This proves pre-dispatch interruption gating, not a crash
-during AUTH/FULL or after POST. Still pending: independent server POST check and
-artifact/target tamper. A default-deny isolated-copy helper is prepared for a FULL
-aggregate and AUTH per-target result, with exact-byte restoration and source
-fingerprints. The copy is an offline fixture; its bundle is never reimported.
+during AUTH/FULL or after POST. Isolated-copy FULL aggregate and AUTH target
+tamper passed: doctor/run-once rejected both with exit 2, exact bytes restored,
+sidecars/state unchanged, all grants denied, zero dispatch and 75 source files
+unchanged. The active mTLS API console shows three historical HTTP 201 POSTs
+from 192.168.100.20, last at 01/Oct/2026 19:10:04, with none later displayed after
+client repeats. Gate accepted within the observed process/window; run attribution
+is correlated with client evidence because access logs do not carry bundle_id.
+The copy remains an offline fixture; its bundle is never reimported.
 Follow the corrected
-[LAB procedure](LAB_OPTIONAL_AGENT_v0.5f.0_R1.md); retain CANDIDATE until closure.
+[LAB procedure](LAB_OPTIONAL_AGENT_v0.5f.0_R1.md). Foundation acceptance closed
+for Windows R1. Linux real deployment is not claimed; systemd has its own v0.5f.2 LAB.
 
 Service installation and automatic schedules remain outside v0.5f.0. Schedule
 descriptor is metadata only. Workspaces require local filesystem lock semantics;
 network filesystem qualification and journal rotation are pending. Protect policy,
 manifest/profiles and workspace with OS permissions; SHA256 is not a signature.
 
-Next: v0.5f.0 LAB VALIDATED -> v0.5f.1 Windows Service -> v0.5f.2 Linux/systemd ->
+Next: [v0.5f.1 Windows Service CANDIDATE](STATUS_WINDOWS_SERVICE_v0.5f.1.md) -> v0.5f.2 Linux/systemd ->
 v0.5f.3 scheduling/recovery/soak. No v0.5f.1 service is installed by this change.

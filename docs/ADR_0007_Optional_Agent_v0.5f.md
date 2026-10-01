@@ -1,6 +1,7 @@
 # ADR 0007 — Optional agent foundation
 
-Status: Accepted for v0.5f.0 implementation; LAB validation pending.
+Status: Accepted; v0.5f.0 Windows P01LAB R1 LAB VALIDATED on 2026-10-01.
+Linux CI passed; real Linux/systemd acceptance remains v0.5f.2.
 Date: 2026-10-01. Scope: Issue #83.
 
 ## Decision

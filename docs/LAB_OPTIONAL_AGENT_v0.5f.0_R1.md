@@ -1,15 +1,17 @@
 # Cancã — LAB Optional Agent v0.5f.0 / P01LAB R1
 
-Data: 01/10/2026. Status: CANDIDATE; LAB Windows parcialmente comprovado.
+Data: 01/10/2026. Status: LAB VALIDATED — Windows P01LAB R1; Linux coberto por CI.
 Baseline: portable runtime v0.5e.6 LAB VALIDATED; Issue #83.
 
-As 25 capturas do R1 comprovam completed-resume, progressão até upload,
+As 27 capturas do R1 comprovam completed-resume, progressão até upload,
 FULL 5/5, receipt mTLS HTTP 201/semantic_match=true, grants separados e lock
 agente/portátil. Policy inválida/identidade divergente falharam com exit 2;
 Config tamper e interrupção antes de dispatch passaram no run negativo, com
 state/config preservados, policy restaurada e intent mantido. Auditoria do
 contrato e hashes dos journals: 17/17 no completo e 4/4 no negativo.
-Artifact/target tamper e confirmação de logs do servidor continuam pendentes.
+Artifact/target tamper PASS, 75 arquivos da origem inalterados; console da API
+mostra último POST às 19:10:04, sem POST posterior exibido após os repeats.
+Aceite fechado no processo/janela observados. Linux real não foi executado.
 Ver [registro de evidências](validation/OPTIONAL_AGENT_P01LAB_R1_v0.5f.0.md).
 
 ## Objetivo e limites
@@ -271,26 +273,26 @@ python runtime/P01_Discovery_Node.py status --workspace $AgentWorkspace --json
 
 O [registro R1](validation/OPTIONAL_AGENT_P01LAB_R1_v0.5f.0.md) contém a prova mTLS
 concluída, policy/config tamper/interrupção/auditoria aprovados e o próximo comando
-de artifact/target tamper em cópia isolada. Não repetir os gates
+do LAB Windows Service v0.5f.1; artifact/target tamper já aprovado. Não repetir os gates
 live concluídos para coletar esses negativos.
 
 ## Critério de aceite e evidências
 
 - [x] doctor offline; policy versionada válida e grants ausentes negados;
-- [ ] completed workspace: already_complete, state inalterado, nenhum novo POST;
+- [x] completed workspace: already_complete, state inalterado, nenhum novo POST;
 - [x] discovery/planning/dry-run avançam uma vez cada; parada antes de AUTH;
 - [x] AUTH e FULL dependem de grants distintos; nenhuma repetição silenciosa;
 - [x] resolver/export avançam; upload negado ou transport_required sem inputs;
-- [ ] mTLS autorizado conclui; repeat upload não faz POST;
+- [x] mTLS autorizado conclui; repeat upload não faz POST;
 - [x] JSON/SHA256 journal íntegro e sem segredos/key paths/erros brutos;
-- [ ] policy inválida/identity mismatch/integridade falham fechadas;
+- [x] policy inválida/identity mismatch/integridade falham fechadas;
 - [x] duas instâncias e agente vs portátil bloqueados pelo lock;
 - [x] interrupção antes de dispatch exige revisão e bloqueia replay; intent preservado;
 - [x] nenhum serviço/tarefa/cron instalado nesta versão.
 
-Os itens de completed-resume/upload aguardam confirmação independente de nenhum
-POST no servidor. A integridade aguarda tamper de artifact/target no LAB; o helper
-cria uma fixture isolada e não altera o run completo. O gate de interrupção acima
+Completed-resume/upload e integridade aprovados nas 27 capturas. O console da
+API não exibe POST posterior aos repeats na execução observada; a fixture de
+tamper preservou o run completo. O gate de interrupção acima
 tem a fronteira pre-dispatch; não comprova queda durante AUTH/FULL ou após POST.
 
 Enviar outputs/prints de doctor, status, resume, gates e hashes; journals e seus
@@ -298,4 +300,5 @@ sidecars; run-state e sidecar; receipt sanitizado e confirmação de logs do ser
 Não incluir secret locators ou private key. CI usa fixtures/mock de transporte;
 não substitui este aceite Windows/Linux e mTLS real.
 
-Após aprovação: marcar v0.5f.0 LAB VALIDATED e iniciar v0.5f.1 Windows Service.
+Aceite Windows concluído em 01/10/2026: v0.5f.0 LAB VALIDATED.
+Próximo roteiro: [LAB Windows Service v0.5f.1](LAB_WINDOWS_SERVICE_v0.5f.1_R1.md).
