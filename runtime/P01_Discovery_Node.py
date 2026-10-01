@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Cancã / Orizon IT Portable Discovery Node Runtime v0.5e.0.
+"""Cancã / Orizon IT Portable Discovery Node Runtime v0.5e.1.
 
 Portable-first operator workflow foundation.
 
-v0.5e.0 intentionally does not orchestrate Network Discovery or credentialed
-authentication yet. It manages deterministic workspaces/checkpoints and wraps
-the already validated Evidence Bundle and Connected Upload components.
+v0.5e.1 internalizes authorized Network Discovery as the first managed active
+stage. Credential planning/execution and Asset Resolver remain externally
+managed until later incremental releases. Evidence Bundle and Connected Upload
+continue to reuse the already validated components.
 
 Security properties:
 - no plaintext credential values are accepted or persisted;
@@ -21,6 +22,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import importlib.util
+import ipaddress
 import json
 import os
 import platform
@@ -36,7 +38,7 @@ from urllib.parse import urlparse
 
 NAME = "Canca-Portable-Discovery-Node"
 DISPLAY_NAME = "Cancã Portable Discovery Node"
-VERSION = "0.5e.0"
+VERSION = "0.5e.1"
 SCHEMA_VERSION = "0.5e"
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -307,8 +309,8 @@ def init_workspace(
             "managed_by": VERSION,
         },
         "network_discovery": {
-            "status": "external_required",
-            "managed_from_version": "0.5e.1",
+            "status": "pending",
+            "managed_by": VERSION,
         },
         "credential_plan": {
             "status": "external_required",
@@ -349,7 +351,7 @@ def init_workspace(
             "secret_provider_references_persisted": False,
             "private_key_material_persisted": False,
             "server_initiated_remote_execution": False,
-            "active_discovery_managed_in_this_version": False,
+            "active_discovery_managed_in_this_version": True,
         },
         "steps": steps,
         "artifacts": {},
@@ -489,6 +491,261 @@ def _artifact_ref(path: Path) -> Dict[str, Any]:
         "path": str(path.resolve()),
         "sha256": digest_file(path),
         "size_bytes": path.stat().st_size,
+    }
+
+
+
+def _authorized_ipv4_networks(manifest: Mapping[str, Any]) -> List[ipaddress.IPv4Network]:
+    values = manifest.get("authorized_scopes")
+    if not isinstance(values, list) or not values:
+        raise RuntimeErrorSafe("Assessment Manifest has no authorized_scopes")
+    networks: List[ipaddress.IPv4Network] = []
+    for raw in values:
+        try:
+            net = ipaddress.ip_network(str(raw), strict=False)
+        except ValueError as exc:
+            raise RuntimeErrorSafe(f"invalid authorized scope {raw!r}: {exc}") from exc
+        if not isinstance(net, ipaddress.IPv4Network):
+            raise RuntimeErrorSafe("v0.5e.1 managed discovery supports IPv4 only")
+        networks.append(net)
+    return networks
+
+
+def run_network_discovery(
+    workspace: Path,
+    targets: Sequence[str],
+    excludes: Sequence[str],
+    *,
+    ack_authorized_scan: bool,
+    profile: str = "safe",
+    ports: Optional[str] = None,
+    timeout: float = 0.35,
+    workers: int = 64,
+    max_hosts: int = 2048,
+    allow_large_scope: bool = False,
+    disable_ssdp: bool = False,
+    force_rescan: bool = False,
+) -> Dict[str, Any]:
+    workspace = workspace.expanduser().resolve()
+    state = _load_state(workspace)
+    step = state["steps"]["network_discovery"]
+
+    if step.get("status") == "completed" and not force_rescan:
+        existing = state.get("artifacts", {}).get("network_discovery", {})
+        path_value = existing.get("path")
+        if path_value:
+            path = _workspace_owned_path(workspace, str(path_value))
+            if path.is_file() and digest_file(path) == existing.get("sha256"):
+                return {
+                    "status": "already_complete",
+                    "network_json": str(path),
+                    "network_sha256": existing.get("sha256"),
+                    "hosts_discovered": existing.get("hosts_discovered"),
+                    "network_activity_performed": False,
+                }
+        raise RuntimeErrorSafe(
+            "network discovery is completed but recorded evidence is missing or changed"
+        )
+
+    if force_rescan:
+        downstream = ("credential_plan", "credentialed_execution", "asset_resolver", "evidence_bundle", "upload")
+        completed = [
+            name
+            for name in downstream
+            if (state.get("steps", {}).get(name) or {}).get("status") == "completed"
+        ]
+        if completed:
+            raise RuntimeErrorSafe(
+                "refusing --force-rescan because downstream completed steps would become stale: "
+                + ", ".join(completed)
+            )
+
+    if not ack_authorized_scan:
+        raise RuntimeErrorSafe(
+            "--ack-authorized-scan is required before managed active discovery"
+        )
+    if not targets:
+        raise RuntimeErrorSafe("provide at least one --target")
+
+    manifest_ref = state.get("source_refs", {}).get("assessment_manifest")
+    if not manifest_ref:
+        raise RuntimeErrorSafe(
+            "managed discovery requires an Assessment Manifest with authorized_scopes"
+        )
+    manifest_path = Path(str(manifest_ref))
+    manifest = load_json(manifest_path)
+    if str(manifest.get("assessment_id") or "") != str(state.get("assessment_id") or ""):
+        raise RuntimeErrorSafe(
+            "Assessment Manifest assessment_id does not match workspace assessment_id"
+        )
+
+    scanner = _load_component(
+        "network_discovery/P01_Network_Discovery_Scanner.py",
+        "p01_runtime_network_discovery",
+    )
+
+    manifest_excludes = [
+        str(x)
+        for x in (manifest.get("exclude_scopes") or [])
+        if str(x).strip()
+    ]
+    effective_excludes = list(manifest_excludes) + [str(x) for x in excludes]
+
+    try:
+        effective_ips, _resolved_excludes = scanner.resolve_scope(
+            list(targets),
+            effective_excludes,
+        )
+    except Exception as exc:
+        raise RuntimeErrorSafe(f"unable to resolve requested discovery scope: {exc}") from exc
+
+    authorized = _authorized_ipv4_networks(manifest)
+    outside = [
+        ip
+        for ip in effective_ips
+        if not any(ipaddress.ip_address(ip) in net for net in authorized)
+    ]
+    if outside:
+        preview = ", ".join(outside[:5])
+        more = "" if len(outside) <= 5 else f" (+{len(outside)-5} more)"
+        raise RuntimeErrorSafe(
+            "requested effective discovery scope contains addresses outside "
+            f"Assessment Manifest authorization: {preview}{more}"
+        )
+
+    output_dir = workspace / "evidence" / "network"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    run_label = f"{safe_label(state['run_id'], 'run_id')}-NETWORK"
+    before = {p.resolve() for p in output_dir.glob("P01-Network-Discovery_*.json")}
+
+    argv: List[str] = []
+    for target in targets:
+        argv.extend(["--target", str(target)])
+    for exclude in effective_excludes:
+        argv.extend(["--exclude", exclude])
+    argv.extend([
+        "--profile", profile,
+        "--timeout", str(timeout),
+        "--workers", str(workers),
+        "--max-hosts", str(max_hosts),
+        "--output-dir", str(output_dir),
+        "--run-label", run_label,
+        "--ack-authorized-scan",
+    ])
+    if ports:
+        argv.extend(["--ports", ports])
+    if allow_large_scope:
+        argv.append("--allow-large-scope")
+    if disable_ssdp:
+        argv.append("--disable-ssdp")
+
+    step.clear()
+    step.update({
+        "status": "running",
+        "started_at_utc": utc_now_iso(),
+        "managed_by": VERSION,
+        "authorization_acknowledged": True,
+    })
+    _append_event(
+        state,
+        "network_discovery",
+        "started",
+        {
+            "target_count": len(targets),
+            "effective_ip_count": len(effective_ips),
+            "profile": profile,
+        },
+    )
+    _write_state(workspace, state)
+
+    try:
+        rc = int(scanner.main(argv))
+    except SystemExit as exc:
+        rc = int(exc.code or 0)
+    except Exception as exc:
+        step["status"] = "failed"
+        step["failed_at_utc"] = utc_now_iso()
+        step["last_error"] = str(exc)[:1200]
+        _append_event(state, "network_discovery", "failed", {"error": str(exc)[:500]})
+        _write_state(workspace, state)
+        raise RuntimeErrorSafe(str(exc)) from exc
+
+    after = sorted(
+        {p.resolve() for p in output_dir.glob("P01-Network-Discovery_*.json")} - before,
+        key=lambda p: p.stat().st_mtime_ns,
+    )
+    if not after:
+        step["status"] = "failed"
+        step["failed_at_utc"] = utc_now_iso()
+        step["last_error"] = "Network Discovery did not produce a new JSON artifact"
+        _append_event(state, "network_discovery", "failed", {"return_code": rc})
+        _write_state(workspace, state)
+        raise RuntimeErrorSafe(step["last_error"])
+
+    network_json = after[-1]
+    sidecar = network_json.with_suffix(network_json.suffix + ".sha256")
+    if not verify_sidecar(network_json):
+        step["status"] = "failed"
+        step["failed_at_utc"] = utc_now_iso()
+        step["last_error"] = "Network Discovery output SHA256 sidecar is missing or invalid"
+        _append_event(state, "network_discovery", "failed", {"return_code": rc})
+        _write_state(workspace, state)
+        raise RuntimeErrorSafe(step["last_error"])
+
+    network_doc = load_json(network_json)
+    hosts = int((network_doc.get("summary") or {}).get("hosts_discovered") or 0)
+    state["artifacts"]["network_discovery"] = {
+        "path": _relative_if_owned(workspace, network_json),
+        "sha256_path": _relative_if_owned(workspace, sidecar),
+        "sha256": digest_file(network_json),
+        "hosts_discovered": hosts,
+        "effective_ip_count": len(effective_ips),
+        "targets": list(targets),
+        "excludes": effective_excludes,
+    }
+
+    if rc != 0:
+        step["status"] = "failed"
+        step["failed_at_utc"] = utc_now_iso()
+        step["last_error"] = f"Network Discovery returned code {rc}; partial evidence retained"
+        _append_event(
+            state,
+            "network_discovery",
+            "failed",
+            {"return_code": rc, "partial_evidence_retained": True},
+        )
+        _write_state(workspace, state)
+        raise RuntimeErrorSafe(step["last_error"])
+
+    step.clear()
+    step.update({
+        "status": "completed",
+        "completed_at_utc": utc_now_iso(),
+        "managed_by": VERSION,
+        "authorization_acknowledged": True,
+        "network_activity_performed": True,
+        "authentication_attempts": False,
+        "hosts_discovered": hosts,
+        "effective_ip_count": len(effective_ips),
+    })
+    _append_event(
+        state,
+        "network_discovery",
+        "completed",
+        {
+            "hosts_discovered": hosts,
+            "effective_ip_count": len(effective_ips),
+        },
+    )
+    _write_state(workspace, state)
+    return {
+        "status": "completed",
+        "network_json": str(network_json),
+        "network_sha256": digest_file(network_json),
+        "hosts_discovered": hosts,
+        "effective_ip_count": len(effective_ips),
+        "network_activity_performed": True,
+        "authentication_attempts_performed": False,
     }
 
 
@@ -736,6 +993,13 @@ def upload_bundle(
 
 def next_action(state: Mapping[str, Any]) -> str:
     steps = state.get("steps") or {}
+    network_status = (steps.get("network_discovery") or {}).get("status")
+    if network_status in {"pending", "failed"}:
+        return "run_network_discovery"
+    if network_status == "completed":
+        plan_status = (steps.get("credential_plan") or {}).get("status")
+        if plan_status == "external_required":
+            return "credential_plan_external"
     if (steps.get("evidence_bundle") or {}).get("status") != "completed":
         return "export"
     if (steps.get("upload") or {}).get("status") == "failed":
@@ -832,6 +1096,23 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
     status_p.add_argument("--workspace", required=True)
     status_p.add_argument("--json", action="store_true")
 
+    run_p = sub.add_parser(
+        "run",
+        help="Run the currently managed active stage (Network Discovery in v0.5e.1)",
+    )
+    run_p.add_argument("--workspace", required=True)
+    run_p.add_argument("--target", action="append", required=True)
+    run_p.add_argument("--exclude", action="append", default=[])
+    run_p.add_argument("--profile", choices=["safe", "standard"], default="safe")
+    run_p.add_argument("--ports")
+    run_p.add_argument("--timeout", type=float, default=0.35)
+    run_p.add_argument("--workers", type=int, default=64)
+    run_p.add_argument("--max-hosts", type=int, default=2048)
+    run_p.add_argument("--allow-large-scope", action="store_true")
+    run_p.add_argument("--disable-ssdp", action="store_true")
+    run_p.add_argument("--ack-authorized-scan", action="store_true")
+    run_p.add_argument("--force-rescan", action="store_true")
+
     export_p = sub.add_parser(
         "export",
         help="Create the validated .p01bundle from existing evidence",
@@ -902,6 +1183,31 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
                 print(json.dumps(result, indent=2, ensure_ascii=False))
             else:
                 _print_status(result)
+            return 0
+
+        if args.command == "run":
+            result = run_network_discovery(
+                workspace=Path(args.workspace),
+                targets=args.target,
+                excludes=args.exclude,
+                ack_authorized_scan=args.ack_authorized_scan,
+                profile=args.profile,
+                ports=args.ports,
+                timeout=args.timeout,
+                workers=args.workers,
+                max_hosts=args.max_hosts,
+                allow_large_scope=args.allow_large_scope,
+                disable_ssdp=args.disable_ssdp,
+                force_rescan=args.force_rescan,
+            )
+            print(f"{DISPLAY_NAME} v{VERSION}")
+            print(f"Network Discovery status: {result.get('status')}")
+            print(f"Hosts discovered: {result.get('hosts_discovered')}")
+            print(f"Effective IPs: {result.get('effective_ip_count')}")
+            print(f"JSON: {result.get('network_json')}")
+            print(f"SHA256: {result.get('network_sha256')}")
+            print(f"Network activity performed: {str(bool(result.get('network_activity_performed'))).lower()}")
+            print("Authentication attempts performed: false")
             return 0
 
         if args.command == "export":
