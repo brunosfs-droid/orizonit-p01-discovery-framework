@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Cancã / Orizon IT Portable Discovery Node Runtime v0.5e.5.
+"""Cancã / Orizon IT Portable Discovery Node Runtime v0.5e.6.
 
 Portable-first operator workflow foundation.
 
-v0.5e.5 makes Evidence Bundle export workspace-driven after the managed Asset
-Resolver. The normal export path derives and validates all evidence inputs from
-runtime state; explicit-path export remains available for backwards compatibility.
+v0.5e.6 closes the connected-upload runtime gate after workspace-driven bundle
+creation. A live upload still requires explicit mTLS transport inputs, while a
+completed upload can be resumed/status-checked with workspace identity only.
 
 Security properties:
 - no plaintext credential values are accepted or persisted;
@@ -37,7 +37,7 @@ from urllib.parse import urlparse
 
 NAME = "Canca-Portable-Discovery-Node"
 DISPLAY_NAME = "Cancã Portable Discovery Node"
-VERSION = "0.5e.5"
+VERSION = "0.5e.6"
 SCHEMA_VERSION = "0.5e"
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -358,6 +358,7 @@ def init_workspace(
             "credentialed_execution_full_managed_in_this_version": True,
             "asset_resolver_managed_in_this_version": True,
             "workspace_driven_bundle_managed_in_this_version": True,
+            "zero_input_upload_resume_supported": True,
         },
         "steps": steps,
         "artifacts": {},
@@ -512,7 +513,7 @@ def _authorized_ipv4_networks(manifest: Mapping[str, Any]) -> List[ipaddress.IPv
         except ValueError as exc:
             raise RuntimeErrorSafe(f"invalid authorized scope {raw!r}: {exc}") from exc
         if not isinstance(net, ipaddress.IPv4Network):
-            raise RuntimeErrorSafe("v0.5e.5 managed discovery supports IPv4 only")
+            raise RuntimeErrorSafe("v0.5e.6 managed discovery supports IPv4 only")
         networks.append(net)
     return networks
 
@@ -2542,16 +2543,19 @@ def export_bundle(
 
 def upload_bundle(
     workspace: Path,
-    server_url: str,
-    ca_cert: Path,
-    client_cert: Path,
-    client_key: Path,
+    server_url: Optional[str] = None,
+    ca_cert: Optional[Path] = None,
+    client_cert: Optional[Path] = None,
+    client_key: Optional[Path] = None,
     timeout: float = 30.0,
     max_retries: int = 2,
     force_resend: bool = False,
 ) -> Dict[str, Any]:
     workspace = workspace.expanduser().resolve()
     state = _load_state(workspace)
+    state["runtime_version"] = VERSION
+    state.setdefault("security", {})["zero_input_upload_resume_supported"] = True
+
     bundle_info = state.get("artifacts", {}).get("evidence_bundle")
     if state["steps"]["evidence_bundle"].get("status") != "completed" or not bundle_info:
         raise RuntimeErrorSafe("evidence bundle must be completed before upload")
@@ -2563,11 +2567,39 @@ def upload_bundle(
             "server_status": upload_step.get("server_status"),
             "http_status": upload_step.get("http_status"),
             "receipt": state.get("artifacts", {}).get("upload_receipt"),
+            "network_activity_performed": False,
+            "secret_resolution_performed": False,
+            "authentication_attempts_performed": False,
         }
 
+    missing = []
+    if not server_url:
+        missing.append("--server-url")
+    if ca_cert is None:
+        missing.append("--ca-cert")
+    if client_cert is None:
+        missing.append("--client-cert")
+    if client_key is None:
+        missing.append("--client-key")
+    if missing:
+        reason = (
+            "forced resend"
+            if force_resend and upload_step.get("status") == "completed"
+            else "live connected upload"
+        )
+        raise RuntimeErrorSafe(
+            f"{reason} requires explicit transport inputs: " + ", ".join(missing)
+        )
+
     bundle = _workspace_owned_path(workspace, str(bundle_info["path"]))
-    if not bundle.is_file() or digest_file(bundle) != bundle_info.get("sha256"):
-        raise RuntimeErrorSafe("recorded evidence bundle is missing or failed SHA256 verification")
+    if (
+        not bundle.is_file()
+        or digest_file(bundle) != bundle_info.get("sha256")
+        or not verify_sidecar(bundle)
+    ):
+        raise RuntimeErrorSafe(
+            "recorded evidence bundle is missing or failed SHA256 verification"
+        )
 
     parsed = urlparse(server_url)
     if parsed.scheme.lower() != "https" or not parsed.hostname:
@@ -2656,6 +2688,9 @@ def upload_bundle(
         "result": result,
         "receipt": str(receipt),
         "receipt_sha256": str(receipt_sha),
+        "network_activity_performed": True,
+        "secret_resolution_performed": False,
+        "authentication_attempts_performed": False,
     }
 
 
@@ -2839,10 +2874,10 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
         help="Upload the completed bundle using the validated v0.5d mTLS transport",
     )
     upload_p.add_argument("--workspace", required=True)
-    upload_p.add_argument("--server-url", required=True)
-    upload_p.add_argument("--ca-cert", required=True)
-    upload_p.add_argument("--client-cert", required=True)
-    upload_p.add_argument("--client-key", required=True)
+    upload_p.add_argument("--server-url")
+    upload_p.add_argument("--ca-cert")
+    upload_p.add_argument("--client-cert")
+    upload_p.add_argument("--client-key")
     upload_p.add_argument("--timeout", type=float, default=30.0)
     upload_p.add_argument("--max-retries", type=int, default=2)
     upload_p.add_argument(
@@ -3105,9 +3140,9 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
             result = upload_bundle(
                 workspace=Path(args.workspace),
                 server_url=args.server_url,
-                ca_cert=Path(args.ca_cert),
-                client_cert=Path(args.client_cert),
-                client_key=Path(args.client_key),
+                ca_cert=Path(args.ca_cert) if args.ca_cert else None,
+                client_cert=Path(args.client_cert) if args.client_cert else None,
+                client_key=Path(args.client_key) if args.client_key else None,
                 timeout=args.timeout,
                 max_retries=args.max_retries,
                 force_resend=args.force_resend,
@@ -3125,6 +3160,12 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
                 print(f"HTTP status: {result.get('http_status')}")
                 print(f"Server status: {result.get('server_status')}")
                 print("No network retry performed because upload was already completed.")
+            print(
+                "Network activity performed: "
+                f"{str(bool(result.get('network_activity_performed'))).lower()}"
+            )
+            print("Secret resolution performed: false")
+            print("Authentication attempts performed: false")
             return 0
 
     except RuntimeErrorSafe as exc:
