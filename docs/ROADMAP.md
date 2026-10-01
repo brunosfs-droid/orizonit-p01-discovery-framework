@@ -320,6 +320,6 @@ O LAB inicial usará P01-MGMT01 como Discovery Node por possuir acesso ao segmen
 - resume completed ocorre antes de setup de TLS/rede;
 - `--force-resend` exige novamente todos os parâmetros de transporte;
 - receipt JSON/SHA256 e state transition para `upload: completed` permanecem.
-- **Status:** CANDIDATE / CI gate pending; P01LAB end-to-end validation next.
+- **Status:** LAB VALIDATED no P01LAB-RUNTIME-R3. Upload mTLS HTTP 201/imported, semantic_match=true, node P01-MGMT01, receipt JSON/SHA256, state `upload: completed`, `Next action: complete`, zero-input repeat `already_complete` sem novo POST e force-resend sem transporte bloqueado.
 
 Follow-up: após fechar v0.5e, iniciar v0.5f Optional Installed Service/Agent e os gates de product alpha/persistência central.
