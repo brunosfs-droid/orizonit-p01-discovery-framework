@@ -1,10 +1,10 @@
-# Cancã Portable Discovery Node — v0.5e.2
+# Cancã Portable Discovery Node — v0.5e.3
 
 The portable runtime is the first unified operator workflow for the Cancã Discovery Node.
 
 It is intentionally **portable-first**: no Windows service or systemd installation is required.
 
-## Scope of v0.5e.2
+## Scope of v0.5e.3
 
 Implemented:
 
@@ -18,11 +18,12 @@ Implemented:
 - manifest excludes automatically honored by runtime discovery;
 - SHA256-protected runtime state/config;
 - managed Credential Planner using the workspace Network Discovery artifact plus Assessment Manifest/Credential Profiles;
-- resume guards that prevent silent re-scan/re-plan/re-export/re-upload of completed steps.
+- managed Multi-target Credentialed Executor **dry-run/preflight** using the workspace Credential Plan;
+- resume guards that prevent silent re-scan/re-plan/re-preview/re-export/re-upload of completed steps.
 
-Still external in v0.5e.2:
+Still external in v0.5e.3:
 
-- Credentialed Executor orchestration;
+- live credentialed execution/authentication;
 - Asset Resolver orchestration.
 
 ## Workspace
@@ -54,7 +55,7 @@ It does **not** persist plaintext passwords, Secret Provider locators (`wincred:
 initialized               completed
 network_discovery         pending -> running -> completed / failed
 credential_plan           pending -> running -> completed / failed
-credentialed_execution    external_required
+credentialed_execution    pending -> running -> preview_completed / failed
 asset_resolver            external_required
 evidence_bundle           pending -> completed / failed
 upload                    pending -> completed / failed
@@ -82,7 +83,7 @@ python .\runtime\P01_Discovery_Node.py doctor `
   --client-key C:\P01\pki-v05d-r1\p01-mgmt01.key
 ```
 
-Doctor performs no network activity in v0.5e.2.
+Doctor performs no network activity in v0.5e.3.
 
 ## Init
 
@@ -128,7 +129,21 @@ The runtime reuses the Network Discovery artifact recorded in state and the Asse
 
 The generated Credential Plan JSON + SHA256 are stored under `evidence\credential_plan`. A repeated `run` returns `already_complete`; `--force-replan` is refused if completed downstream stages would become stale.
 
-Existing v0.5e.1 workspaces with `credential_plan: external_required` can be continued in place; the stage is adopted safely by v0.5e.2 when invoked.
+Existing v0.5e.1 workspaces with `credential_plan: external_required` can be continued in place; the stage is adopted safely when invoked.
+
+## Managed Credentialed Executor dry-run
+
+After a Credential Plan is completed, run the same command again:
+
+```powershell
+python .\runtime\P01_Discovery_Node.py run `
+  --workspace C:\Canca\runs\P01LAB-CTX-R1\P01LAB-RUNTIME-R3 `
+  --max-actions 25
+```
+
+v0.5e.3 invokes the existing Multi-target Executor in **dry-run only**. It revalidates the plan artifact/hash and live Credential Profiles, then writes a Credentialed Job JSON + SHA256 under `evidence\credentialed_execution`.
+
+The runtime records `credentialed_execution: preview_completed`, not live completion. No secret is resolved and no authentication is attempted in this increment. Repeating the same command returns `already_complete`.
 
 ## Status
 
@@ -170,4 +185,4 @@ The private-key path is used for the current invocation only and is not written 
 
 The runtime never silently repeats a completed bundle build or completed upload.
 
-Credentialed Executor and Asset Resolver will gain the same checkpoint discipline in the next incremental runtime releases.
+Live credentialed execution and Asset Resolver will gain the same checkpoint discipline in the next incremental runtime releases.

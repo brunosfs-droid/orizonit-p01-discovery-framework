@@ -46,9 +46,13 @@ class PortableRuntimeTests(unittest.TestCase):
             state = mod._load_state(workspace)
             self.assertEqual(state["steps"]["network_discovery"]["status"], "pending")
             self.assertEqual(state["steps"]["credential_plan"]["status"], "pending")
+            self.assertEqual(state["steps"]["credentialed_execution"]["status"], "pending")
             self.assertEqual(state["steps"]["evidence_bundle"]["status"], "pending")
             self.assertEqual(state["steps"]["upload"]["status"], "pending")
             self.assertTrue(state["security"]["active_discovery_managed_in_this_version"])
+            self.assertTrue(
+                state["security"]["credentialed_execution_dry_run_managed_in_this_version"]
+            )
             self.assertFalse(state["security"]["plaintext_credentials_persisted"])
 
     def test_init_is_idempotent_for_same_identity(self):
@@ -415,7 +419,10 @@ class PortableRuntimeTests(unittest.TestCase):
 
             state = mod._load_state(workspace)
             self.assertEqual(state["steps"]["credential_plan"]["status"], "completed")
-            self.assertEqual(mod.status(workspace)["next_action"], "credentialed_execution_external")
+            self.assertEqual(
+                mod.status(workspace)["next_action"],
+                "run_credentialed_execution_dry_run",
+            )
             artifact = state["artifacts"]["credential_plan"]
             plan_path = mod._workspace_owned_path(workspace, artifact["path"])
             self.assertTrue(plan_path.is_file())
@@ -460,6 +467,218 @@ class PortableRuntimeTests(unittest.TestCase):
 
             with self.assertRaises(mod.RuntimeErrorSafe) as ctx:
                 mod.run_credential_plan(workspace)
+            self.assertIn("Credential Profiles", str(ctx.exception))
+
+    def _seed_completed_plan(self, workspace, profiles):
+        plan = write_json(
+            pathlib.Path(workspace) / "evidence" / "credential_plan" / "P01-Credential-Plan_TEST.json",
+            {
+                "metadata": {
+                    "planner_name": "P01-Credentialed-Discovery-Planner",
+                    "planner_version": "0.4b.3.2",
+                    "secret_resolution": False,
+                    "authentication_attempts": False,
+                },
+                "source": {"run_label": "RUNTIME-NETWORK"},
+                "summary": {
+                    "assets_seen": 1,
+                    "adapter_candidates": 1,
+                },
+                "assets": [],
+            },
+            sidecar=True,
+        )
+        state = mod._load_state(pathlib.Path(workspace))
+        state["steps"]["credential_plan"] = {
+            "status": "completed",
+            "completed_at_utc": mod.utc_now_iso(),
+            "managed_by": "0.5e.2",
+        }
+        state["artifacts"]["credential_plan"] = {
+            "path": mod._relative_if_owned(pathlib.Path(workspace), plan),
+            "sha256_path": mod._relative_if_owned(
+                pathlib.Path(workspace),
+                plan.with_suffix(plan.suffix + ".sha256"),
+            ),
+            "sha256": mod.digest_file(plan),
+            "credential_profiles_sha256": mod.digest_file(profiles),
+            "assets_seen": 1,
+            "adapter_candidates": 1,
+        }
+        mod._write_state(pathlib.Path(workspace), state)
+        return plan
+
+    def _fake_executor(self, calls):
+        def load(path):
+            return json.loads(pathlib.Path(path).read_text(encoding="utf-8"))
+
+        def load_profiles(path):
+            return json.loads(pathlib.Path(path).read_text(encoding="utf-8"))
+
+        def run_job(
+            plan,
+            profiles,
+            plan_hash,
+            outdir,
+            run_label,
+            execute=False,
+            auth_only=False,
+            max_actions=25,
+            known_hosts=None,
+            hostkey="strict",
+        ):
+            calls["runs"] += 1
+            self.assertFalse(execute)
+            self.assertFalse(auth_only)
+            return {
+                "metadata": {
+                    "executor_name": "P01-Credentialed-Discovery-Executor",
+                    "executor_version": "0.4b.5",
+                    "schema_version": "0.4b",
+                    "execution_mode": "dry_run",
+                    "auth_only": False,
+                    "read_only_mode": True,
+                    "secret_resolution": False,
+                    "authentication_attempts": False,
+                    "plan_sha256": plan_hash,
+                    "concurrency": 1,
+                },
+                "summary": {
+                    "actions_total": 1,
+                    "actions_ready": 1,
+                    "actions_blocked_preflight": 0,
+                    "dry_run_ready": 1,
+                    "completed": 0,
+                    "skipped": 0,
+                    "authentication_successes": 0,
+                    "authentication_failures": 0,
+                    "open_credential_circuits": 0,
+                },
+                "actions": [{"execution_status": "dry_run_ready"}],
+                "credential_circuits": {},
+                "limitations": [],
+            }
+
+        def write(path, payload):
+            calls["writes"] += 1
+            path = pathlib.Path(path)
+            write_json(path, payload, sidecar=True)
+            return (
+                path,
+                path.with_suffix(path.suffix + ".sha256"),
+                hashlib.sha256(path.read_bytes()).hexdigest(),
+            )
+
+        return types.SimpleNamespace(
+            load=load,
+            load_profiles=load_profiles,
+            run_job=run_job,
+            write=write,
+        )
+
+    def test_managed_executor_dry_run_is_resume_safe_and_migrates_external_state(self):
+        with tempfile.TemporaryDirectory() as td:
+            manifest = self._manifest_for_discovery(td)
+            profiles = write_json(
+                pathlib.Path(td) / "profiles.json",
+                {"schema_version": "0.4b.6", "profiles": []},
+                sidecar=False,
+            )
+            init = mod.init_workspace(
+                pathlib.Path(td) / "runs",
+                "A1",
+                "R1",
+                "NODE-01",
+                manifest=manifest,
+                profiles=profiles,
+            )
+            workspace = pathlib.Path(init["workspace"])
+            self._seed_completed_network(workspace)
+            self._seed_completed_plan(workspace, profiles)
+
+            state = mod._load_state(workspace)
+            state["steps"]["credentialed_execution"] = {
+                "status": "external_required",
+                "managed_from_version": "0.5e.3",
+            }
+            mod._write_state(workspace, state)
+
+            calls = {"runs": 0, "writes": 0}
+            fake = self._fake_executor(calls)
+            with mock.patch.object(mod, "_load_component", return_value=fake):
+                first = mod.run_credentialed_execution_dry_run(workspace, max_actions=25)
+                second = mod.run_credentialed_execution_dry_run(workspace, max_actions=25)
+
+            self.assertEqual(first["status"], "preview_completed")
+            self.assertEqual(second["status"], "already_complete")
+            self.assertEqual(calls["runs"], 1)
+            self.assertEqual(calls["writes"], 1)
+            self.assertEqual(first["actions_total"], 1)
+            self.assertEqual(first["actions_ready"], 1)
+            self.assertFalse(first["network_activity_performed"])
+            self.assertFalse(first["secret_resolution_performed"])
+            self.assertFalse(first["authentication_attempts_performed"])
+
+            state = mod._load_state(workspace)
+            self.assertEqual(
+                state["steps"]["credentialed_execution"]["status"],
+                "preview_completed",
+            )
+            self.assertEqual(
+                mod.status(workspace)["next_action"],
+                "credentialed_execution_live_external",
+            )
+            artifact = state["artifacts"]["credentialed_execution_preview"]
+            job_path = mod._workspace_owned_path(workspace, artifact["path"])
+            self.assertTrue(job_path.is_file())
+            self.assertTrue(mod.verify_sidecar(job_path))
+
+    def test_managed_executor_dry_run_rejects_changed_plan_artifact(self):
+        with tempfile.TemporaryDirectory() as td:
+            manifest = self._manifest_for_discovery(td)
+            profiles = write_json(
+                pathlib.Path(td) / "profiles.json",
+                {"schema_version": "0.4b.6", "profiles": []},
+                sidecar=False,
+            )
+            init = mod.init_workspace(
+                pathlib.Path(td) / "runs",
+                "A1",
+                "R1",
+                "NODE-01",
+                manifest=manifest,
+                profiles=profiles,
+            )
+            workspace = pathlib.Path(init["workspace"])
+            self._seed_completed_network(workspace)
+            plan = self._seed_completed_plan(workspace, profiles)
+            plan.write_text("{}\n", encoding="utf-8")
+
+            with self.assertRaises(mod.RuntimeErrorSafe) as ctx:
+                mod.run_credentialed_execution_dry_run(workspace)
+            self.assertIn("SHA256", str(ctx.exception))
+
+    def test_managed_executor_dry_run_requires_profiles_reference(self):
+        with tempfile.TemporaryDirectory() as td:
+            manifest = self._manifest_for_discovery(td)
+            init = mod.init_workspace(
+                pathlib.Path(td) / "runs",
+                "A1",
+                "R1",
+                "NODE-01",
+                manifest=manifest,
+            )
+            workspace = pathlib.Path(init["workspace"])
+            self._seed_completed_network(workspace)
+            profiles = write_json(
+                pathlib.Path(td) / "profiles-placeholder.json",
+                {"schema_version": "0.4b.6", "profiles": []},
+                sidecar=False,
+            )
+            self._seed_completed_plan(workspace, profiles)
+
+            with self.assertRaises(mod.RuntimeErrorSafe) as ctx:
+                mod.run_credentialed_execution_dry_run(workspace)
             self.assertIn("Credential Profiles", str(ctx.exception))
 
     def test_force_rescan_refused_after_downstream_bundle_completion(self):

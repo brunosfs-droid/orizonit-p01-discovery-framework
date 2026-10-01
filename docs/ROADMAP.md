@@ -257,6 +257,16 @@ O LAB inicial usará P01-MGMT01 como Discovery Node por possuir acesso ao segmen
 - workspaces v0.5e.1 com `credential_plan: external_required` podem ser continuados in-place;
 - repeat plan retorna `already_complete`;
 - force-replan é bloqueado quando invalidaria etapas downstream concluídas.
-- **Status:** CANDIDATE / CI gate pending; P01LAB runtime validation next.
+- **Status:** LAB VALIDATED no P01LAB-RUNTIME-R2. 4 assets, JSON/SHA256 gerados, zero network/secret/auth e resume `already_complete` confirmados.
 
-Follow-up: Credentialed Executor e Asset Resolver serão internalizados em incrementos separados.
+### v0.5e.3 — Managed Credentialed Executor Dry-run
+- terceiro `run` avança para o Multi-target Credentialed Executor;
+- plan artifact/hash e live Credential Profiles são revalidados;
+- execução limitada a `dry_run` nesta iteração;
+- Credentialed Job JSON/SHA256 é gravado no workspace;
+- checkpoint `preview_completed` não é confundido com autenticação real concluída;
+- zero secret resolution e zero authentication attempts;
+- repeat dry-run retorna `already_complete`.
+- **Status:** CANDIDATE / CI gate pending; P01LAB validation next.
+
+Follow-up: live credentialed execution e Asset Resolver serão internalizados em incrementos separados.
