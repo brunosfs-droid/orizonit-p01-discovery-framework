@@ -1,0 +1,101 @@
+# Cancã Project Governance
+
+Cancã is the open-source product identity of Orizon IT Product 01 (P01).
+
+## Project model
+
+- **Software license:** GNU AGPLv3.
+- **Maintainer:** Orizon IT.
+- **Contribution model:** external contributions will require the Orizon IT Contributor License Agreement (CLA) when public contribution is opened.
+- **Trademark:** the software license does not grant unrestricted use of the Cancã or Orizon IT brands, logos, or visual identity.
+- **Engineering source of truth:** GitHub.
+- **Product governance and validation evidence:** Orizon IT controlled repositories and Google Drive.
+
+## Product principles
+
+1. Open by default.
+2. Evidence before opinion.
+3. Read-only before automation.
+4. Secure by design.
+5. API-first.
+6. Distributed by design.
+7. Vendor-neutral.
+8. Explainable findings.
+9. Community-driven.
+10. Enterprise-ready.
+
+## Scope discipline
+
+Every new proposal is classified as:
+
+- **A — MVP:** necessary to prove the Cancã 1.0 assessment workflow.
+- **B — Post-MVP:** valuable, but not required for 1.0.
+- **C — Experiment:** research or prototype.
+- **D — Out of product scope.**
+
+The control question is:
+
+> Is this required to prove Cancã Assessment 1.0, or does it belong to the future platform?
+
+## Release maturity
+
+### Technical Alpha
+Internal engineering and controlled LAB validation. Breaking changes are allowed.
+
+### Design Partner Alpha
+Controlled external environments with structured feedback.
+
+### Community Beta
+Public repository, reproducible installation, contribution/security policies, support matrix, SBOM, third-party license inventory, and documented limitations.
+
+### Release Candidate
+Feature freeze, hardening, upgrade/rollback, backup/restore, compatibility and blocker closure.
+
+### 1.0 GA
+A supportable end-to-end product with reproducible installation, stable core contracts, usable reports, security controls and operational documentation.
+
+## Commercial ecosystem
+
+The open-source project is intended to support a commercial ecosystem around:
+
+- infrastructure assessments;
+- support plans;
+- professional services;
+- integrations and custom collectors;
+- managed services;
+- training and future certification;
+- hosted/SaaS operation.
+
+The Community project must remain genuinely useful and not be intentionally crippled to force a paid edition.
+
+## Architecture governance
+
+Architecture-changing work should be documented through an ADR/RFC before implementation when it affects:
+
+- trust boundaries;
+- data contracts;
+- schemas;
+- authentication;
+- credential handling;
+- persistence;
+- plugin boundaries;
+- backward compatibility;
+- licensing or redistribution.
+
+## Security boundary
+
+Cancã is an infrastructure assessment platform, not an exploitation framework.
+
+- scanning requires explicit authorization;
+- collectors are read-only first;
+- credentials are scope/protocol/context constrained;
+- secrets must never be persisted in evidence bundles;
+- discovered assets are not silently used as pivots;
+- remote connected transport uses authenticated channels;
+- customer evidence never belongs in Git.
+
+## Naming transition
+
+**Cancã** is the official product name.
+
+P01 remains temporarily valid inside filenames, schemas, headers and validated artifacts during Technical Alpha. Internal renaming will be performed as a controlled compatibility change rather than a global search/replace.
