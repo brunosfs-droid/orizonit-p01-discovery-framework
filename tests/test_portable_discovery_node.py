@@ -286,7 +286,7 @@ class PortableRuntimeTests(unittest.TestCase):
             self.assertEqual(state["steps"]["network_discovery"]["status"], "completed")
             artifact = state["artifacts"]["network_discovery"]
             self.assertIn("192.0.2.2/32", artifact["excludes"])
-            self.assertEqual(mod.status(workspace)["next_action"], "credential_plan_external")
+            self.assertEqual(mod.status(workspace)["next_action"], "run_credential_plan")
 
     def _fake_planner(self, calls):
         def load_json(path):
