@@ -72,6 +72,14 @@ FORBIDDEN_KEY_RE = re.compile(
     r"api_key|access_token|refresh_token|private_key)(?:$|_)",
     re.IGNORECASE,
 )
+SAFE_FALSE_SECURITY_FLAGS = {
+    "secret_values_persisted",
+    "secret_provider_references_persisted",
+    "private_key_material_persisted",
+    "contains_secret_values",
+    "contains_secret_provider_references",
+    "contains_private_key_material",
+}
 
 
 class RuntimeErrorSafe(RuntimeError):
@@ -116,9 +124,11 @@ def assert_no_secret_material(value: Any, path: str = "$") -> None:
         for key, child in value.items():
             key_text = str(key)
             if FORBIDDEN_KEY_RE.search(key_text):
-                raise RuntimeErrorSafe(
-                    f"sensitive field prohibited in runtime state/config: {path}.{key_text}"
-                )
+                safe_false_flag = key_text in SAFE_FALSE_SECURITY_FLAGS and child is False
+                if not safe_false_flag:
+                    raise RuntimeErrorSafe(
+                        f"sensitive field prohibited in runtime state/config: {path}.{key_text}"
+                    )
             assert_no_secret_material(child, f"{path}.{key_text}")
     elif isinstance(value, list):
         for index, child in enumerate(value):
