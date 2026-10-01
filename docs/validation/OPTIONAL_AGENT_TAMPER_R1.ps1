@@ -8,14 +8,25 @@ $ErrorActionPreference = "Stop"
 $SourceState = Get-Content -Raw (Join-Path $CompletedWorkspace "state/run-state.json") | ConvertFrom-Json
 $RunsRoot = Split-Path (Split-Path $CompletedWorkspace -Parent) -Parent
 $NegativeRun = "P01LAB-AGENT-NEG-" + [guid]::NewGuid().ToString("N").Substring(0, 12)
-$InitRaw = & python runtime/P01_Discovery_Node.py init --workspace-root $RunsRoot `
-    --assessment-id $SourceState.assessment_id --run-id $NegativeRun `
-    --node-id $SourceState.node_id --manifest $SourceState.source_refs.assessment_manifest `
-    --profiles $SourceState.source_refs.credential_profiles
+$InitArguments = @(
+    "runtime/P01_Discovery_Node.py", "init", "--workspace-root", $RunsRoot,
+    "--assessment-id", $SourceState.assessment_id, "--run-id", $NegativeRun,
+    "--node-id", $SourceState.node_id
+)
+if ($SourceState.source_refs.assessment_manifest) {
+    $InitArguments += @("--manifest", $SourceState.source_refs.assessment_manifest)
+}
+if ($SourceState.source_refs.credential_profiles) {
+    $InitArguments += @("--profiles", $SourceState.source_refs.credential_profiles)
+}
+$InitRaw = & python @InitArguments
 if ($LASTEXITCODE -ne 0) { throw "Negative run initialization failed; no tamper performed." }
-$Initialized = ($InitRaw -join "`n") | ConvertFrom-Json
-if ($Initialized.status -ne "initialized") { throw "Unexpected initialization result." }
-$NegativeWorkspace = $Initialized.workspace
+$InitRaw | ForEach-Object { Write-Host $_ }
+# Portable init emits human-readable output, not JSON.
+$NegativeWorkspace = Join-Path (Join-Path $RunsRoot $SourceState.assessment_id) $NegativeRun
+if (-not (Test-Path -LiteralPath (Join-Path $NegativeWorkspace "state/run-state.json"))) {
+    throw "Initialized workspace state was not found."
+}
 $NegativePolicy = Join-Path $NegativeWorkspace "config/agent-policy.json"
 @{
     schema_version = "0.5f"
