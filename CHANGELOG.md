@@ -1,6 +1,14 @@
 ## [Unreleased]
 
 ### Added
+- Portable runtime v0.5e.4 managed offline Asset Resolver after FULL credentialed enrichment, using workspace-bound Network Discovery + EXEC-FULL target evidence with SHA256 validation and resume protection.
+
+### Validated
+- Portable runtime v0.5e.3.2 FULL enrichment gate in P01LAB-RUNTIME-R3: acknowledgement enforcement, 4/4 completed and collected actions, 4 authentication successes, zero failures/circuits and no-second-full behavior.
+
+## [Unreleased]
+
+### Added
 - Portable runtime v0.5e.3.2 managed FULL credentialed enrichment after validated AUTH-only execution, with explicit authorization acknowledgement, staged hash binding, per-target JSON/SHA256 evidence and no-silent-repeat protection.
 
 ### Changed
