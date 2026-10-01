@@ -66,8 +66,8 @@ try {
     $RunRaw = & python agent/P01_Agent.py run-once --workspace $NegativeWorkspace --policy $NegativePolicy
     $RunExit = $LASTEXITCODE
     $Run = ($RunRaw -join "`n") | ConvertFrom-Json
-    [pscustomobject]@{ Gate = "tamper_doctor"; Error = $Doctor.error_code; Exit = $DoctorExit }
-    [pscustomobject]@{ Gate = "tamper_run_once"; Error = $Run.error_code; Exit = $RunExit }
+    Write-Host ("tamper_doctor: {0}; exit={1}" -f $Doctor.error_code, $DoctorExit)
+    Write-Host ("tamper_run_once: {0}; exit={1}" -f $Run.error_code, $RunExit)
     if ($DoctorExit -ne 2 -or $Doctor.error_code -ne "workspace_integrity_failed" -or
         $RunExit -ne 2 -or $Run.error_code -ne "workspace_integrity_failed") {
         throw "Tamper gate did not fail closed as expected."
@@ -83,14 +83,10 @@ $StateUnchanged = (Get-FileHash -Algorithm SHA256 $StatePath).Hash -eq $StateBef
 $AfterRaw = & python agent/P01_Agent.py status --workspace $NegativeWorkspace --policy $NegativePolicy
 $AfterExit = $LASTEXITCODE
 $After = ($AfterRaw -join "`n") | ConvertFrom-Json
-[pscustomobject]@{
-    Gate = "restore"
-    ConfigRestored = $ConfigRestored
-    StateUnchanged = $StateUnchanged
-    Status = $After.status
-    Exit = $AfterExit
-    NegativeWorkspace = $NegativeWorkspace
-}
+Write-Host "ConfigRestored: $ConfigRestored"
+Write-Host "StateUnchanged: $StateUnchanged"
+Write-Host ("Restored status: {0}; exit={1}" -f $After.status, $AfterExit)
+Write-Host "NegativeWorkspace: $NegativeWorkspace"
 if (-not $ConfigRestored -or -not $StateUnchanged -or $AfterExit -ne 3 -or $After.status -ne "policy_denied") {
     throw "Restoration verification failed; preserve the negative workspace and backup."
 }
