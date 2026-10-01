@@ -491,3 +491,29 @@ Candidate acceptance:
 - repeated resolve returns `already_complete` without a second resolver run;
 - force-reresolve is rejected after completed Evidence Bundle or Upload;
 - state advances to `asset_resolver: completed` and next action is Evidence Bundle export.
+
+
+## Portable Discovery Node Runtime v0.5e.4 — P01LAB
+
+LAB VALIDATED on P01-MGMT01 using workspace `P01LAB-RUNTIME-R3`.
+
+Acceptance evidence:
+- legacy `asset_resolver: external_required` state was adopted in place;
+- resolver processed 5 Network Discovery assets + 4 EXEC-FULL observations;
+- result was 5 logical assets, 0 unresolved, 0 ambiguous and 0 conflicts;
+- resolver JSON + SHA256 were written under `resolved`;
+- zero network activity, secret resolution and authentication were reported;
+- state advanced to `asset_resolver: completed`;
+- repeated resolver run returned `already_complete`.
+
+## Portable Discovery Node Runtime v0.5e.5
+
+Candidate acceptance:
+- normal export requires only `--workspace`;
+- Network Discovery, EXEC-FULL job, FULL target evidence, Asset Resolver and optional Assessment Manifest are derived from runtime state;
+- every workspace evidence input is hash/sidecar validated before packaging;
+- only target evidence referenced by EXEC-FULL is packaged; AUTH-only/unrelated target files are excluded;
+- bundle validation returns valid=true;
+- runtime records workspace-state selection mode and exact input hashes;
+- repeated export returns `already_complete` without rebuilding;
+- manual explicit-path export remains backwards compatible.
