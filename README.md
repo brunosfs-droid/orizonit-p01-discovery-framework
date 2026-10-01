@@ -34,7 +34,7 @@
 - **Offline Import:** 0.5b.0 — LAB VALIDATED; import idempotente, raw evidence preservation, receipt JSON/SHA256 e server-side Asset Resolver replay com semantic_match=true.
 - **Central Ingestion API:** 0.5c.1 — LAB VALIDATED; localhost ingestion, idempotência, status lookup, semantic equivalence, negative gates e connection hygiene.
 - **Connected Discovery Node Upload:** 0.5d.0 — LAB VALIDATED; HTTPS/mTLS, identidade do node ligada ao certificado e ao bundle, upload outbound, idempotência e transporte cross-host Windows→Linux validados.
-- **Portable Discovery Node Runtime:** 0.5e.5 — CANDIDATE; Network Discovery + Credential Planner + Executor dry-run/AUTH/FULL + Asset Resolver + Evidence Bundle workspace-driven gerenciados, com hash binding, checkpoints SHA256 e resume guards.
+- **Portable Discovery Node Runtime:** 0.5e.6 — CANDIDATE; fluxo local completo + Evidence Bundle workspace-driven + Connected Upload mTLS com resume zero-input após conclusão, hash binding e checkpoints SHA256.
 - **Reporting Engine:** planejado após Network Discovery + Asset Resolver.
 
 > Saídas reais de discovery devem ser tratadas como **CONFIDENCIAL — DADOS DO CLIENTE**.
@@ -113,7 +113,7 @@ O scanner **descobre**. Os collectors **aprofundam**. O Asset Resolver **dedupli
 
 ## Uso — Portable Discovery Node v0.5e
 
-A v0.5e.5 mantém o entry point unificado e torna o Evidence Bundle workspace-driven após o Asset Resolver:
+A v0.5e.6 fecha o fluxo portátil end-to-end até o Connected Upload:
 
 ```powershell
 python .\runtime\P01_Discovery_Node.py doctor --workspace-root C:\Canca\runs
@@ -121,7 +121,7 @@ python .\runtime\P01_Discovery_Node.py doctor --workspace-root C:\Canca\runs
 
 Em seguida, o operador cria um workspace isolado com `init`, executa Network Discovery autorizado com `run` e executa novamente `run` para gerar o Credential Plan seguro. O `status` acompanha checkpoints; `export` gera o mesmo `.p01bundle` homologado e `upload` usa o transporte mTLS v0.5d.
 
-Após o FULL, um novo `run` executa o Asset Resolver. Em seguida, `export --workspace <path>` gera o `.p01bundle` diretamente dos artefatos validados no state, sem informar manualmente network/evidence-dir/resolver.
+Após o Asset Resolver, `export --workspace <path>` gera o `.p01bundle` do state. O primeiro `upload` exige os parâmetros mTLS; após concluir, `upload --workspace <path>` retorna `already_complete` sem abrir nova conexão.
 
 Veja [runtime/README.md](runtime/README.md).
 
