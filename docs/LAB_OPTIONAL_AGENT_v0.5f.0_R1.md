@@ -3,12 +3,13 @@
 Data: 01/10/2026. Status: CANDIDATE; LAB Windows parcialmente comprovado.
 Baseline: portable runtime v0.5e.6 LAB VALIDATED; Issue #83.
 
-As 24 capturas do R1 comprovam completed-resume, progressão até upload,
+As 25 capturas do R1 comprovam completed-resume, progressão até upload,
 FULL 5/5, receipt mTLS HTTP 201/semantic_match=true, grants separados e lock
 agente/portátil. Policy inválida/identidade divergente falharam com exit 2;
-17/17 hashes de journals conferem; config tamper rejeitado e restaurado no run
-negativo. Artifact/target tamper, interrupção, auditoria de conteúdo e
-confirmação de logs do servidor continuam pendentes.
+Config tamper e interrupção antes de dispatch passaram no run negativo, com
+state/config preservados, policy restaurada e intent mantido. Auditoria do
+contrato e hashes dos journals: 17/17 no completo e 4/4 no negativo.
+Artifact/target tamper e confirmação de logs do servidor continuam pendentes.
 Ver [registro de evidências](validation/OPTIONAL_AGENT_P01LAB_R1_v0.5f.0.md).
 
 ## Objetivo e limites
@@ -269,23 +270,28 @@ python runtime/P01_Discovery_Node.py status --workspace $AgentWorkspace --json
 ```
 
 O [registro R1](validation/OPTIONAL_AGENT_P01LAB_R1_v0.5f.0.md) contém a prova mTLS
-concluída, policy/hashes/config tamper aprovados e os próximos comandos de
-interrupção isolada/auditoria de conteúdo. Não repetir os gates
+concluída, policy/config tamper/interrupção/auditoria aprovados e o próximo comando
+de artifact/target tamper em cópia isolada. Não repetir os gates
 live concluídos para coletar esses negativos.
 
 ## Critério de aceite e evidências
 
-- [ ] doctor offline; policy versionada válida e grants ausentes negados;
+- [x] doctor offline; policy versionada válida e grants ausentes negados;
 - [ ] completed workspace: already_complete, state inalterado, nenhum novo POST;
-- [ ] discovery/planning/dry-run avançam uma vez cada; parada antes de AUTH;
-- [ ] AUTH e FULL dependem de grants distintos; nenhuma repetição silenciosa;
-- [ ] resolver/export avançam; upload negado ou transport_required sem inputs;
+- [x] discovery/planning/dry-run avançam uma vez cada; parada antes de AUTH;
+- [x] AUTH e FULL dependem de grants distintos; nenhuma repetição silenciosa;
+- [x] resolver/export avançam; upload negado ou transport_required sem inputs;
 - [ ] mTLS autorizado conclui; repeat upload não faz POST;
-- [ ] JSON/SHA256 journal íntegro e sem segredos/key paths/erros brutos;
+- [x] JSON/SHA256 journal íntegro e sem segredos/key paths/erros brutos;
 - [ ] policy inválida/identity mismatch/integridade falham fechadas;
-- [ ] duas instâncias e agente vs portátil bloqueados pelo lock;
-- [ ] falha/interrupção exige revisão e não repete acesso automaticamente;
-- [ ] nenhum serviço/tarefa/cron instalado nesta versão.
+- [x] duas instâncias e agente vs portátil bloqueados pelo lock;
+- [x] interrupção antes de dispatch exige revisão e bloqueia replay; intent preservado;
+- [x] nenhum serviço/tarefa/cron instalado nesta versão.
+
+Os itens de completed-resume/upload aguardam confirmação independente de nenhum
+POST no servidor. A integridade aguarda tamper de artifact/target no LAB; o helper
+cria uma fixture isolada e não altera o run completo. O gate de interrupção acima
+tem a fronteira pre-dispatch; não comprova queda durante AUTH/FULL ou após POST.
 
 Enviar outputs/prints de doctor, status, resume, gates e hashes; journals e seus
 sidecars; run-state e sidecar; receipt sanitizado e confirmação de logs do server.

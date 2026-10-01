@@ -32,7 +32,7 @@ prove real connectivity or OS service lifecycle.
 
 ## Real LAB evidence and remaining acceptance
 
-[24 Windows screenshots reviewed](validation/OPTIONAL_AGENT_P01LAB_R1_v0.5f.0.md):
+[25 Windows screenshots reviewed](validation/OPTIONAL_AGENT_P01LAB_R1_v0.5f.0.md):
 offline doctor/status, completed-resume with unchanged state and two matching
 journal hashes; default-deny; one-stage progression through discovery, planning,
 dry-run, AUTH, FULL, resolver and export; separate AUTH/FULL/upload grants;
@@ -48,11 +48,16 @@ next_action=complete. No service or schedule installed per doctor.
 Invalid policy and identity mismatch failed closed with exit 2; all 17 new-run
 journals shown match their SHA256 sidecars. Config tamper in isolated run
 P01LAB-AGENT-NEG-c41bfbdf8992 rejected by doctor/run-once with exit 2; exact bytes
-restored, state unchanged and default-deny resumed. Still pending: independent
-server POST check; journal content/sanitization audit; artifact/target tamper
-and interruption/review gates. An offline helper is prepared for a native process
-exit after running intent, before dispatch, plus journal contract auditing.
-Security flags in runtime status do not replace review of agent journal content.
+restored, state unchanged and default-deny resumed. Native child exit 71 after
+running intent and before dispatch passed: two review_required/exit 3 responses,
+zero runtime dispatch, state/config unchanged, policy restored, lock released and
+intent retained. Journal contract audit passed for 17/17 completed-run journals
+and 4/4 negative-run journals, including hashes, fixed fields/enums, UUID, UTC
+timestamps and digests. This proves pre-dispatch interruption gating, not a crash
+during AUTH/FULL or after POST. Still pending: independent server POST check and
+artifact/target tamper. A default-deny isolated-copy helper is prepared for a FULL
+aggregate and AUTH per-target result, with exact-byte restoration and source
+fingerprints. The copy is an offline fixture; its bundle is never reimported.
 Follow the corrected
 [LAB procedure](LAB_OPTIONAL_AGENT_v0.5f.0_R1.md); retain CANDIDATE until closure.
 

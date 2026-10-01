@@ -2,7 +2,7 @@
 
 Revisão: 01/10/2026. **CANDIDATE — validação Windows parcial.**
 Implementação: PR #84, main `b85746a38295def054a3822fb152086fae9ef3b2`.
-Fonte: 24 capturas fornecidas pelo operador (17 iniciais + 5 de upload + 1 de negativos/hashes + 1 de config tamper); resultados observados, sem execução
+Fonte: 25 capturas fornecidas pelo operador (17 iniciais + 5 de upload + 1 de negativos/hashes + 1 de config tamper + 1 de interrupção/auditoria); resultados observados, sem execução
 remota pelo Codex. CI Windows/Ubuntu já aprovada na implementação, com fixtures
 para live AUTH/upload; não substitui os gates reais abaixo.
 
@@ -52,6 +52,7 @@ exibidas pelo host nem substitui sidecars dos journals.
 | 221147 | Status declara plaintext_credentials_persisted=false, private_key_material_persisted=false e secret_provider_references_persisted=false; zero_input_upload_resume_supported=true. Não substitui auditoria do conteúdo dos journals. |
 | 222234 | Policy schema inválido -> invalid_policy/exit 2; policy com run_id divergente -> workspace_identity_mismatch/exit 2; 17 journals do P01LAB-AGENT-R1, incluindo upload/repeat, mostram SHA256_OK=True. |
 | 224503 | Main atualizada até bd4d840; helper cria P01LAB-AGENT-NEG-c41bfbdf8992 sem discovery/AUTH. Config adulterado: doctor e run-once retornam workspace_integrity_failed/exit 2. ConfigRestored=True, StateUnchanged=True; status final policy_denied/exit 3; CONFIG TAMPER PASS. |
+| 231511 | Main atualizada até bfd9d0d; INTERRUPTION PASS no negativo c41bfbdf8992: child_exit=71 após running intent/antes de runtime dispatch; duas respostas review_required/exit 3; zero dispatch após queda; state/config inalterados, policy restaurada, lock liberado e intent preservado. Auditoria PASS dos 4 journals negativos e dos 17 journals do run completo: hashes e contrato válidos. |
 
 Journals da prova no run concluído: `49adc374-0001-45e2-bdd3-39bc55befe93`
 e `702c2071-9bb9-41eb-ac8d-e99e325c6232`. Os hashes foram exibidos como válidos;
@@ -72,16 +73,16 @@ Seu sidecar corresponde conforme runtime status. Não foi recebido o JSON origin
 | Progressão unitária | Comprovada de discovery até upload |
 | FULL real no novo run | Comprovado: 5/5 completed/collected, 5 auth successes, 0 failures/circuits |
 | Resolver real no novo run | Comprovado: 5 logical, zero unresolved/ambiguous/conflicts |
-| Lock agente e portátil | Comprovado com bloqueio e liberação; não comprova encerramento abrupto do processo |
+| Lock agente e portátil | Bloqueio/liberação comprovados; liberação pelo kernel após saída abrupta também comprovada no negativo |
 | Ausência de serviço/agendamento | Comprovada pelos flags do doctor |
 | Upload mTLS do agente | Comprovado no novo run: HTTP 201/imported, semantic_match=true, mTLS/TLS true e receipt íntegro |
 | Repeat sem inputs de transporte | Comprovado no cliente: already_complete e attempts=1; confirmação independente de nenhum segundo POST nos logs do servidor pendente |
 | Hashes dos journals do novo run | Comprovados na captura 222234: 17/17 SHA256_OK=True |
-| Sanitização do conteúdo dos journals | Pendente; hashes correspondentes não provam ausência de dados sensíveis |
+| Sanitização do conteúdo dos journals | Comprovada pelo auditor de contrato: 17/17 no run completo e 4/4 no negativo; campos/valores fixos e hashes válidos |
 | Policy inválida / identidade divergente | Comprovados: invalid_policy e workspace_identity_mismatch, ambos exit 2 |
 | Tamper de configuração | Comprovado no run isolado P01LAB-AGENT-NEG-c41bfbdf8992; bytes restaurados e state inalterado |
 | Tamper de artifact/target | Pendente de evidência real |
-| Interrupção com intent running / review_required | Pendente de evidência real em run isolado |
+| Interrupção com intent running / review_required | Comprovada no negativo: queda antes de dispatch, duas recusas de replay, intent preservado e lock liberado |
 | Linux real | Não executado nesta rodada; CI Ubuntu passou |
 
 Retém CANDIDATE. Não inicia instalação do Windows Service v0.5f.1 até o fechamento
@@ -93,8 +94,8 @@ distinto do resultado 4/4 do run portátil anterior.
 Upload e repeat concluídos nas capturas 221101–221147. Os comandos abaixo ficam
 como referência da prova executada. Não repetir discovery/AUTH/FULL/export,
 reinicializar o workspace ou usar force-resend para esta prova.
-Policies negativas, hashes e config tamper concluídos. O próximo trabalho é artifact/target tamper,
-interrupção, auditoria do conteúdo dos journals e confirmação de logs do servidor.
+Policies negativas, config tamper, interrupção e auditoria de journals concluídos.
+O próximo trabalho é artifact/target tamper e confirmação de logs do servidor.
 
 Os caminhos PKI abaixo foram usados na homologação anterior. Confirmar sua
 existência antes de usar; o script para se faltarem arquivos. Não enviar a key.
@@ -192,8 +193,8 @@ e sidecars. Não anexar profiles, variáveis de ambiente ou material privado PKI
 
 ## Alterações documentais desta revisão
 
-Registro das 24 capturas, incluindo upload/receipt, FULL 5/5,
-negativos de policy/identidade, hashes 17/17 e config tamper isolado;
+Registro das 25 capturas, incluindo upload/receipt, FULL 5/5,
+negativos de policy/identidade, config tamper, interrupção isolada e auditoria 17/17;
 status/roadmap atualizados para aceite parcial;
 lock Windows com arquivo .py e variáveis explícitas em cada janela; validação
 de entrada vazia do escopo; comandos de upload com verificação dos paths PKI.
@@ -224,9 +225,12 @@ mensagem CONFIG TAMPER PASS. Todos esses resultados foram exibidos na captura
 `C:\Canca\runs\P01LAB-CTX-R1\P01LAB-AGENT-NEG-c41bfbdf8992`.
 Se o processo/sessão terminar antes do finally, restaurar runtime.json pelos
 bytes do backup logs/runtime-original.bin do próprio run negativo, sem alterar
-sidecars. Tamper de artifact/target, interrupção e logs do servidor seguem pendentes.
+sidecars. Tamper de artifact/target e logs do servidor seguem pendentes.
 
-## Próximos gates: interrupção controlada e auditoria de conteúdo
+## Gates concluídos: interrupção controlada e auditoria de conteúdo
+
+Executados no P01-MGMT01 e comprovados na captura 231511. Os comandos abaixo
+documentam a prova; não repetir a interrupção neste run negativo.
 
 O helper [OPTIONAL_AGENT_INTERRUPTION_R1.py](OPTIONAL_AGENT_INTERRUPTION_R1.py)
 usa o run negativo recém-inicializado. Ele habilita discovery apenas nesse run
@@ -257,7 +261,7 @@ o helper completo retorna exit 0 ao passar. Não repetir o ensaio nem remover
 o intent para liberar replay; o run negativo deve ficar preservado para revisão.
 
 Segundo: JOURNAL AUDIT PASS, sha256_valid e contract_fields_valid true, contando
-os journals atuais do run concluído (17 na captura anterior). O auditor verifica
+os journals atuais do run concluído (17 confirmados na captura 231511). O auditor verifica
 hashes, campos permitidos, enums/códigos fixos, UUID, timestamps UTC e digests;
 rejeita campos extras/duplicados e valores livres que poderiam carregar paths,
 provider refs, resultados ou erros brutos. Não imprime conteúdo bruto nem secrets.
@@ -266,6 +270,70 @@ Este modo apenas lê journals, sob lock; não cria uma invocação no run conclu
 Prova de interrupção limitada à fronteira running-intent/antes da dispatch.
 Não comprova queda no meio de AUTH/FULL ou depois de um POST. CI exercita o
 helper em workspace offline independente, com um teste negativo de journal
-hash-valid mas com campo extra. O aceite real destes dois gates depende dos
-resultados executados no P01-MGMT01. Artifact/target tamper e logs do servidor
-permanecem pendentes.
+hash-valid mas com campo extra. A captura confirma os dois gates no P01-MGMT01:
+4 journals no negativo e 17 no run completo, todos válidos. Artifact/target
+tamper e logs do servidor permanecem pendentes.
+
+## Próximo gate: artifact e resultado por alvo em cópia isolada
+
+O helper [OPTIONAL_AGENT_ARTIFACT_TAMPER_R1.py](OPTIONAL_AGENT_ARTIFACT_TAMPER_R1.py)
+lê o run completo sob o lock compartilhado e copia somente state/config e as
+evidências vinculadas por hashes, com sidecars. Não copia profiles, PKI ou journals
+do run de aceite. A cópia retém assessment/run/node como proveniência e fica em
+`P01LAB-AGENT-ARTIFACT-NEG-<id>`; não é um novo run de execução ou upload.
+Rebaseia paths e hashes dos agregados AUTH/FULL na preparação da fixture,
+preservando bytes dos targets, bundle e receipt. A fixture não deve ser importada,
+usada para retomar etapas ou promovida a evidência de um novo assessment.
+
+Todos os grants da cópia ficam negados; um guard em memória impede dispatch.
+Baseline deve ser already_complete. O helper adultera o artifact agregado FULL
+e depois um resultado AUTH por alvo. Este alvo é verificado pelo agregado,
+independentemente dos bindings do export; o mesmo gate protege targets FULL.
+Cada ensaio adiciona um byte sem alterar sidecar: doctor/run-once devem rejeitar
+com workspace_integrity_failed/exit 2. Restaura bytes exatos em finally, confirma
+state/sidecar inalterados e status already_complete. Backups e journals de falha
+ficam na cópia. Fingerprints comprovam que a origem permaneceu inalterada.
+
+Na raiz do repositório com .venv ativa e main atualizada:
+
+```powershell
+$AgentWorkspace = "C:\Canca\runs\P01LAB-CTX-R1\P01LAB-AGENT-R1"
+python docs/validation/OPTIONAL_AGENT_ARTIFACT_TAMPER_R1.py `
+    --workspace $AgentWorkspace
+```
+
+Esperado: ARTIFACT/TARGET TAMPER PASS; ambos os testes rejeitados/exit 2;
+bytes_restored, sidecar_unchanged e state_unchanged true; source_unchanged=true,
+all_grants_denied=true e runtime_dispatch_calls=0. O helper retorna exit 0.
+Não usar o negativo c41bfbdf8992 como origem: ele contém intent de interrupção
+e deve permanecer preservado. Em falha, conservar a cópia/backups para revisão.
+CI executa este ensaio offline no Windows/Ubuntu; o aceite LAB depende da captura
+do comando acima no P01-MGMT01.
+
+## Gate restante: confirmação independente de POST no servidor
+
+A API registra acessos HTTP no stderr (`P01_Ingestion_API.py`, log_message).
+No P01-LNX-RKY01, preservar o log da execução de ingestão ou o journal da unidade
+que realmente hospeda a API, com início/fim da janela e timezone. Conferir o
+POST `/api/v1/bundles` que recebeu HTTP 201 para o novo bundle e ausência de outro
+POST nas chamadas already_complete. O store/receipt demonstra importação, mas
+sozinho não demonstra ausência de uma requisição posterior.
+
+Se os logs históricos não estiverem disponíveis, observar o log atual do servidor
+e executar uma nova prova limitada a completed-resume, sem inputs de transporte:
+
+```powershell
+$AgentWorkspace = "C:\Canca\runs\P01LAB-CTX-R1\P01LAB-AGENT-R1"
+$AgentPolicy = Join-Path $AgentWorkspace "config/agent-policy.json"
+"Inicio UTC: $((Get-Date).ToUniversalTime().ToString('o'))"
+python agent/P01_Agent.py run-once --workspace $AgentWorkspace --policy $AgentPolicy
+"Fim UTC: $((Get-Date).ToUniversalTime().ToString('o'))"
+python docs/validation/OPTIONAL_AGENT_INTERRUPTION_R1.py `
+    --workspace $AgentWorkspace --audit-only
+```
+
+Esperado: already_complete/exit 0; nenhum POST nessa janela no log do servidor;
+auditoria de journals PASS, agora com uma invocação adicional. Para o completed-
+resume portátil, usar o mesmo procedimento com P01LAB-RUNTIME-R3 e sua policy
+já validada. Enviar trecho/print sanitizado dos logs com a janela identificada.
+Não habilitar force-resend, reinicializar o run ou repetir etapas live.
