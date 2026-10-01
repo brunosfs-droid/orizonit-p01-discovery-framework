@@ -1,10 +1,10 @@
-# Cancã Portable Discovery Node — v0.5e.3.2
+# Cancã Portable Discovery Node — v0.5e.4
 
 The portable runtime is the first unified operator workflow for the Cancã Discovery Node.
 
 It is intentionally **portable-first**: no Windows service or systemd installation is required.
 
-## Scope of v0.5e.3.2
+## Scope of v0.5e.4
 
 Implemented:
 
@@ -21,11 +21,12 @@ Implemented:
 - managed Multi-target Credentialed Executor **dry-run/preflight** using the workspace Credential Plan;
 - gated live **AUTH-only** execution with explicit authorization acknowledgement;
 - gated live **FULL enrichment** after successful AUTH validation;
-- resume guards that prevent silent re-scan/re-plan/re-preview/re-auth/re-full/re-export/re-upload of completed steps.
+- managed offline **Asset Resolver** consuming only the workspace Network Discovery + recorded FULL target evidence;
+- resume guards that prevent silent re-scan/re-plan/re-preview/re-auth/re-full/re-resolve/re-export/re-upload of completed steps.
 
-Still external in v0.5e.3.2:
+Still separate after v0.5e.4:
 
-- Asset Resolver orchestration.
+- Evidence Bundle export remains an explicit operator command, although its implementation is already runtime-managed.
 
 ## Workspace
 
@@ -57,7 +58,7 @@ initialized               completed
 network_discovery         pending -> running -> completed / failed
 credential_plan           pending -> running -> completed / failed
 credentialed_execution    pending -> running -> preview_completed -> auth_validated -> full_completed / failed
-asset_resolver            external_required
+asset_resolver            pending -> running -> completed / failed
 evidence_bundle           pending -> completed / failed
 upload                    pending -> completed / failed
 ```
@@ -84,7 +85,7 @@ python .\runtime\P01_Discovery_Node.py doctor `
   --client-key C:\P01\pki-v05d-r1\p01-mgmt01.key
 ```
 
-Doctor performs no network activity in v0.5e.3.2.
+Doctor performs no network activity in v0.5e.4.
 
 ## Init
 
@@ -184,6 +185,19 @@ Successful FULL evidence is stored under `evidence\credentialed_execution` as an
 
 A repeated FULL command returns `already_complete` and performs no second network/authentication pass. Partial or failed FULL execution preserves its evidence but requires explicit `--force-full-retry` together with `--ack-authorized-access`.
 
+## Managed Asset Resolver
+
+After `credentialed_execution: full_completed`, the next plain `run` advances the offline resolver:
+
+```powershell
+python .\runtime\P01_Discovery_Node.py run `
+  --workspace C:\Canca\runs\P01LAB-CTX-R1\P01LAB-RUNTIME-R3
+```
+
+The runtime selects the Network Discovery artifact from state and **only** the per-target evidence referenced by the validated EXEC-FULL aggregate job. AUTH-only target evidence is not mixed into resolution. Network, FULL job and every target sidecar are revalidated before correlation.
+
+The existing Asset Resolver v0.4c.0 runs offline/read-only and writes JSON + SHA256 under `resolved`. It performs no network access, secret resolution or authentication. A repeated `run` returns `already_complete`; `--force-reresolve` is refused once downstream bundle/upload steps are complete.
+
 ## Status
 
 ```powershell
@@ -193,7 +207,7 @@ python .\runtime\P01_Discovery_Node.py status `
 
 ## Export existing evidence
 
-v0.5e.2 still accepts already collected credentialed/resolved evidence while Executor and Asset Resolver remain external:
+Explicit export can still package validated workspace or previously collected evidence:
 
 ```powershell
 python .\runtime\P01_Discovery_Node.py export `
@@ -224,4 +238,4 @@ The private-key path is used for the current invocation only and is not written 
 
 The runtime never silently repeats a completed bundle build or completed upload.
 
-Asset Resolver will gain the same checkpoint discipline in the next incremental runtime release.
+Asset Resolver now follows the same checkpoint/resume discipline. Evidence Bundle export and upload already preserve no-silent-repeat behavior.
