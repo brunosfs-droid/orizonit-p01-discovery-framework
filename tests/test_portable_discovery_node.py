@@ -1899,8 +1899,10 @@ class PortableRuntimeTests(unittest.TestCase):
             self.assertEqual(calls["uploads"], 1)
 
             state = mod._load_state(workspace)
+            state_text = json.dumps(state).lower()
             self.assertNotIn("client_key", state["steps"]["upload"])
-            self.assertNotIn("private_key", json.dumps(state).lower())
+            self.assertNotIn(str(key).lower(), state_text)
+            self.assertNotIn("node.key", state_text)
 
     def test_pending_upload_requires_explicit_transport_inputs(self):
         with tempfile.TemporaryDirectory() as td:
