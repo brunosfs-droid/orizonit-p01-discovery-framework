@@ -68,7 +68,8 @@
         "credentialed_execution_auth_only_managed_in_this_version",
         "credentialed_execution_full_managed_in_this_version",
         "asset_resolver_managed_in_this_version",
-        "workspace_driven_bundle_managed_in_this_version"
+        "workspace_driven_bundle_managed_in_this_version",
+        "zero_input_upload_resume_supported"
       ],
       "properties": {
         "plaintext_credentials_persisted": { "const": false },
@@ -81,7 +82,8 @@
         "credentialed_execution_auth_only_managed_in_this_version": { "type": "boolean" },
         "credentialed_execution_full_managed_in_this_version": { "type": "boolean" },
         "asset_resolver_managed_in_this_version": { "type": "boolean" },
-        "workspace_driven_bundle_managed_in_this_version": { "type": "boolean" }
+        "workspace_driven_bundle_managed_in_this_version": { "type": "boolean" },
+        "zero_input_upload_resume_supported": { "type": "boolean" }
       },
       "additionalProperties": false
     },

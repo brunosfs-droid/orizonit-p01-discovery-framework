@@ -311,6 +311,15 @@ O LAB inicial usará P01-MGMT01 como Discovery Node por possuir acesso ao segmen
 - preserva export explícito/manual para compatibilidade;
 - grava `selection_mode=workspace_state` e bindings exatos dos inputs;
 - repeat export retorna `already_complete` sem reconstrução.
-- **Status:** CANDIDATE / CI gate pending; P01LAB validation next.
+- **Status:** LAB VALIDATED no P01LAB-RUNTIME-R3. Bundle workspace_state com 7 payload artifacts, 4 credentialed EXEC-FULL, validate=true, inventory=8, outer SHA256=true e repeat export sem rebuild.
 
-Follow-up: validar upload conectado end-to-end a partir do bundle workspace-driven e reduzir os últimos parâmetros operacionais do fluxo.
+### v0.5e.6 — End-to-end Connected Upload / zero-input resume
+- primeiro upload usa o uploader mTLS v0.5d e exige URL/CA/client cert/client key explícitos;
+- private-key path continua invocation-only e não entra no state;
+- após upload completed, `upload --workspace <path>` retorna `already_complete` sem exigir parâmetros de transporte;
+- resume completed ocorre antes de setup de TLS/rede;
+- `--force-resend` exige novamente todos os parâmetros de transporte;
+- receipt JSON/SHA256 e state transition para `upload: completed` permanecem.
+- **Status:** CANDIDATE / CI gate pending; P01LAB end-to-end validation next.
+
+Follow-up: após fechar v0.5e, iniciar v0.5f Optional Installed Service/Agent e os gates de product alpha/persistência central.

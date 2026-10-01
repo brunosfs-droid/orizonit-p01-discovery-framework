@@ -1,10 +1,10 @@
-# Cancã Portable Discovery Node — v0.5e.5
+# Cancã Portable Discovery Node — v0.5e.6
 
 The portable runtime is the first unified operator workflow for the Cancã Discovery Node.
 
 It is intentionally **portable-first**: no Windows service or systemd installation is required.
 
-## Scope of v0.5e.5
+## Scope of v0.5e.6
 
 Implemented:
 
@@ -23,11 +23,11 @@ Implemented:
 - gated live **FULL enrichment** after successful AUTH validation;
 - managed offline **Asset Resolver** consuming only the workspace Network Discovery + recorded FULL target evidence;
 - workspace-driven **Evidence Bundle export** derived from validated runtime state with no manual evidence paths required;
+- connected mTLS upload end-to-end from that bundle;
+- zero-input `upload --workspace ...` resume after completion, with no second network call;
 - resume guards that prevent silent re-scan/re-plan/re-preview/re-auth/re-full/re-resolve/re-export/re-upload of completed steps.
 
-Still explicit after v0.5e.5:
-
-- Connected upload remains an explicit operator command because server URL and mTLS material are transport inputs.
+Live connected upload in v0.5e.6 still requires explicit transport inputs because server URL and mTLS material are security-sensitive invocation context. The client private-key path remains invocation-only and is never persisted.
 
 ## Workspace
 
@@ -86,7 +86,7 @@ python .\runtime\P01_Discovery_Node.py doctor `
   --client-key C:\P01\pki-v05d-r1\p01-mgmt01.key
 ```
 
-Doctor performs no network activity in v0.5e.5.
+Doctor performs no network activity in v0.5e.6.
 
 ## Init
 
@@ -213,6 +213,28 @@ The runtime derives Network Discovery, the EXEC-FULL aggregate job, exactly the 
 AUTH-only target files and unrelated JSONs in the evidence directory are never selected by workspace-driven export.
 
 Explicit-path export remains available for backward compatibility.
+
+## Connected upload and zero-input resume
+
+A first live upload still requires explicit transport material:
+
+```powershell
+python .\runtime\P01_Discovery_Node.py upload `
+  --workspace C:\Canca\runs\P01LAB-CTX-R1\P01LAB-RUNTIME-R3 `
+  --server-url https://P01-LNX-RKY01.p01.lab.test:8443 `
+  --ca-cert C:\P01\pki\ca.crt `
+  --client-cert C:\P01\pki\p01-mgmt01.crt `
+  --client-key C:\P01\pki\p01-mgmt01.key
+```
+
+After the upload checkpoint is completed, the safe-resume check needs only the workspace:
+
+```powershell
+python .\runtime\P01_Discovery_Node.py upload `
+  --workspace C:\Canca\runs\P01LAB-CTX-R1\P01LAB-RUNTIME-R3
+```
+
+The second command returns `already_complete` before any network/TLS setup. A forced resend still requires the complete transport parameter set.
 
 ## Status
 
