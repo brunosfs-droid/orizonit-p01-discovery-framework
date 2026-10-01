@@ -1,8 +1,8 @@
-# Architecture
+# Cancã Architecture
 
 ## Purpose
 
-P01 separates discovery, collection, identity resolution, analysis and reporting so each component can evolve and be tested independently.
+Cancã (Orizon IT Product 01 / P01) separates discovery, collection, identity resolution, ingestion, analysis and reporting so each component can evolve and be tested independently.
 
 ## High-level architecture
 
