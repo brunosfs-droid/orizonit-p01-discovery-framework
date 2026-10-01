@@ -54,5 +54,12 @@ may be ready while its next live stage is denied; readiness is not authorization
 Real LAB procedure: [LAB_OPTIONAL_AGENT_v0.5f.0_R1.md](../docs/LAB_OPTIONAL_AGENT_v0.5f.0_R1.md).
 Architecture decision: [ADR 0007](../docs/ADR_0007_Optional_Agent_v0.5f.md).
 
-Next increments: v0.5f.1 Windows Service; v0.5f.2 Linux/systemd; v0.5f.3 scheduling,
-restart/recovery and soak. LAB acceptance of this foundation precedes installation.
+Foundation v0.5f.0: Windows P01LAB R1 LAB VALIDATED (27 screenshots); Linux CI
+passed, real Linux not claimed.
+
+Windows host v0.5f.1 is a separate CANDIDATE component:
+[service guide](WINDOWS_SERVICE.md). It keeps this agent version/journal contract,
+manual usage and runtime v0.5e.6 intact. Use the service CLI query for actual SCM
+installation state; this foundation doctor does not query SCM.
+
+Next: v0.5f.1 service LAB -> v0.5f.2 Linux/systemd -> v0.5f.3 scheduling/recovery/soak.

@@ -1,8 +1,8 @@
 # Cancã — Optional Agent v0.5f.0 / evidências P01LAB R1
 
-Revisão: 01/10/2026. **CANDIDATE — validação Windows parcial.**
+Revisão: 01/10/2026. **LAB VALIDATED — Windows P01LAB R1; Linux coberto por CI.**
 Implementação: PR #84, main `b85746a38295def054a3822fb152086fae9ef3b2`.
-Fonte: 25 capturas fornecidas pelo operador (17 iniciais + 5 de upload + 1 de negativos/hashes + 1 de config tamper + 1 de interrupção/auditoria); resultados observados, sem execução
+Fonte: 27 capturas fornecidas pelo operador (17 iniciais + 5 de upload + 1 de negativos/hashes + 1 de config tamper + 1 de interrupção/auditoria + 2 de artifact/target e servidor); resultados observados, sem execução
 remota pelo Codex. CI Windows/Ubuntu já aprovada na implementação, com fixtures
 para live AUTH/upload; não substitui os gates reais abaixo.
 
@@ -54,6 +54,9 @@ exibidas pelo host nem substitui sidecars dos journals.
 | 224503 | Main atualizada até bd4d840; helper cria P01LAB-AGENT-NEG-c41bfbdf8992 sem discovery/AUTH. Config adulterado: doctor e run-once retornam workspace_integrity_failed/exit 2. ConfigRestored=True, StateUnchanged=True; status final policy_denied/exit 3; CONFIG TAMPER PASS. |
 | 231511 | Main atualizada até bfd9d0d; INTERRUPTION PASS no negativo c41bfbdf8992: child_exit=71 após running intent/antes de runtime dispatch; duas respostas review_required/exit 3; zero dispatch após queda; state/config inalterados, policy restaurada, lock liberado e intent preservado. Auditoria PASS dos 4 journals negativos e dos 17 journals do run completo: hashes e contrato válidos. |
 
+| 233320 | ARTIFACT/TARGET TAMPER PASS: agregado FULL e target AUTH WinRM 192.168.100.10 rejeitados por doctor/run-once, exit 2; bytes/sidecars/state restaurados; 75 arquivos da origem inalterados; grants negados e zero dispatch. Negativo a095aa73fd82. |
+| 233356 | Mesma prova de tamper ao lado do console ativo da API Rocky/mTLS: três POSTs históricos HTTP 201 de 192.168.100.20; último 01/Oct/2026 19:10:04, sem POST posterior exibido após repeats. |
+
 Journals da prova no run concluído: `49adc374-0001-45e2-bdd3-39bc55befe93`
 e `702c2071-9bb9-41eb-ac8d-e99e325c6232`. Os hashes foram exibidos como válidos;
 os arquivos originais não foram recebidos nesta revisão.
@@ -68,7 +71,7 @@ Seu sidecar corresponde conforme runtime status. Não foi recebido o JSON origin
 | Gate | Situação |
 |---|---|
 | Doctor/status e policy válida | Comprovados no Windows |
-| Resume do run concluído | Comprovado no cliente; state inalterado e dois hashes válidos; confirmação de nenhum POST nos logs do servidor pendente |
+| Resume do run concluído | Cliente already_complete/state inalterado; console da API sem POST adicional exibido após os repeats |
 | Default-deny e grants separados | Discovery/AUTH/FULL/upload negados nos respectivos checkpoints |
 | Progressão unitária | Comprovada de discovery até upload |
 | FULL real no novo run | Comprovado: 5/5 completed/collected, 5 auth successes, 0 failures/circuits |
@@ -76,17 +79,18 @@ Seu sidecar corresponde conforme runtime status. Não foi recebido o JSON origin
 | Lock agente e portátil | Bloqueio/liberação comprovados; liberação pelo kernel após saída abrupta também comprovada no negativo |
 | Ausência de serviço/agendamento | Comprovada pelos flags do doctor |
 | Upload mTLS do agente | Comprovado no novo run: HTTP 201/imported, semantic_match=true, mTLS/TLS true e receipt íntegro |
-| Repeat sem inputs de transporte | Comprovado no cliente: already_complete e attempts=1; confirmação independente de nenhum segundo POST nos logs do servidor pendente |
+| Repeat sem inputs de transporte | Cliente already_complete/attempts=1; console da API mantém último POST às 19:10:04, sem segundo POST exibido |
 | Hashes dos journals do novo run | Comprovados na captura 222234: 17/17 SHA256_OK=True |
 | Sanitização do conteúdo dos journals | Comprovada pelo auditor de contrato: 17/17 no run completo e 4/4 no negativo; campos/valores fixos e hashes válidos |
 | Policy inválida / identidade divergente | Comprovados: invalid_policy e workspace_identity_mismatch, ambos exit 2 |
 | Tamper de configuração | Comprovado no run isolado P01LAB-AGENT-NEG-c41bfbdf8992; bytes restaurados e state inalterado |
-| Tamper de artifact/target | Pendente de evidência real |
+| Tamper de artifact/target | Comprovado no negativo a095aa73fd82: agregado FULL e target AUTH rejeitados; bytes restaurados, sidecars/state inalterados e 75 arquivos da origem preservados |
 | Interrupção com intent running / review_required | Comprovada no negativo: queda antes de dispatch, duas recusas de replay, intent preservado e lock liberado |
 | Linux real | Não executado nesta rodada; CI Ubuntu passou |
 
-Retém CANDIDATE. Não inicia instalação do Windows Service v0.5f.1 até o fechamento
-do aceite definido no roteiro. O novo run tem resultado FULL 5/5 próprio,
+Aceite v0.5f.0 fechado para o Windows P01LAB R1. Iniciar v0.5f.1 Windows Service
+como CANDIDATE independente, com novo LAB de lifecycle. Linux real e systemd
+serão homologados na etapa v0.5f.2; CI Ubuntu não é evidência de instalação Linux. O novo run tem resultado FULL 5/5 próprio,
 distinto do resultado 4/4 do run portátil anterior.
 
 ## Gate concluído: upload mTLS do P01LAB-AGENT-R1
@@ -95,7 +99,8 @@ Upload e repeat concluídos nas capturas 221101–221147. Os comandos abaixo fic
 como referência da prova executada. Não repetir discovery/AUTH/FULL/export,
 reinicializar o workspace ou usar force-resend para esta prova.
 Policies negativas, config tamper, interrupção e auditoria de journals concluídos.
-O próximo trabalho é artifact/target tamper e confirmação de logs do servidor.
+Artifact/target tamper e console do servidor comprovados nas capturas 233320/233356.
+O próximo trabalho é o host Windows Service v0.5f.1 e seu LAB isolado.
 
 Os caminhos PKI abaixo foram usados na homologação anterior. Confirmar sua
 existência antes de usar; o script para se faltarem arquivos. Não enviar a key.
@@ -193,7 +198,7 @@ e sidecars. Não anexar profiles, variáveis de ambiente ou material privado PKI
 
 ## Alterações documentais desta revisão
 
-Registro das 25 capturas, incluindo upload/receipt, FULL 5/5,
+Registro das 27 capturas, incluindo upload/receipt, FULL 5/5,
 negativos de policy/identidade, config tamper, interrupção isolada e auditoria 17/17;
 status/roadmap atualizados para aceite parcial;
 lock Windows com arquivo .py e variáveis explícitas em cada janela; validação
@@ -225,7 +230,7 @@ mensagem CONFIG TAMPER PASS. Todos esses resultados foram exibidos na captura
 `C:\Canca\runs\P01LAB-CTX-R1\P01LAB-AGENT-NEG-c41bfbdf8992`.
 Se o processo/sessão terminar antes do finally, restaurar runtime.json pelos
 bytes do backup logs/runtime-original.bin do próprio run negativo, sem alterar
-sidecars. Tamper de artifact/target e logs do servidor seguem pendentes.
+sidecars. Artifact/target tamper e logs do servidor também concluídos abaixo.
 
 ## Gates concluídos: interrupção controlada e auditoria de conteúdo
 
@@ -272,9 +277,17 @@ Não comprova queda no meio de AUTH/FULL ou depois de um POST. CI exercita o
 helper em workspace offline independente, com um teste negativo de journal
 hash-valid mas com campo extra. A captura confirma os dois gates no P01-MGMT01:
 4 journals no negativo e 17 no run completo, todos válidos. Artifact/target
-tamper e logs do servidor permanecem pendentes.
+tamper e console do servidor foram comprovados nas capturas seguintes.
 
-## Próximo gate: artifact e resultado por alvo em cópia isolada
+## Gate concluído: artifact e resultado por alvo em cópia isolada
+
+Executado no P01-MGMT01, comprovado nas capturas 233320/233356. Negativo:
+`C:\Canca\runs\P01LAB-CTX-R1\P01LAB-AGENT-ARTIFACT-NEG-a095aa73fd82`.
+Agregado FULL e target AUTH de 192.168.100.10/WinRM rejeitados por doctor/run-once,
+ambos exit 2/workspace_integrity_failed. Os dois testes restauraram bytes exatos,
+mantiveram sidecar/state e voltaram a already_complete. Source_unchanged=true,
+source_files_checked=75, todos os grants negados e runtime_dispatch_calls=0.
+Os comandos abaixo documentam a prova; não é necessário repeti-la.
 
 O helper [OPTIONAL_AGENT_ARTIFACT_TAMPER_R1.py](OPTIONAL_AGENT_ARTIFACT_TAMPER_R1.py)
 lê o run completo sob o lock compartilhado e copia somente state/config e as
@@ -307,10 +320,30 @@ bytes_restored, sidecar_unchanged e state_unchanged true; source_unchanged=true,
 all_grants_denied=true e runtime_dispatch_calls=0. O helper retorna exit 0.
 Não usar o negativo c41bfbdf8992 como origem: ele contém intent de interrupção
 e deve permanecer preservado. Em falha, conservar a cópia/backups para revisão.
-CI executa este ensaio offline no Windows/Ubuntu; o aceite LAB depende da captura
-do comando acima no P01-MGMT01.
+CI executou este ensaio offline no Windows/Ubuntu; o aceite LAB está comprovado
+pelas capturas 233320/233356.
 
-## Gate restante: confirmação independente de POST no servidor
+## Gate concluído: confirmação independente de POST no servidor
+
+A captura 233356 mostra a API ativa no P01-LNX-RKY01, mTLS, bind
+192.168.100.50:8443, store `/root/p01/store-v05e-r1`, process=true. O console
+da mesma execução exibe somente três POSTs de 192.168.100.20, todos HTTP 201:
+
+| Timestamp mostrado pelo servidor | Relação com as provas |
+|---|---|
+| 30/Sep/2026 23:39:02 | Histórico anterior à rodada Optional Agent R1 |
+| 01/Oct/2026 17:03:14 | Compatível com o upload portátil P01LAB-RUNTIME-R3 |
+| 01/Oct/2026 19:10:04 | Compatível com o upload do P01LAB-AGENT-R1 |
+
+Não há POST posterior exibido, embora os repeats já tenham retornado
+already_complete e a captura seja posterior. Aceite do gate no processo/janela
+observados, cruzando source IP, HTTP 201 e a sequência das capturas do cliente.
+Os access logs não incluem bundle_id; a associação dos dois últimos horários aos
+runs é uma correlação das evidências, não um vínculo criptográfico. Mantém-se a
+ressalva de relógios/fuso já registrada; não calcular duração UTC entre hosts
+com essas capturas. O receipt e o estado do cliente continuam sendo os vínculos
+do bundle. Os comandos abaixo ficam como referência para futuras provas.
+
 
 A API registra acessos HTTP no stderr (`P01_Ingestion_API.py`, log_message).
 No P01-LNX-RKY01, preservar o log da execução de ingestão ou o journal da unidade
