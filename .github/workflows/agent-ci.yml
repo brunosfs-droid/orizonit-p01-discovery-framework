@@ -28,6 +28,8 @@ jobs:
         run: python -m unittest discover -s tests -p "test_optional_agent.py" -v
       - name: Offline process interruption and journal content audit
         run: python docs/validation/OPTIONAL_AGENT_INTERRUPTION_R1.py --self-test
+      - name: Offline isolated artifact and nested target tamper
+        run: python docs/validation/OPTIONAL_AGENT_ARTIFACT_TAMPER_R1.py --self-test
       - name: Parse LAB helper with Windows PowerShell
         if: runner.os == 'Windows'
         shell: powershell

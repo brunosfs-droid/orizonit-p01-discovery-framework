@@ -241,9 +241,11 @@ O LAB inicial usará P01-MGMT01 como Discovery Node por possuir acesso ao segmen
   Windows R1 partial evidence: completed-resume, progression through upload,
   FULL 5/5, separate grants, shared lock and real agent mTLS receipt passed.
   Repeat returned already_complete with attempts=1; invalid policy and identity
-  mismatch rejected with exit 2; 17/17 journal hashes matched. Server POST
-  confirmation, journal content audit and artifact/target tamper/interruption
-  pending; config tamper rejected and restored in an isolated Windows LAB run;
+  mismatch rejected with exit 2. Config tamper and pre-dispatch process exit
+  passed in an isolated Windows run: review_required twice, no replay, restored
+  policy, preserved intent and released lock. Journal hashes/contract passed
+  17/17 in the complete run and 4/4 in the negative run. Server POST confirmation
+  and artifact/target tamper pending; isolated-copy helper prepared;
   [evidence record](validation/OPTIONAL_AGENT_P01LAB_R1_v0.5f.0.md).
 - **v0.5f.1:** planned — Windows Service lifecycle/install/uninstall/recovery.
 - **v0.5f.2:** planned — Linux/systemd lifecycle/install/uninstall/recovery.
