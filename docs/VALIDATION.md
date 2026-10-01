@@ -544,3 +544,21 @@ Candidate acceptance:
 - state advances to `upload: completed` and next action `complete`;
 - repeated upload with only `--workspace` returns `already_complete` before any network/TLS activity;
 - forced resend without explicit transport inputs is rejected locally.
+
+
+## Portable Discovery Node Runtime v0.5e.6 — P01LAB
+
+LAB VALIDATED on P01-MGMT01 / P01-LNX-RKY01 using workspace `P01LAB-RUNTIME-R3`.
+
+Acceptance evidence:
+- first live connected upload used the validated HTTPS/mTLS endpoint and returned HTTP 201 / `imported`;
+- server response reported `semantic_match=true` and authenticated node `P01-MGMT01`;
+- receipt JSON + SHA256 were written under the workspace `receipts` directory;
+- state advanced to `upload: completed` and `Next action: complete`;
+- repeated command with only `upload --workspace ...` returned `already_complete`;
+- repeated upload reported zero network activity, zero secret resolution and zero authentication attempts;
+- Rocky ingestion log showed no additional POST for the zero-input repeat;
+- `--force-resend` without explicit transport parameters was rejected locally.
+
+This validates the end-to-end portable runtime path in one workspace:
+`init -> discovery -> planner -> dry-run -> AUTH-only -> FULL -> Asset Resolver -> Evidence Bundle -> mTLS upload -> complete`.
