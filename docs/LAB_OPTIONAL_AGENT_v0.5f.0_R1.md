@@ -1,7 +1,11 @@
 # Cancã — LAB Optional Agent v0.5f.0 / P01LAB R1
 
-Data: 01/10/2026. Status: CANDIDATE; execução real ainda pendente.
+Data: 01/10/2026. Status: CANDIDATE; LAB Windows parcialmente comprovado.
 Baseline: portable runtime v0.5e.6 LAB VALIDATED; Issue #83.
+
+As 17 capturas do R1 comprovam completed-resume, progressão até export,
+grants separados e lock agente/portátil. Upload mTLS do novo run e os demais
+negativos continuam pendentes. Ver [registro de evidências](validation/OPTIONAL_AGENT_P01LAB_R1_v0.5f.0.md).
 
 ## Objetivo e limites
 
@@ -123,6 +127,7 @@ esteja autorizado no Assessment Manifest do LAB:
 ```powershell
 (Get-Content -Raw $Manifest | ConvertFrom-Json).authorized_scopes
 $ScanTarget = Read-Host "UM IP/CIDR do LAB autorizado no manifest"
+if ([string]::IsNullOrWhiteSpace($ScanTarget)) { throw "Informar um IP/CIDR autorizado" }
 $PolicyDoc.discovery = @{ targets = @($ScanTarget) }
 $PolicyDoc.limits = @{ max_hosts = 2048; max_actions = 25 }
 $PolicyDoc.grants.discovery = $true
@@ -209,9 +214,13 @@ alterar o arquivo sem atualizar seu sidecar e chamar doctor/run-once. Esperado
 workspace_integrity_failed. Restaurar os bytes originais; nunca recalcular hash
 para ocultar adulteração. Repetir com um artifact/target FULL de um run de teste.
 
-Lock em duas janelas, na raiz do repositório. Janela 1:
+Lock em duas janelas, na raiz do repositório. Definir os caminhos e ativar o
+ambiente em CADA janela: variáveis PowerShell não são compartilhadas. Janela 1:
 
 ```powershell
+Set-Location "C:\GitHub\orizonit-p01-discovery-framework"
+. .\.venv\Scripts\Activate.ps1
+$AgentWorkspace = "C:\Canca\runs\P01LAB-CTX-R1\P01LAB-AGENT-R1"
 $HoldScript = @'
 import sys
 from pathlib import Path
@@ -221,12 +230,27 @@ with workspace_lock(Path(sys.argv[1])):
     print("LOCK HELD", flush=True)
     input("Press Enter to release: ")
 '@
-python -c $HoldScript $AgentWorkspace
+$HoldFile = Join-Path $env:TEMP "p01_hold_workspace_lock.py"
+$HoldScript | Set-Content -Path $HoldFile -Encoding UTF8
+python $HoldFile $AgentWorkspace
 ```
 
-Janela 2: definir os mesmos caminhos em suas próprias variáveis e chamar agent
-run-once. Esperado workspace_busy. Enquanto o lock estiver ativo, chamar também
-o portable `run --workspace ...`; ele deve ser bloqueado antes da mutação.
+Usar o arquivo `.py`: `python -c $HoldScript` perdeu aspas na execução real com
+Windows PowerShell e gerou SyntaxError antes de adquirir o lock.
+
+Janela 2, enquanto a primeira mostra LOCK HELD:
+
+```powershell
+Set-Location "C:\GitHub\orizonit-p01-discovery-framework"
+. .\.venv\Scripts\Activate.ps1
+$AgentWorkspace = "C:\Canca\runs\P01LAB-CTX-R1\P01LAB-AGENT-R1"
+$AgentPolicy = Join-Path $AgentWorkspace "config/agent-policy.json"
+python agent/P01_Agent.py run-once --workspace $AgentWorkspace --policy $AgentPolicy
+python runtime/P01_Discovery_Node.py run --workspace $AgentWorkspace
+```
+
+Esperado workspace_busy nos dois comandos, antes da mutação. Este gate já foi
+comprovado no R1 (capturas 213612 e 213854); não é necessário repeti-lo.
 Um journal `running` após queda do processo também exige revisão. Verificar os
 checkpoints e, para upload, receipt/idempotency no servidor antes da recuperação
 portátil explícita. Preservar e arquivar o intent revisado fora de logs/agent antes
@@ -234,6 +258,14 @@ de retomar o agente; não simplesmente excluir o intent para repetir acesso.
 
 Liberar com Enter e verificar que o status passa a funcionar. O arquivo de lock
 permanece; não excluí-lo. Encerrar o processo também libera o lock pelo kernel.
+
+```powershell
+python agent/P01_Agent.py status --workspace $AgentWorkspace --policy $AgentPolicy
+python runtime/P01_Discovery_Node.py status --workspace $AgentWorkspace --json
+```
+
+O [registro R1](validation/OPTIONAL_AGENT_P01LAB_R1_v0.5f.0.md) contém o próximo
+comando mTLS com os caminhos usados anteriormente no LAB e verificação de existência.
 
 ## Critério de aceite e evidências
 

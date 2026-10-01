@@ -1,7 +1,8 @@
 # Cancã v0.5f.0 — Optional Agent foundation
 
-Date: 2026-10-01. Status: CANDIDATE for real P01LAB acceptance.
+Date: 2026-10-01. Status: CANDIDATE; partial Windows P01LAB evidence reviewed.
 Baseline main: c35b3c27364dba4fb5c1e95ce3d5e29fbcd12d11, portable v0.5e.6 LAB VALIDATED.
+Foundation merged in PR #84: b85746a38295def054a3822fb152086fae9ef3b2.
 Tracking: Issue #83. Runtime engine version/schema remain v0.5e.6 / v0.5e.
 
 ## Implemented
@@ -23,18 +24,27 @@ Tracking: Issue #83. Runtime engine version/schema remain v0.5e.6 / v0.5e.
 
 Local Linux / Python 3.12: **170 tests passed**, including 25 agent tests and
 145 existing regression tests. Python compilation, JSON syntax, default policy
-validation and diff whitespace checks passed. Agent contract CI is configured for
-ubuntu-latest and windows-latest / Python 3.12; its results must pass before merge.
+validation and diff whitespace checks passed. Agent contract CI passed on
+ubuntu-latest and windows-latest / Python 3.12 before PR #84 merged.
 Live authentication/upload in agent integration tests use fixtures/mocks. They
 prove runtime wiring, stage gates, integrity, journaling and resume; they do not
 prove real connectivity or OS service lifecycle.
 
-## Pending real acceptance
+## Real LAB evidence and remaining acceptance
 
-Run [LAB_OPTIONAL_AGENT_v0.5f.0_R1.md](LAB_OPTIONAL_AGENT_v0.5f.0_R1.md) on P01-MGMT01,
-starting with the completed v0.5e.6 workspace. Preserve journals/sidecars and
-verify no repeated POST on completed resume. Then use a separate run for policy
-progression, AUTH/FULL, resolver/export and granted mTLS upload.
+[17 Windows screenshots reviewed](validation/OPTIONAL_AGENT_P01LAB_R1_v0.5f.0.md):
+offline doctor/status, completed-resume with unchanged state and two matching
+journal hashes; default-deny; one-stage progression through discovery, planning,
+dry-run, AUTH, FULL, resolver and export; separate AUTH/FULL/upload grants;
+transport_required without mTLS inputs; agent/portable workspace_busy and release.
+New run resolver: 5 network assets + 5 FULL observations -> 5 logical assets,
+0 unresolved/ambiguous/conflicts. No service or schedule installed per doctor.
+
+Still pending: new run mTLS receipt and repeated completion/server POST check;
+new journals integrity/sanitization audit; invalid policy, identity mismatch,
+tamper and interruption/review gates. A prior portable run's HTTP 201 receipt
+does not establish agent upload acceptance. Follow the corrected
+[LAB procedure](LAB_OPTIONAL_AGENT_v0.5f.0_R1.md); retain CANDIDATE until closure.
 
 Service installation and automatic schedules remain outside v0.5f.0. Schedule
 descriptor is metadata only. Workspaces require local filesystem lock semantics;
