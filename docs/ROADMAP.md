@@ -235,7 +235,14 @@ O LAB inicial usará P01-MGMT01 como Discovery Node por possuir acesso ao segmen
 ### v0.5f — Optional Installed Service/Agent
 - reuse the same portable runtime core;
 - add service lifecycle, scheduling and unattended execution policy.
-- **Status:** planned.
+- **v0.5f.0:** CANDIDATE — cross-platform agent doctor/status/run-once,
+  strict versioned default-deny policy, independent stage grants, shared OS lock,
+  checkpoint integrity and sanitized JSON/SHA256 journal. No service installation.
+- **v0.5f.1:** planned — Windows Service lifecycle/install/uninstall/recovery.
+- **v0.5f.2:** planned — Linux/systemd lifecycle/install/uninstall/recovery.
+- **v0.5f.3:** planned — scheduling/restart/recovery hardening and soak.
+- Issue #83; [agent guide](../agent/README.md) and
+  [LAB gate](LAB_OPTIONAL_AGENT_v0.5f.0_R1.md).
 
 
 ### v0.5e.1 — Managed Network Discovery
@@ -323,3 +330,4 @@ O LAB inicial usará P01-MGMT01 como Discovery Node por possuir acesso ao segmen
 - **Status:** LAB VALIDATED no P01LAB-RUNTIME-R3. Upload mTLS HTTP 201/imported, semantic_match=true, node P01-MGMT01, receipt JSON/SHA256, state `upload: completed`, `Next action: complete`, zero-input repeat `already_complete` sem novo POST e force-resend sem transporte bloqueado.
 
 Follow-up: após fechar v0.5e, iniciar v0.5f Optional Installed Service/Agent e os gates de product alpha/persistência central.
+

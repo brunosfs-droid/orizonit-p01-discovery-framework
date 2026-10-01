@@ -44,3 +44,9 @@ python -m json.tool schemas/p01-discovery-schema-v0.3.json > /dev/null
 ## v0.5e contracts
 
 - `p01-portable-node-state-schema-v0.5e.json` — portable Discovery Node workspace/checkpoint state contract.
+
+
+- `p01-agent-policy-schema-v0.5f.json`: default-deny agent grants and run identity.
+- `p01-agent-journal-schema-v0.5f.json`: sanitized per-invocation journal.
+
+Policy IPv4 syntax and duplicate JSON keys are additionally checked by the agent.

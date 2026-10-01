@@ -236,3 +236,10 @@ Mais detalhes: [docs/ROADMAP.md](docs/ROADMAP.md).
 
 **Cancã — Open Infrastructure Assessment & Intelligence Platform**  
 **Orizon IT — Tecnologia que transforma negócios.**
+
+
+## Optional agent track
+
+v0.5f.0 is CANDIDATE for LAB: [agent guide](agent/README.md). The canonical
+portable runtime remains v0.5e.6 and is supported independently. Windows Service
+and Linux/systemd installation will follow after the agent foundation gate.

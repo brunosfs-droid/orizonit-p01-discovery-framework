@@ -1,0 +1,18 @@
+{
+  "schema_version": "0.5f",
+  "identity": {
+    "assessment_id": "EXAMPLE-2026-001",
+    "run_id": "RUN-001",
+    "node_id": "NODE-01"
+  },
+  "grants": {
+    "discovery": false,
+    "planning": false,
+    "dry_run": false,
+    "auth_only": false,
+    "full": false,
+    "resolver": false,
+    "export": false,
+    "upload": false
+  }
+}

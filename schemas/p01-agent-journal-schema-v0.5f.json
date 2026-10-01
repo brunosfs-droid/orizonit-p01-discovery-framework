@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:orizon:p01:agent-journal:0.5f",
+  "title": "Canc\u00e3 Agent Journal v0.5f",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "agent_version",
+    "invocation_id",
+    "started_at_utc",
+    "status",
+    "stage",
+    "policy_sha256"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "0.5f"
+    },
+    "agent_version": {
+      "const": "0.5f.0"
+    },
+    "invocation_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "started_at_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "finished_at_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "enum": [
+        "running",
+        "advanced",
+        "already_complete",
+        "policy_denied",
+        "review_required",
+        "failed"
+      ]
+    },
+    "stage": {
+      "enum": [
+        null,
+        "discovery",
+        "planning",
+        "dry_run",
+        "auth_only",
+        "full",
+        "resolver",
+        "export",
+        "upload"
+      ]
+    },
+    "policy_sha256": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "error_code": {
+      "enum": [
+        "invalid_policy",
+        "workspace_integrity_failed",
+        "workspace_identity_mismatch",
+        "interactive_provider_denied",
+        "credential_configuration_invalid",
+        "transport_required",
+        "stage_invalid",
+        "runtime_failed",
+        "journal_integrity_failed"
+      ]
+    }
+  }
+}
