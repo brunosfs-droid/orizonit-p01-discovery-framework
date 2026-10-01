@@ -1420,6 +1420,11 @@ class PortableRuntimeTests(unittest.TestCase):
             sidecar=True,
         )
         state = mod._load_state(workspace)
+        state["steps"]["credential_plan"] = {
+            "status": "completed",
+            "completed_at_utc": mod.utc_now_iso(),
+            "managed_by": "0.5e.2",
+        }
         state["steps"]["credentialed_execution"] = {
             "status": "full_completed",
             "completed_at_utc": mod.utc_now_iso(),
