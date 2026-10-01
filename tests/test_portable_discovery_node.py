@@ -63,6 +63,7 @@ class PortableRuntimeTests(unittest.TestCase):
             mod.assert_no_secret_material({"value": "wincred://EXAMPLE/secret"})
         with self.assertRaises(mod.RuntimeErrorSafe):
             mod.assert_no_secret_material({"value": "-----BEGIN PRIVATE KEY-----"})
+        mod.assert_no_secret_material({"private_key_material_persisted": False})
 
     def test_state_sidecar_tamper_detected(self):
         with tempfile.TemporaryDirectory() as td:
