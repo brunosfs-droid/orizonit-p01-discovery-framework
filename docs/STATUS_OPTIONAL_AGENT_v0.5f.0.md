@@ -32,7 +32,7 @@ prove real connectivity or OS service lifecycle.
 
 ## Real LAB evidence and remaining acceptance
 
-[22 Windows screenshots reviewed](validation/OPTIONAL_AGENT_P01LAB_R1_v0.5f.0.md):
+[23 Windows screenshots reviewed](validation/OPTIONAL_AGENT_P01LAB_R1_v0.5f.0.md):
 offline doctor/status, completed-resume with unchanged state and two matching
 journal hashes; default-deny; one-stage progression through discovery, planning,
 dry-run, AUTH, FULL, resolver and export; separate AUTH/FULL/upload grants;
@@ -45,8 +45,9 @@ Repeat without transport inputs: already_complete; upload attempts=1. All eight
 runtime artifact references, including receipt, exist and match their hashes;
 next_action=complete. No service or schedule installed per doctor.
 
-Still pending: independent server POST check; new journals integrity/sanitization
-audit; invalid policy, identity mismatch, tamper and interruption/review gates.
+Invalid policy and identity mismatch failed closed with exit 2; all 17 new-run
+journals shown match their SHA256 sidecars. Still pending: independent server
+POST check; journal content/sanitization audit; tamper and interruption/review gates.
 Security flags in runtime status do not replace review of agent journal content.
 Follow the corrected
 [LAB procedure](LAB_OPTIONAL_AGENT_v0.5f.0_R1.md); retain CANDIDATE until closure.
