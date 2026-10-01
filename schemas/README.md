@@ -39,3 +39,8 @@ python -m json.tool schemas/p01-discovery-schema-v0.3.json > /dev/null
 ## v0.5d contracts
 
 - `p01-connected-upload-receipt-schema-v0.5d.json` — authenticated connected-upload receipt contract.
+
+
+## v0.5e contracts
+
+- `p01-portable-node-state-schema-v0.5e.json` — portable Discovery Node workspace/checkpoint state contract.
