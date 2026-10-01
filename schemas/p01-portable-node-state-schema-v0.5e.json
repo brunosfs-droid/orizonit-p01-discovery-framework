@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://orizonit.example/schemas/p01-portable-node-state-v0.5e.json",
+  "title": "Cancã Portable Discovery Node Runtime State v0.5e",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "runtime_name",
+    "runtime_version",
+    "created_at_utc",
+    "updated_at_utc",
+    "assessment_id",
+    "run_id",
+    "node_id",
+    "platform",
+    "source_refs",
+    "workspace",
+    "security",
+    "steps",
+    "artifacts",
+    "events"
+  ],
+  "properties": {
+    "schema_version": { "const": "0.5e" },
+    "runtime_name": { "const": "Canca-Portable-Discovery-Node" },
+    "runtime_version": { "type": "string" },
+    "created_at_utc": { "type": "string" },
+    "updated_at_utc": { "type": "string" },
+    "assessment_id": { "type": "string", "minLength": 1 },
+    "run_id": { "type": "string", "minLength": 1 },
+    "node_id": { "type": "string", "minLength": 1 },
+    "platform": {
+      "type": "object",
+      "required": ["system", "python_version", "hostname"],
+      "additionalProperties": true
+    },
+    "source_refs": {
+      "type": "object",
+      "properties": {
+        "assessment_manifest": { "type": ["string", "null"] },
+        "credential_profiles": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "workspace": {
+      "type": "object",
+      "required": ["root", "directories"],
+      "properties": {
+        "root": { "type": "string" },
+        "directories": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "security": {
+      "type": "object",
+      "required": [
+        "plaintext_credentials_persisted",
+        "secret_provider_references_persisted",
+        "private_key_material_persisted",
+        "server_initiated_remote_execution",
+        "active_discovery_managed_in_this_version"
+      ],
+      "properties": {
+        "plaintext_credentials_persisted": { "const": false },
+        "secret_provider_references_persisted": { "const": false },
+        "private_key_material_persisted": { "const": false },
+        "server_initiated_remote_execution": { "const": false },
+        "active_discovery_managed_in_this_version": { "const": false }
+      },
+      "additionalProperties": false
+    },
+    "steps": {
+      "type": "object",
+      "required": [
+        "initialized",
+        "network_discovery",
+        "credential_plan",
+        "credentialed_execution",
+        "asset_resolver",
+        "evidence_bundle",
+        "upload"
+      ],
+      "additionalProperties": {
+        "type": "object",
+        "required": ["status"]
+      }
+    },
+    "artifacts": { "type": "object" },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["at_utc", "action", "status"],
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": false
+}
