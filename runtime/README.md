@@ -116,7 +116,7 @@ A completed discovery is not repeated unless the operator explicitly passes `--f
 
 ## Managed Credential Planner
 
-After Network Discovery is completed, run the same operational command again:
+After Network Discovery is completed, run the same operational command again **without `--target`** so the runtime advances to the next managed stage:
 
 ```powershell
 python .\runtime\P01_Discovery_Node.py run `
