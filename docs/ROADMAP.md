@@ -1,4 +1,19 @@
-# P01 Network Discovery — Roadmap v0.4
+# Cancã — Engineering Roadmap
+
+> Cancã is Orizon IT Product 01 (P01). Existing P01 identifiers remain valid during Technical Alpha for compatibility.
+
+## Product maturity path
+
+1. **Technical Alpha — current:** core discovery, credentialed enrichment, Asset Resolver, Evidence Bundle, offline/connected ingestion and mTLS contracts.
+2. **Distributed Technical Alpha — next gate:** Discovery Node and Cancã Server on separate hosts with outbound-only mTLS.
+3. **Product Alpha:** PostgreSQL persistence, assessment lifecycle, minimal Web/API surface and end-to-end reporting.
+4. **Design Partner Alpha:** controlled external environments and support-matrix expansion.
+5. **Community Beta:** public open-source readiness, installation, CLA process, SECURITY/CONTRIBUTING, SBOM and third-party license inventory.
+6. **Release Candidate:** feature freeze, hardening, upgrade/rollback, backup/restore and blocker closure.
+7. **1.0 GA:** supportable end-to-end Assessment & Intelligence product.
+
+See [MVP.md](MVP.md) and [PROJECT_GOVERNANCE.md](PROJECT_GOVERNANCE.md).
+
 
 ## v0.4a — Network Discovery MVP
 
