@@ -2,7 +2,7 @@
 
 Revisão: 01/10/2026. **CANDIDATE — validação Windows parcial.**
 Implementação: PR #84, main `b85746a38295def054a3822fb152086fae9ef3b2`.
-Fonte: 17 capturas fornecidas pelo operador; resultados observados, sem execução
+Fonte: 22 capturas fornecidas pelo operador (17 iniciais + 5 de upload); resultados observados, sem execução
 remota pelo Codex. CI Windows/Ubuntu já aprovada na implementação, com fixtures
 para live AUTH/upload; não substitui os gates reais abaixo.
 
@@ -45,10 +45,20 @@ exibidas pelo host nem substitui sidecars dos journals.
 | 213642 | python -c perdeu aspas no Windows PowerShell; operador criou arquivo .py e conseguiu LOCK HELD. Corrigido no roteiro. |
 | 213854 | Sob lock: agente e portátil workspace_busy. Após liberação: status ready/upload, runtime state_integrity=true; resolver 5 Network + 5 FULL -> 5 logical, 0 unresolved/ambiguous/conflicts; 5 plan candidates. |
 | 213936 | Após liberar o lock, run-once sem transporte continua transport_required. Resultado esperado para upload pendente. |
+| 221101 | Upload do P01LAB-AGENT-R1 advanced com inputs mTLS; próxima chamada sem inputs already_complete; runtime state_integrity=true. Paths PKI verificados sem erro. |
+| 221111 | Novo run: FULL actions_total=5, completed=5, collected=5, authentication_successes=5, failures=0 e open_credential_circuits=0. Resolver 5 Network + 5 FULL -> 5 logical, zero unresolved/ambiguous/conflicts. Bundle input_count=8. |
+| 221128 | Upload completed, attempts=1, HTTP 201/imported, semantic_match=true, authenticated_node_id=P01-MGMT01, mTLS e verificação TLS true; automatic_retry_of_completed_step=false. |
+| 221139 | Oito referências do novo run, incluindo upload_receipt: exists=true e sha256_match=true; next_action=complete. |
+| 221147 | Status declara plaintext_credentials_persisted=false, private_key_material_persisted=false e secret_provider_references_persisted=false; zero_input_upload_resume_supported=true. Não substitui auditoria do conteúdo dos journals. |
 
 Journals da prova no run concluído: `49adc374-0001-45e2-bdd3-39bc55befe93`
 e `702c2071-9bb9-41eb-ac8d-e99e325c6232`. Os hashes foram exibidos como válidos;
 os arquivos originais não foram recebidos nesta revisão.
+
+Novo run: upload journal `1e7706e8-b97d-47f2-9e83-d18366802ea3`; repeat journal
+`b8afc164-7649-449f-ae0f-0134f06e1280`.
+Receipt observado: `P01-Upload-Receipt_bnd-62a74d08048b75988a23.json`.
+Seu sidecar corresponde conforme runtime status. Não foi recebido o JSON original.
 
 ## Decisão de aceite
 
@@ -57,25 +67,28 @@ os arquivos originais não foram recebidos nesta revisão.
 | Doctor/status e policy válida | Comprovados no Windows |
 | Resume do run concluído | Comprovado no cliente; state inalterado e dois hashes válidos; confirmação de nenhum POST nos logs do servidor pendente |
 | Default-deny e grants separados | Discovery/AUTH/FULL/upload negados nos respectivos checkpoints |
-| Progressão unitária | Comprovada de discovery até export |
+| Progressão unitária | Comprovada de discovery até upload |
+| FULL real no novo run | Comprovado: 5/5 completed/collected, 5 auth successes, 0 failures/circuits |
 | Resolver real no novo run | Comprovado: 5 logical, zero unresolved/ambiguous/conflicts |
 | Lock agente e portátil | Comprovado com bloqueio e liberação; não comprova encerramento abrupto do processo |
 | Ausência de serviço/agendamento | Comprovada pelos flags do doctor |
-| Upload mTLS do agente e repeat sem novo POST | Pendente; receipt de P01LAB-RUNTIME-R3 pertence ao baseline |
+| Upload mTLS do agente | Comprovado no novo run: HTTP 201/imported, semantic_match=true, mTLS/TLS true e receipt íntegro |
+| Repeat sem inputs de transporte | Comprovado no cliente: already_complete e attempts=1; confirmação independente de nenhum segundo POST nos logs do servidor pendente |
 | Journals do novo run íntegros/sanitizados | Pendente; dois hashes do run antigo não cobrem o novo run inteiro |
 | Policy inválida / identidade divergente / tamper | Pendentes de evidência real |
 | Interrupção com intent running / review_required | Pendente de evidência real em run isolado |
 | Linux real | Não executado nesta rodada; CI Ubuntu passou |
 
 Retém CANDIDATE. Não inicia instalação do Windows Service v0.5f.1 até o fechamento
-do aceite definido no roteiro. As capturas não fornecem o resumo completo de
-FULL do novo run; não atribuir a ele o resultado 4/4 do run portátil anterior.
+do aceite definido no roteiro. O novo run tem resultado FULL 5/5 próprio,
+distinto do resultado 4/4 do run portátil anterior.
 
-## Próximo gate: upload mTLS do P01LAB-AGENT-R1
+## Gate concluído: upload mTLS do P01LAB-AGENT-R1
 
-Não repetir discovery/AUTH/FULL/export, nem reinicializar o workspace. Seu próximo
-checkpoint já é upload. `transport_required` informa a ausência dos quatro
-inputs de transporte dessa invocação; não indica falha do lock ou do export.
+Upload e repeat concluídos nas capturas 221101–221147. Os comandos abaixo ficam
+como referência da prova executada. Não repetir discovery/AUTH/FULL/export,
+reinicializar o workspace ou usar force-resend para esta prova.
+O próximo trabalho é o bloco de negativos/journals, não outro upload.
 
 Os caminhos PKI abaixo foram usados na homologação anterior. Confirmar sua
 existência antes de usar; o script para se faltarem arquivos. Não enviar a key.
@@ -107,8 +120,8 @@ completed e next_action complete. Confirmar nos logs de ingestão que a repetiç
 não gerou outro POST. Preservar receipt e sidecar do workspace. Em falha ou
 review_required, preservar outputs/journals e revisar antes de nova tentativa.
 
-As capturas mostram timestamps de journal em `2026-10-02T00:06...Z` e
-`00:15...Z`, enquanto os nomes são de 01/10 às 21h. Conferir data/fuso e
+As capturas mostram timestamps de journal em `2026-10-02T00:06...Z`,
+`00:15...Z` e `01:10...Z`, enquanto os nomes são de 01/10 às 21h/22h. Conferir data/fuso e
 sincronização do node, sem concluir a causa apenas pelos nomes de arquivo:
 
 ```powershell
@@ -119,6 +132,14 @@ w32tm /query /status
 ```
 
 ## Fechamento dos negativos e journals
+
+Este é o próximo bloco. O run P01LAB-AGENT-R1 já está completo.
+Na janela PowerShell com a .venv ativa, definir os caminhos antes dos comandos:
+
+```powershell
+$AgentWorkspace = "C:\Canca\runs\P01LAB-CTX-R1\P01LAB-AGENT-R1"
+$AgentPolicy = Join-Path $AgentWorkspace "config/agent-policy.json"
+```
 
 Com o run parado, os testes de policy usam cópias temporárias; não alteram a
 policy real. O grant upload é explicitamente negado nas cópias.
@@ -163,7 +184,8 @@ e sidecars. Não anexar profiles, variáveis de ambiente ou material privado PKI
 
 ## Alterações documentais desta revisão
 
-Registro de gates por captura; status/roadmap atualizados para aceite parcial;
+Registro das 22 capturas, incluindo upload/receipt e FULL 5/5;
+status/roadmap atualizados para aceite parcial;
 lock Windows com arquivo .py e variáveis explícitas em cada janela; validação
 de entrada vazia do escopo; comandos de upload com verificação dos paths PKI.
 Nenhuma mudança no motor/agente, nos grants do LAB ou na versão executável.

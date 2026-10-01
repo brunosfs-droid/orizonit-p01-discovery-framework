@@ -32,18 +32,23 @@ prove real connectivity or OS service lifecycle.
 
 ## Real LAB evidence and remaining acceptance
 
-[17 Windows screenshots reviewed](validation/OPTIONAL_AGENT_P01LAB_R1_v0.5f.0.md):
+[22 Windows screenshots reviewed](validation/OPTIONAL_AGENT_P01LAB_R1_v0.5f.0.md):
 offline doctor/status, completed-resume with unchanged state and two matching
 journal hashes; default-deny; one-stage progression through discovery, planning,
 dry-run, AUTH, FULL, resolver and export; separate AUTH/FULL/upload grants;
 transport_required without mTLS inputs; agent/portable workspace_busy and release.
 New run resolver: 5 network assets + 5 FULL observations -> 5 logical assets,
-0 unresolved/ambiguous/conflicts. No service or schedule installed per doctor.
+0 unresolved/ambiguous/conflicts. FULL: 5/5 completed/collected, 5 authentication
+successes, 0 failures/circuits. Granted agent upload: HTTP 201/imported,
+semantic_match=true, node P01-MGMT01, mTLS and TLS server verification true.
+Repeat without transport inputs: already_complete; upload attempts=1. All eight
+runtime artifact references, including receipt, exist and match their hashes;
+next_action=complete. No service or schedule installed per doctor.
 
-Still pending: new run mTLS receipt and repeated completion/server POST check;
-new journals integrity/sanitization audit; invalid policy, identity mismatch,
-tamper and interruption/review gates. A prior portable run's HTTP 201 receipt
-does not establish agent upload acceptance. Follow the corrected
+Still pending: independent server POST check; new journals integrity/sanitization
+audit; invalid policy, identity mismatch, tamper and interruption/review gates.
+Security flags in runtime status do not replace review of agent journal content.
+Follow the corrected
 [LAB procedure](LAB_OPTIONAL_AGENT_v0.5f.0_R1.md); retain CANDIDATE until closure.
 
 Service installation and automatic schedules remain outside v0.5f.0. Schedule
