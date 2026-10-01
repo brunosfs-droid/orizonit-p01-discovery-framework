@@ -66,6 +66,7 @@ class PortableRuntimeTests(unittest.TestCase):
             self.assertTrue(
                 state["security"]["workspace_driven_bundle_managed_in_this_version"]
             )
+            self.assertTrue(state["security"]["zero_input_upload_resume_supported"])
             self.assertFalse(state["security"]["plaintext_credentials_persisted"])
 
     def test_init_is_idempotent_for_same_identity(self):
@@ -1880,18 +1881,51 @@ class PortableRuntimeTests(unittest.TestCase):
                     key,
                     max_retries=0,
                 )
-                second = mod.upload_bundle(
-                    workspace,
-                    "https://server.example:8443",
-                    ca,
-                    cert,
-                    key,
-                    max_retries=0,
-                )
+                second = mod.upload_bundle(workspace)
+
+                with self.assertRaises(mod.RuntimeErrorSafe) as ctx:
+                    mod.upload_bundle(
+                        workspace,
+                        force_resend=True,
+                    )
 
             self.assertEqual(first["status"], "completed")
             self.assertEqual(second["status"], "already_complete")
+            self.assertTrue(first["network_activity_performed"])
+            self.assertFalse(second["network_activity_performed"])
+            self.assertFalse(second["secret_resolution_performed"])
+            self.assertFalse(second["authentication_attempts_performed"])
+            self.assertIn("forced resend requires explicit transport inputs", str(ctx.exception))
             self.assertEqual(calls["uploads"], 1)
+
+            state = mod._load_state(workspace)
+            self.assertNotIn("client_key", state["steps"]["upload"])
+            self.assertNotIn("private_key", json.dumps(state).lower())
+
+    def test_pending_upload_requires_explicit_transport_inputs(self):
+        with tempfile.TemporaryDirectory() as td:
+            network, evidence_dir, _cred, resolver, manifest = self._synthetic_inputs(td)
+            init = mod.init_workspace(
+                pathlib.Path(td) / "runs",
+                "A1",
+                "R1",
+                "NODE-01",
+                manifest=manifest,
+            )
+            workspace = pathlib.Path(init["workspace"])
+            mod.export_bundle(
+                workspace,
+                network,
+                evidence_dir,
+                "RUNTIME-FULL",
+                resolver,
+                None,
+                require_sidecars=True,
+            )
+
+            with self.assertRaises(mod.RuntimeErrorSafe) as ctx:
+                mod.upload_bundle(workspace)
+            self.assertIn("live connected upload requires explicit transport inputs", str(ctx.exception))
 
     def test_doctor_performs_no_network_activity(self):
         with tempfile.TemporaryDirectory() as td:
