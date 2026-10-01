@@ -76,6 +76,7 @@ FORBIDDEN_KEY_RE = re.compile(
 )
 SAFE_FALSE_SECURITY_FLAGS = {
     "secret_values_persisted",
+    "secret_values_persisted_to_output",
     "secret_provider_references_persisted",
     "private_key_material_persisted",
     "contains_secret_values",
