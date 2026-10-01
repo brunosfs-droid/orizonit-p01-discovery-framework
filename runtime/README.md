@@ -1,10 +1,10 @@
-# Cancã Portable Discovery Node — v0.5e.3.1
+# Cancã Portable Discovery Node — v0.5e.3.2
 
 The portable runtime is the first unified operator workflow for the Cancã Discovery Node.
 
 It is intentionally **portable-first**: no Windows service or systemd installation is required.
 
-## Scope of v0.5e.3.1
+## Scope of v0.5e.3.2
 
 Implemented:
 
@@ -20,11 +20,11 @@ Implemented:
 - managed Credential Planner using the workspace Network Discovery artifact plus Assessment Manifest/Credential Profiles;
 - managed Multi-target Credentialed Executor **dry-run/preflight** using the workspace Credential Plan;
 - gated live **AUTH-only** execution with explicit authorization acknowledgement;
-- resume guards that prevent silent re-scan/re-plan/re-preview/re-auth/re-export/re-upload of completed steps.
+- gated live **FULL enrichment** after successful AUTH validation;
+- resume guards that prevent silent re-scan/re-plan/re-preview/re-auth/re-full/re-export/re-upload of completed steps.
 
-Still external in v0.5e.3.1:
+Still external in v0.5e.3.2:
 
-- FULL credentialed enrichment/collection;
 - Asset Resolver orchestration.
 
 ## Workspace
@@ -56,7 +56,7 @@ It does **not** persist plaintext passwords, Secret Provider locators (`wincred:
 initialized               completed
 network_discovery         pending -> running -> completed / failed
 credential_plan           pending -> running -> completed / failed
-credentialed_execution    pending -> running -> preview_completed -> auth_validated / failed
+credentialed_execution    pending -> running -> preview_completed -> auth_validated -> full_completed / failed
 asset_resolver            external_required
 evidence_bundle           pending -> completed / failed
 upload                    pending -> completed / failed
@@ -84,7 +84,7 @@ python .\runtime\P01_Discovery_Node.py doctor `
   --client-key C:\P01\pki-v05d-r1\p01-mgmt01.key
 ```
 
-Doctor performs no network activity in v0.5e.3.1.
+Doctor performs no network activity in v0.5e.3.2.
 
 ## Init
 
@@ -165,6 +165,25 @@ This increment performs authentication only; FULL enrichment is refused. Success
 
 A repeated AUTH-only command returns `already_complete` and performs no additional network activity, secret resolution or authentication. If an AUTH run fails or is partial, retry is refused unless the operator explicitly adds `--force-auth-retry` together with the authorization acknowledgement.
 
+## Managed Credentialed Executor FULL enrichment
+
+After `credentialed_execution: auth_validated`, FULL collection is a separate explicit live gate:
+
+```powershell
+python .\runtime\P01_Discovery_Node.py run `
+  --workspace C:\Canca\runs\P01LAB-CTX-R1\P01LAB-RUNTIME-R3 `
+  --execute `
+  --full-enrichment `
+  --ack-authorized-access `
+  --max-actions 25
+```
+
+The runtime revalidates the Credential Plan, dry-run preview, AUTH-only job and live Credential Profiles before executing the existing read-only enrichers. The executor remains sequential (`concurrency=1`) and preserves credential failure budgets/circuit breakers.
+
+Successful FULL evidence is stored under `evidence\credentialed_execution` as an aggregate job plus per-target JSON/SHA256 pairs. The runtime records `credentialed_execution: full_completed`.
+
+A repeated FULL command returns `already_complete` and performs no second network/authentication pass. Partial or failed FULL execution preserves its evidence but requires explicit `--force-full-retry` together with `--ack-authorized-access`.
+
 ## Status
 
 ```powershell
@@ -205,4 +224,4 @@ The private-key path is used for the current invocation only and is not written 
 
 The runtime never silently repeats a completed bundle build or completed upload.
 
-FULL credentialed enrichment and Asset Resolver will gain the same checkpoint discipline in the next incremental runtime releases.
+Asset Resolver will gain the same checkpoint discipline in the next incremental runtime release.

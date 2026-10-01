@@ -34,7 +34,7 @@
 - **Offline Import:** 0.5b.0 — LAB VALIDATED; import idempotente, raw evidence preservation, receipt JSON/SHA256 e server-side Asset Resolver replay com semantic_match=true.
 - **Central Ingestion API:** 0.5c.1 — LAB VALIDATED; localhost ingestion, idempotência, status lookup, semantic equivalence, negative gates e connection hygiene.
 - **Connected Discovery Node Upload:** 0.5d.0 — LAB VALIDATED; HTTPS/mTLS, identidade do node ligada ao certificado e ao bundle, upload outbound, idempotência e transporte cross-host Windows→Linux validados.
-- **Portable Discovery Node Runtime:** 0.5e.3.1 — CANDIDATE; Network Discovery + Credential Planner + Executor dry-run + AUTH-only gerenciados, com acknowledgement explícito, circuit breaker, state/checkpoints SHA256 e resume guards.
+- **Portable Discovery Node Runtime:** 0.5e.3.2 — CANDIDATE; Network Discovery + Credential Planner + Executor dry-run + AUTH-only + FULL enrichment gerenciados, com acknowledgement explícito, circuit breaker, state/checkpoints SHA256 e resume guards.
 - **Reporting Engine:** planejado após Network Discovery + Asset Resolver.
 
 > Saídas reais de discovery devem ser tratadas como **CONFIDENCIAL — DADOS DO CLIENTE**.
@@ -113,7 +113,7 @@ O scanner **descobre**. Os collectors **aprofundam**. O Asset Resolver **dedupli
 
 ## Uso — Portable Discovery Node v0.5e
 
-A v0.5e.3.1 mantém o entry point unificado e acrescenta AUTH-only credentialed execution ao fluxo gerenciado:
+A v0.5e.3.2 mantém o entry point unificado e acrescenta FULL credentialed enrichment ao fluxo gerenciado:
 
 ```powershell
 python .\runtime\P01_Discovery_Node.py doctor --workspace-root C:\Canca\runs
@@ -121,7 +121,7 @@ python .\runtime\P01_Discovery_Node.py doctor --workspace-root C:\Canca\runs
 
 Em seguida, o operador cria um workspace isolado com `init`, executa Network Discovery autorizado com `run` e executa novamente `run` para gerar o Credential Plan seguro. O `status` acompanha checkpoints; `export` gera o mesmo `.p01bundle` homologado e `upload` usa o transporte mTLS v0.5d.
 
-FULL credentialed enrichment e Asset Resolver permanecem externos nesta iteração e serão internalizados incrementalmente.
+Asset Resolver permanece externo nesta iteração e será internalizado no próximo incremento.
 
 Veja [runtime/README.md](runtime/README.md).
 

@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Cancã / Orizon IT Portable Discovery Node Runtime v0.5e.3.1.
+"""Cancã / Orizon IT Portable Discovery Node Runtime v0.5e.3.2.
 
 Portable-first operator workflow foundation.
 
-v0.5e.3.1 internalizes the first live credentialed execution gate in AUTH-only
-mode after the managed Executor dry-run. Full enrichment and Asset Resolver
-remain separate gated increments. Evidence Bundle and Connected Upload continue
-to reuse validated components.
+v0.5e.3.2 internalizes FULL credentialed enrichment after the managed dry-run
+and AUTH-only gates. Asset Resolver remains external until the next gated
+increment. Evidence Bundle and Connected Upload continue to reuse validated
+components.
 
 Security properties:
 - no plaintext credential values are accepted or persisted;
@@ -38,7 +38,7 @@ from urllib.parse import urlparse
 
 NAME = "Canca-Portable-Discovery-Node"
 DISPLAY_NAME = "Cancã Portable Discovery Node"
-VERSION = "0.5e.3.1"
+VERSION = "0.5e.3.2"
 SCHEMA_VERSION = "0.5e"
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -356,6 +356,7 @@ def init_workspace(
             "credential_planning_managed_in_this_version": True,
             "credentialed_execution_dry_run_managed_in_this_version": True,
             "credentialed_execution_auth_only_managed_in_this_version": True,
+            "credentialed_execution_full_managed_in_this_version": True,
         },
         "steps": steps,
         "artifacts": {},
@@ -510,7 +511,7 @@ def _authorized_ipv4_networks(manifest: Mapping[str, Any]) -> List[ipaddress.IPv
         except ValueError as exc:
             raise RuntimeErrorSafe(f"invalid authorized scope {raw!r}: {exc}") from exc
         if not isinstance(net, ipaddress.IPv4Network):
-            raise RuntimeErrorSafe("v0.5e.3.1 managed discovery supports IPv4 only")
+            raise RuntimeErrorSafe("v0.5e.3.2 managed discovery supports IPv4 only")
         networks.append(net)
     return networks
 
@@ -963,13 +964,13 @@ def run_credentialed_execution_dry_run(
     ] = True
     step = state["steps"]["credentialed_execution"]
 
-    if step.get("status") == "failed" and step.get("mode") == "auth_only":
+    if step.get("status") == "failed" and step.get("mode") in {"auth_only", "full"}:
         raise RuntimeErrorSafe(
-            "previous AUTH-only execution failed or was partial; review it before "
-            "running any new credentialed-execution stage"
+            "previous live credentialed execution failed or was partial; review it "
+            "before running any new credentialed-execution stage"
         )
 
-    if step.get("status") in {"preview_completed", "auth_validated"}:
+    if step.get("status") in {"preview_completed", "auth_validated", "full_completed"}:
         existing = state.get("artifacts", {}).get("credentialed_execution_preview", {})
         path_value = existing.get("path")
         if path_value:
@@ -1166,7 +1167,7 @@ def run_credentialed_execution_auth_only(
     ] = True
     step = state["steps"]["credentialed_execution"]
 
-    if step.get("status") == "auth_validated":
+    if step.get("status") in {"auth_validated", "full_completed"}:
         existing = state.get("artifacts", {}).get("credentialed_execution_auth", {})
         path_value = existing.get("path")
         if path_value:
@@ -1189,6 +1190,11 @@ def run_credentialed_execution_auth_only(
             "AUTH-only execution is completed but recorded evidence is missing or changed"
         )
 
+    if step.get("status") == "failed" and step.get("mode") == "full":
+        raise RuntimeErrorSafe(
+            "previous FULL execution failed or was partial; review it and retry the "
+            "FULL stage explicitly rather than repeating AUTH-only"
+        )
     if step.get("status") == "failed" and step.get("mode") == "auth_only" and not force_auth_retry:
         raise RuntimeErrorSafe(
             "previous AUTH-only execution failed or was partial; review evidence and use "
@@ -1365,7 +1371,9 @@ def run_credentialed_execution_auth_only(
         target_files.append(target_path)
 
     actions_total = int(summary.get("actions_total") or 0)
+    actions_ready = int(summary.get("actions_ready") or 0)
     completed = int(summary.get("completed") or 0)
+    skipped = int(summary.get("skipped") or 0)
     auth_successes = int(summary.get("authentication_successes") or 0)
     auth_failures = int(summary.get("authentication_failures") or 0)
     open_circuits = int(summary.get("open_credential_circuits") or 0)
@@ -1378,13 +1386,63 @@ def run_credentialed_execution_auth_only(
         "source_preview_sha256": preview_sha,
         "credential_profiles_sha256": current_profiles_sha,
         "actions_total": actions_total,
+        "actions_ready": actions_ready,
         "completed": completed,
+        "skipped": skipped,
         "authentication_successes": auth_successes,
         "authentication_failures": auth_failures,
         "open_credential_circuits": open_circuits,
         "target_evidence_count": len(target_files),
         "mode": "auth_only",
     }
+
+    auth_success = (
+        actions_total > 0
+        and actions_ready == actions_total
+        and completed == actions_total
+        and auth_successes == actions_total
+        and auth_failures == 0
+        and skipped == 0
+        and open_circuits == 0
+        and len(target_files) == actions_total
+    )
+    if not auth_success:
+        step.clear()
+        step.update({
+            "status": "failed",
+            "failed_at_utc": utc_now_iso(),
+            "managed_by": VERSION,
+            "mode": "auth_only",
+            "authorization_acknowledged": True,
+            "network_activity_performed": True,
+            "secret_resolution": True,
+            "authentication_attempts": True,
+            "actions_total": actions_total,
+            "actions_ready": actions_ready,
+            "completed": completed,
+            "skipped": skipped,
+            "authentication_successes": auth_successes,
+            "authentication_failures": auth_failures,
+            "open_credential_circuits": open_circuits,
+            "last_error": "AUTH-only execution completed with partial/failed target results",
+        })
+        _append_event(
+            state,
+            "credentialed_execution",
+            "failed",
+            {
+                "mode": "auth_only",
+                "actions_total": actions_total,
+                "completed": completed,
+                "authentication_failures": auth_failures,
+                "skipped": skipped,
+            },
+        )
+        _write_state(workspace, state)
+        raise RuntimeErrorSafe(
+            "AUTH-only execution produced partial/failed results; evidence was preserved. "
+            "Review it before an explicit --force-auth-retry."
+        )
 
     step.clear()
     step.update({
@@ -1397,6 +1455,7 @@ def run_credentialed_execution_auth_only(
         "secret_resolution": True,
         "authentication_attempts": True,
         "actions_total": actions_total,
+        "actions_ready": actions_ready,
         "completed": completed,
         "authentication_successes": auth_successes,
         "authentication_failures": auth_failures,
@@ -1421,6 +1480,378 @@ def run_credentialed_execution_auth_only(
         "job_sha256": job_hash,
         "actions_total": actions_total,
         "completed": completed,
+        "authentication_successes": auth_successes,
+        "authentication_failures": auth_failures,
+        "open_credential_circuits": open_circuits,
+        "network_activity_performed": True,
+        "secret_resolution_performed": True,
+        "authentication_attempts_performed": True,
+    }
+
+
+def run_credentialed_execution_full(
+    workspace: Path,
+    *,
+    ack_authorized_access: bool,
+    max_actions: int = 25,
+    ssh_known_hosts: Optional[Path] = None,
+    ssh_host_key_policy: str = "strict",
+    force_full_retry: bool = False,
+) -> Dict[str, Any]:
+    workspace = workspace.expanduser().resolve()
+    state = _load_state(workspace)
+    state["runtime_version"] = VERSION
+    state.setdefault("security", {})[
+        "credentialed_execution_full_managed_in_this_version"
+    ] = True
+    step = state["steps"]["credentialed_execution"]
+
+    if step.get("status") == "full_completed":
+        existing = state.get("artifacts", {}).get("credentialed_execution_full", {})
+        path_value = existing.get("path")
+        if path_value:
+            path = _workspace_owned_path(workspace, str(path_value))
+            if path.is_file() and digest_file(path) == existing.get("sha256"):
+                return {
+                    "status": "already_complete",
+                    "job_json": str(path),
+                    "job_sha256": existing.get("sha256"),
+                    "actions_total": existing.get("actions_total"),
+                    "completed": existing.get("completed"),
+                    "collected": existing.get("collected"),
+                    "authentication_successes": existing.get("authentication_successes"),
+                    "authentication_failures": existing.get("authentication_failures"),
+                    "open_credential_circuits": existing.get("open_credential_circuits"),
+                    "network_activity_performed": False,
+                    "secret_resolution_performed": False,
+                    "authentication_attempts_performed": False,
+                }
+        raise RuntimeErrorSafe(
+            "FULL credentialed execution is completed but recorded evidence is missing or changed"
+        )
+
+    if step.get("status") == "failed" and step.get("mode") == "auth_only":
+        raise RuntimeErrorSafe(
+            "AUTH-only execution is not validated; resolve/retry AUTH-only before FULL enrichment"
+        )
+    if step.get("status") == "failed" and step.get("mode") == "full" and not force_full_retry:
+        raise RuntimeErrorSafe(
+            "previous FULL execution failed or was partial; review evidence and use "
+            "--force-full-retry with --ack-authorized-access to retry explicitly"
+        )
+    if step.get("status") not in {"auth_validated", "failed"}:
+        raise RuntimeErrorSafe(
+            "managed FULL enrichment requires credentialed_execution: auth_validated"
+        )
+
+    if not ack_authorized_access:
+        raise RuntimeErrorSafe(
+            "--ack-authorized-access is required before managed FULL credentialed enrichment"
+        )
+    if not (1 <= int(max_actions) <= 250):
+        raise RuntimeErrorSafe("--max-actions must be 1..250")
+    if ssh_host_key_policy not in {"strict", "tofu"}:
+        raise RuntimeErrorSafe("--ssh-host-key-policy must be strict or tofu")
+
+    plan_artifact = (state.get("artifacts") or {}).get("credential_plan") or {}
+    plan_value = plan_artifact.get("path")
+    expected_plan_sha = plan_artifact.get("sha256")
+    if not plan_value or not expected_plan_sha:
+        raise RuntimeErrorSafe("Credential Plan artifact metadata is incomplete")
+    plan_path = _workspace_owned_path(workspace, str(plan_value))
+    if not plan_path.is_file() or digest_file(plan_path) != expected_plan_sha:
+        raise RuntimeErrorSafe(
+            "Credential Plan artifact is missing or its SHA256 no longer matches state"
+        )
+
+    preview = (state.get("artifacts") or {}).get("credentialed_execution_preview") or {}
+    preview_value = preview.get("path")
+    preview_sha = preview.get("sha256")
+    if not preview_value or not preview_sha:
+        raise RuntimeErrorSafe("managed FULL enrichment requires a validated dry-run preview")
+    preview_path = _workspace_owned_path(workspace, str(preview_value))
+    if not preview_path.is_file() or digest_file(preview_path) != preview_sha:
+        raise RuntimeErrorSafe(
+            "Executor dry-run preview artifact is missing or its SHA256 no longer matches state"
+        )
+    if preview.get("source_plan_sha256") != expected_plan_sha:
+        raise RuntimeErrorSafe(
+            "Executor dry-run preview is not bound to the current Credential Plan"
+        )
+
+    auth = (state.get("artifacts") or {}).get("credentialed_execution_auth") or {}
+    auth_value = auth.get("path")
+    auth_sha = auth.get("sha256")
+    if not auth_value or not auth_sha:
+        raise RuntimeErrorSafe("managed FULL enrichment requires validated AUTH-only evidence")
+    auth_path = _workspace_owned_path(workspace, str(auth_value))
+    if not auth_path.is_file() or digest_file(auth_path) != auth_sha:
+        raise RuntimeErrorSafe(
+            "AUTH-only job artifact is missing or its SHA256 no longer matches state"
+        )
+    if auth.get("source_plan_sha256") != expected_plan_sha:
+        raise RuntimeErrorSafe(
+            "AUTH-only evidence is not bound to the current Credential Plan"
+        )
+    if auth.get("source_preview_sha256") != preview_sha:
+        raise RuntimeErrorSafe(
+            "AUTH-only evidence is not bound to the current dry-run preview"
+        )
+    if int(auth.get("authentication_failures") or 0) != 0:
+        raise RuntimeErrorSafe(
+            "AUTH-only evidence contains authentication failures; FULL enrichment is blocked"
+        )
+    if int(auth.get("authentication_successes") or 0) <= 0:
+        raise RuntimeErrorSafe(
+            "AUTH-only evidence contains no successful authentications; FULL enrichment is blocked"
+        )
+
+    profiles_ref = (state.get("source_refs") or {}).get("credential_profiles")
+    if not profiles_ref:
+        raise RuntimeErrorSafe("managed FULL enrichment requires Credential Profiles")
+    profiles_path = Path(str(profiles_ref)).expanduser().resolve()
+    if not profiles_path.is_file():
+        raise RuntimeErrorSafe(f"credential profiles file not found: {profiles_path}")
+    current_profiles_sha = digest_file(profiles_path)
+    for name, artifact in (("preview", preview), ("AUTH-only", auth)):
+        expected_profiles_sha = artifact.get("credential_profiles_sha256")
+        if expected_profiles_sha and current_profiles_sha != expected_profiles_sha:
+            raise RuntimeErrorSafe(
+                f"Credential Profiles changed after {name}; regenerate the staged "
+                "credentialed-execution flow before FULL enrichment"
+            )
+
+    executor = _load_component(
+        "orchestrator/P01_Credentialed_Discovery_Executor.py",
+        "p01_runtime_credentialed_executor_full",
+    )
+    output_dir = workspace / "evidence" / "credentialed_execution"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    known_hosts = (
+        ssh_known_hosts.expanduser().resolve()
+        if ssh_known_hosts is not None
+        else Path.home() / ".orizonit" / "p01" / "known_hosts"
+    )
+    run_label = f"{safe_label(state['run_id'], 'run_id')}-EXEC-FULL"
+
+    step.clear()
+    step.update({
+        "status": "running",
+        "started_at_utc": utc_now_iso(),
+        "managed_by": VERSION,
+        "mode": "full",
+        "authorization_acknowledged": True,
+    })
+    _append_event(
+        state,
+        "credentialed_execution",
+        "started",
+        {
+            "mode": "full",
+            "max_actions": int(max_actions),
+            "plan_sha256": expected_plan_sha,
+            "preview_sha256": preview_sha,
+            "auth_sha256": auth_sha,
+            "authorization_acknowledged": True,
+        },
+    )
+    _write_state(workspace, state)
+
+    try:
+        plan_doc = executor.load(plan_path)
+        profiles = executor.load_profiles(profiles_path)
+        payload = executor.run_job(
+            plan_doc,
+            profiles,
+            expected_plan_sha,
+            output_dir,
+            run_label,
+            True,
+            False,
+            int(max_actions),
+            known_hosts,
+            ssh_host_key_policy,
+        )
+        assert_no_secret_material(payload)
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        out = output_dir / (
+            f"P01-Credentialed-Job_{timestamp}_{safe_label(run_label, 'run_label')}.json"
+        )
+        job_json, job_sha, job_hash = executor.write(out, payload)
+    except Exception as exc:
+        step["status"] = "failed"
+        step["failed_at_utc"] = utc_now_iso()
+        step["last_error"] = str(exc)[:1200]
+        step["mode"] = "full"
+        step["authorization_acknowledged"] = True
+        _append_event(
+            state,
+            "credentialed_execution",
+            "failed",
+            {"mode": "full", "error": str(exc)[:500]},
+        )
+        _write_state(workspace, state)
+        if isinstance(exc, RuntimeErrorSafe):
+            raise
+        raise RuntimeErrorSafe(str(exc)) from exc
+
+    job_json = Path(job_json).resolve()
+    job_sha = Path(job_sha).resolve()
+    if not verify_sidecar(job_json):
+        step["status"] = "failed"
+        step["failed_at_utc"] = utc_now_iso()
+        step["last_error"] = "FULL Credentialed Job SHA256 sidecar is missing or invalid"
+        step["mode"] = "full"
+        _append_event(state, "credentialed_execution", "failed", {"mode": "full"})
+        _write_state(workspace, state)
+        raise RuntimeErrorSafe(step["last_error"])
+
+    job_doc = load_json(job_json)
+    assert_no_secret_material(job_doc)
+    metadata = job_doc.get("metadata") or {}
+    summary = job_doc.get("summary") or {}
+    if metadata.get("execution_mode") != "execute" or bool(metadata.get("auth_only")):
+        raise RuntimeErrorSafe("managed v0.5e.3.2 executor must run execute=true, auth_only=false")
+    if not bool(metadata.get("secret_resolution")) or not bool(metadata.get("authentication_attempts")):
+        raise RuntimeErrorSafe(
+            "FULL executor did not report expected secret resolution/authentication activity"
+        )
+    if int(metadata.get("concurrency") or 0) != 1:
+        raise RuntimeErrorSafe("managed FULL executor must remain concurrency=1")
+
+    target_files: List[Path] = []
+    collected = 0
+    for action in job_doc.get("actions") or []:
+        if not isinstance(action, Mapping):
+            continue
+        if action.get("collection_status") == "collected":
+            collected += 1
+        value = action.get("target_result_file")
+        if not value:
+            continue
+        target_path = Path(str(value)).expanduser().resolve()
+        if not target_path.is_file() or not verify_sidecar(target_path):
+            raise RuntimeErrorSafe(
+                f"FULL target evidence missing or failed SHA256 verification: {target_path}"
+            )
+        assert_no_secret_material(load_json(target_path))
+        target_files.append(target_path)
+
+    actions_total = int(summary.get("actions_total") or 0)
+    actions_ready = int(summary.get("actions_ready") or 0)
+    completed = int(summary.get("completed") or 0)
+    skipped = int(summary.get("skipped") or 0)
+    auth_successes = int(summary.get("authentication_successes") or 0)
+    auth_failures = int(summary.get("authentication_failures") or 0)
+    open_circuits = int(summary.get("open_credential_circuits") or 0)
+
+    state["artifacts"]["credentialed_execution_full"] = {
+        "path": _relative_if_owned(workspace, job_json),
+        "sha256_path": _relative_if_owned(workspace, job_sha),
+        "sha256": job_hash,
+        "source_plan_sha256": expected_plan_sha,
+        "source_preview_sha256": preview_sha,
+        "source_auth_sha256": auth_sha,
+        "credential_profiles_sha256": current_profiles_sha,
+        "actions_total": actions_total,
+        "actions_ready": actions_ready,
+        "completed": completed,
+        "collected": collected,
+        "skipped": skipped,
+        "authentication_successes": auth_successes,
+        "authentication_failures": auth_failures,
+        "open_credential_circuits": open_circuits,
+        "target_evidence_count": len(target_files),
+        "mode": "full",
+    }
+
+    full_success = (
+        actions_total > 0
+        and actions_ready == actions_total
+        and completed == actions_total
+        and collected == actions_total
+        and auth_successes == actions_total
+        and auth_failures == 0
+        and skipped == 0
+        and open_circuits == 0
+        and len(target_files) == actions_total
+    )
+    if not full_success:
+        step.clear()
+        step.update({
+            "status": "failed",
+            "failed_at_utc": utc_now_iso(),
+            "managed_by": VERSION,
+            "mode": "full",
+            "authorization_acknowledged": True,
+            "network_activity_performed": True,
+            "secret_resolution": True,
+            "authentication_attempts": True,
+            "actions_total": actions_total,
+            "actions_ready": actions_ready,
+            "completed": completed,
+            "collected": collected,
+            "skipped": skipped,
+            "authentication_successes": auth_successes,
+            "authentication_failures": auth_failures,
+            "open_credential_circuits": open_circuits,
+            "last_error": "FULL execution completed with partial/failed target results",
+        })
+        _append_event(
+            state,
+            "credentialed_execution",
+            "failed",
+            {
+                "mode": "full",
+                "actions_total": actions_total,
+                "completed": completed,
+                "collected": collected,
+                "authentication_failures": auth_failures,
+                "skipped": skipped,
+            },
+        )
+        _write_state(workspace, state)
+        raise RuntimeErrorSafe(
+            "FULL execution produced partial/failed results; evidence was preserved. "
+            "Review it before an explicit --force-full-retry."
+        )
+
+    step.clear()
+    step.update({
+        "status": "full_completed",
+        "completed_at_utc": utc_now_iso(),
+        "managed_by": VERSION,
+        "mode": "full",
+        "authorization_acknowledged": True,
+        "network_activity_performed": True,
+        "secret_resolution": True,
+        "authentication_attempts": True,
+        "actions_total": actions_total,
+        "completed": completed,
+        "collected": collected,
+        "authentication_successes": auth_successes,
+        "authentication_failures": auth_failures,
+        "open_credential_circuits": open_circuits,
+    })
+    _append_event(
+        state,
+        "credentialed_execution",
+        "full_completed",
+        {
+            "actions_total": actions_total,
+            "completed": completed,
+            "collected": collected,
+            "authentication_successes": auth_successes,
+        },
+    )
+    _write_state(workspace, state)
+    return {
+        "status": "full_completed",
+        "job_json": str(job_json),
+        "job_sha256": job_hash,
+        "actions_total": actions_total,
+        "completed": completed,
+        "collected": collected,
         "authentication_successes": auth_successes,
         "authentication_failures": auth_failures,
         "open_credential_circuits": open_circuits,
@@ -1689,11 +2120,15 @@ def next_action(state: Mapping[str, Any]) -> str:
                 mode = (steps.get("credentialed_execution") or {}).get("mode")
                 if mode == "auth_only":
                     return "review_auth_failure_then_retry_explicitly"
+                if mode == "full":
+                    return "review_full_failure_then_retry_explicitly"
                 return "run_credentialed_execution_dry_run"
             if execution_status == "preview_completed":
                 return "run_credentialed_execution_auth_only"
             if execution_status == "auth_validated":
-                return "credentialed_execution_full_external"
+                return "run_credentialed_execution_full"
+            if execution_status == "full_completed":
+                return "asset_resolver_external"
     if (steps.get("evidence_bundle") or {}).get("status") != "completed":
         return "export"
     if (steps.get("upload") or {}).get("status") == "failed":
@@ -1792,7 +2227,7 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
 
     run_p = sub.add_parser(
         "run",
-        help="Advance managed runtime through Executor dry-run and gated AUTH-only execution",
+        help="Advance managed runtime through dry-run, AUTH-only and FULL credentialed execution",
     )
     run_p.add_argument("--workspace", required=True)
     run_p.add_argument("--target", action="append", default=[])
@@ -1811,8 +2246,10 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
     run_p.add_argument("--max-actions", type=int, default=25)
     run_p.add_argument("--execute", action="store_true")
     run_p.add_argument("--auth-only", action="store_true")
+    run_p.add_argument("--full-enrichment", action="store_true")
     run_p.add_argument("--ack-authorized-access", action="store_true")
     run_p.add_argument("--force-auth-retry", action="store_true")
+    run_p.add_argument("--force-full-retry", action="store_true")
     run_p.add_argument(
         "--ssh-host-key-policy",
         choices=["strict", "tofu"],
@@ -1947,19 +2384,23 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
                 print("Authentication attempts performed: false")
                 return 0
 
-            if args.auth_only and not args.execute:
-                raise RuntimeErrorSafe("--auth-only requires --execute")
-            if args.execute and not args.auth_only:
+            if (args.auth_only or args.full_enrichment) and not args.execute:
                 raise RuntimeErrorSafe(
-                    "v0.5e.3.1 permits live execution only with --auth-only"
+                    "--auth-only/--full-enrichment require --execute"
+                )
+            if args.execute and args.auth_only == args.full_enrichment:
+                raise RuntimeErrorSafe(
+                    "live execution requires exactly one mode: --auth-only or --full-enrichment"
                 )
 
             current_state = _load_state(workspace.expanduser().resolve())
             execution_status = (
                 (current_state.get("steps", {}).get("credentialed_execution") or {}).get("status")
             )
-            if args.execute:
-                if execution_status not in {"preview_completed", "auth_validated", "failed"}:
+            if args.execute and args.auth_only:
+                if execution_status not in {
+                    "preview_completed", "auth_validated", "full_completed", "failed"
+                }:
                     raise RuntimeErrorSafe(
                         "run the managed Executor dry-run preview before AUTH-only execution"
                     )
@@ -1976,6 +2417,44 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
                 print("Mode: auth_only")
                 print(f"Actions: {result.get('actions_total')}")
                 print(f"Completed: {result.get('completed')}")
+                print(f"Authentication successes: {result.get('authentication_successes')}")
+                print(f"Authentication failures: {result.get('authentication_failures')}")
+                print(f"Open credential circuits: {result.get('open_credential_circuits')}")
+                print(f"JSON: {result.get('job_json')}")
+                print(f"SHA256: {result.get('job_sha256')}")
+                print(
+                    "Network activity performed: "
+                    f"{str(bool(result.get('network_activity_performed'))).lower()}"
+                )
+                print(
+                    "Secret resolution performed: "
+                    f"{str(bool(result.get('secret_resolution_performed'))).lower()}"
+                )
+                print(
+                    "Authentication attempts performed: "
+                    f"{str(bool(result.get('authentication_attempts_performed'))).lower()}"
+                )
+                return 0
+
+            if args.execute and args.full_enrichment:
+                if execution_status not in {"auth_validated", "full_completed", "failed"}:
+                    raise RuntimeErrorSafe(
+                        "complete managed AUTH-only validation before FULL enrichment"
+                    )
+                result = run_credentialed_execution_full(
+                    workspace=workspace,
+                    ack_authorized_access=args.ack_authorized_access,
+                    max_actions=args.max_actions,
+                    ssh_known_hosts=Path(args.ssh_known_hosts),
+                    ssh_host_key_policy=args.ssh_host_key_policy,
+                    force_full_retry=args.force_full_retry,
+                )
+                print(f"{DISPLAY_NAME} v{VERSION}")
+                print(f"Credentialed Executor status: {result.get('status')}")
+                print("Mode: full")
+                print(f"Actions: {result.get('actions_total')}")
+                print(f"Completed: {result.get('completed')}")
+                print(f"Collected: {result.get('collected')}")
                 print(f"Authentication successes: {result.get('authentication_successes')}")
                 print(f"Authentication failures: {result.get('authentication_failures')}")
                 print(f"Open credential circuits: {result.get('open_credential_circuits')}")

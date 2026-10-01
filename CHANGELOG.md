@@ -1,6 +1,17 @@
 ## [Unreleased]
 
 ### Added
+- Portable runtime v0.5e.3.2 managed FULL credentialed enrichment after validated AUTH-only execution, with explicit authorization acknowledgement, staged hash binding, per-target JSON/SHA256 evidence and no-silent-repeat protection.
+
+### Changed
+- AUTH-only runtime now fails closed on partial/failed target results and requires explicit retry rather than incorrectly promoting the stage.
+
+### Validated
+- Portable runtime v0.5e.3.1 AUTH-only gate in P01LAB-RUNTIME-R3: acknowledgement enforcement, 4/4 successful authentications, 0 failures/circuits, per-target evidence and resume with zero second authentication.
+
+## [Unreleased]
+
+### Added
 - Portable runtime v0.5e.3.1 gated AUTH-only credentialed execution after a validated dry-run preview, with explicit authorization acknowledgement, plan/preview/profile integrity checks and no-silent-retry safeguards.
 
 ### Validated
