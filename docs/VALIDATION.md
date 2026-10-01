@@ -303,3 +303,27 @@ Candidate acceptance:
 - node header/certificate mismatch is rejected with HTTP 403;
 - retries are bounded and limited to transport failures only;
 - no server-initiated discovery, customer authentication or arbitrary command execution.
+
+
+## Connected Discovery Node v0.5d
+
+LAB VALIDATED.
+
+Local mTLS R1:
+- valid upload -> HTTP 201 / imported;
+- repeat upload -> HTTP 200 / already_imported;
+- semantic_match=true;
+- missing client certificate rejected during TLS;
+- valid certificate + forged X-P01-Node-ID rejected with HTTP 403;
+- untrusted client certificate rejected before HTTP.
+
+Separate-host R2:
+- Discovery Node P01-MGMT01 / 192.168.100.20;
+- Central Ingestion Server P01-LNX-RKY01 / 192.168.100.50;
+- remote URL https://P01-LNX-RKY01.p01.lab.test:8443;
+- first remote upload -> 201/imported;
+- second remote upload -> 200/already_imported;
+- authenticated_node_id=P01-MGMT01;
+- server observed source 192.168.100.20;
+- semantic_match=true;
+- same .p01bundle and same server-side ingestion/Asset Resolver pipeline reused.
