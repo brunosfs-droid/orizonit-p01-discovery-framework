@@ -963,6 +963,12 @@ def run_credentialed_execution_dry_run(
     ] = True
     step = state["steps"]["credentialed_execution"]
 
+    if step.get("status") == "failed" and step.get("mode") == "auth_only":
+        raise RuntimeErrorSafe(
+            "previous AUTH-only execution failed or was partial; review it before "
+            "running any new credentialed-execution stage"
+        )
+
     if step.get("status") in {"preview_completed", "auth_validated"}:
         existing = state.get("artifacts", {}).get("credentialed_execution_preview", {})
         path_value = existing.get("path")
