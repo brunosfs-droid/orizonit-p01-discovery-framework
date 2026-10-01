@@ -432,3 +432,33 @@ Candidate acceptance:
 - successful live run advances to `credentialed_execution: auth_validated`;
 - repeated AUTH-only run returns `already_complete` and performs zero additional authentication;
 - failed/partial AUTH execution cannot be retried silently; explicit `--force-auth-retry` plus authorization acknowledgement is required.
+
+
+## Portable Discovery Node Runtime v0.5e.3.1 — P01LAB
+
+LAB VALIDATED on P01-MGMT01 using workspace `P01LAB-RUNTIME-R3`.
+
+Acceptance evidence:
+- state resumed from `credentialed_execution: preview_completed`;
+- AUTH-only without `--ack-authorized-access` was rejected before authentication;
+- authorized AUTH-only execution completed 4 of 4 planned actions;
+- authentication successes = 4, failures = 0, open credential circuits = 0;
+- aggregate AUTH job JSON/SHA256 and four per-target JSON/SHA256 pairs were generated;
+- live run correctly reported network activity, secret resolution and authentication attempts;
+- state advanced to `credentialed_execution: auth_validated`;
+- repeated AUTH-only invocation returned `already_complete` with zero additional network activity, secret resolution or authentication.
+
+## Portable Discovery Node Runtime v0.5e.3.2
+
+Candidate acceptance:
+- FULL enrichment is available only after validated AUTH-only execution;
+- live FULL requires explicit `--execute --full-enrichment --ack-authorized-access`;
+- Credential Plan, dry-run preview, AUTH job and live Credential Profiles are hash-bound and revalidated before execution;
+- executor runs `execute=true`, `auth_only=false`, `concurrency=1`;
+- shared-credential failure budgets/circuit breaker remain active;
+- aggregate FULL job and every completed target evidence file require JSON + SHA256 integrity;
+- no plaintext credentials or Secret Provider locators may be persisted;
+- all planned actions must be ready/completed/collected with successful authentication for the stage to become `full_completed`;
+- partial/failed FULL evidence is preserved but the stage becomes `failed` and requires explicit `--force-full-retry`;
+- repeated successful FULL invocation returns `already_complete` and performs zero additional network/authentication activity;
+- next action after `full_completed` is Asset Resolver.
