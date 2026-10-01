@@ -45,6 +45,7 @@ class PortableRuntimeTests(unittest.TestCase):
             self.assertTrue(mod.verify_sidecar(workspace / mod.CONFIG_REL))
             state = mod._load_state(workspace)
             self.assertEqual(state["steps"]["network_discovery"]["status"], "pending")
+            self.assertEqual(state["steps"]["credential_plan"]["status"], "pending")
             self.assertEqual(state["steps"]["evidence_bundle"]["status"], "pending")
             self.assertEqual(state["steps"]["upload"]["status"], "pending")
             self.assertTrue(state["security"]["active_discovery_managed_in_this_version"])
@@ -87,7 +88,7 @@ class PortableRuntimeTests(unittest.TestCase):
             state["steps"]["network_discovery"] = {"status": "completed"}
             mod._write_state(workspace, state)
             current = mod.status(workspace)
-            self.assertEqual(current["next_action"], "credential_plan_external")
+            self.assertEqual(current["next_action"], "run_credential_plan")
 
     def _synthetic_inputs(self, td):
         td = pathlib.Path(td)
@@ -286,6 +287,180 @@ class PortableRuntimeTests(unittest.TestCase):
             artifact = state["artifacts"]["network_discovery"]
             self.assertIn("192.0.2.2/32", artifact["excludes"])
             self.assertEqual(mod.status(workspace)["next_action"], "credential_plan_external")
+
+    def _fake_planner(self, calls):
+        def load_json(path):
+            return json.loads(pathlib.Path(path).read_text(encoding="utf-8"))
+
+        def load_profiles(path):
+            return json.loads(pathlib.Path(path).read_text(encoding="utf-8"))
+
+        def load_manifest(path):
+            return json.loads(pathlib.Path(path).read_text(encoding="utf-8"))
+
+        def build_plan(discovery, profiles, realm_map=None, max_candidates=2, manifest=None):
+            calls["builds"] += 1
+            return {
+                "metadata": {
+                    "planner_name": "P01-Credentialed-Discovery-Planner",
+                    "planner_version": "0.4b.3.2",
+                    "secret_resolution": False,
+                    "authentication_attempts": False,
+                    "assessment_id": manifest.get("assessment_id") if manifest else None,
+                },
+                "source": {
+                    "scanner_name": discovery.get("metadata", {}).get("scanner_name"),
+                    "scanner_version": discovery.get("metadata", {}).get("scanner_version"),
+                    "run_label": discovery.get("metadata", {}).get("run_label"),
+                },
+                "summary": {
+                    "assets_seen": 1,
+                    "assets_with_protocols": 1,
+                    "adapter_candidates": 1,
+                    "assets_with_adapter_candidates": 1,
+                    "assets_skipped_no_protocol": 0,
+                    "assets_skipped_no_profile": 0,
+                    "protocols": ["ssh"],
+                },
+                "assets": [],
+            }
+
+        def write_output(output_dir, run_label, payload):
+            calls["writes"] += 1
+            output_dir = pathlib.Path(output_dir)
+            path = output_dir / f"P01-Credential-Plan_TEST_{run_label}.json"
+            write_json(path, payload, sidecar=True)
+            return path, path.with_suffix(path.suffix + ".sha256")
+
+        return types.SimpleNamespace(
+            load_json=load_json,
+            load_profiles=load_profiles,
+            load_manifest=load_manifest,
+            build_plan=build_plan,
+            write_output=write_output,
+        )
+
+    def _seed_completed_network(self, workspace):
+        network = write_json(
+            pathlib.Path(workspace) / "evidence" / "network" / "P01-Network-Discovery_TEST.json",
+            {
+                "metadata": {
+                    "scanner_name": "P01-Network-Discovery-Scanner",
+                    "scanner_version": "0.4.1",
+                    "schema_version": "0.4",
+                    "run_label": "RUNTIME-NETWORK",
+                },
+                "summary": {"hosts_discovered": 1},
+                "assets": [{"ip": "192.0.2.10"}],
+            },
+            sidecar=True,
+        )
+        state = mod._load_state(pathlib.Path(workspace))
+        state["steps"]["network_discovery"] = {
+            "status": "completed",
+            "completed_at_utc": mod.utc_now_iso(),
+            "managed_by": "0.5e.1",
+        }
+        state["artifacts"]["network_discovery"] = {
+            "path": mod._relative_if_owned(pathlib.Path(workspace), network),
+            "sha256_path": mod._relative_if_owned(
+                pathlib.Path(workspace),
+                network.with_suffix(network.suffix + ".sha256"),
+            ),
+            "sha256": mod.digest_file(network),
+            "hosts_discovered": 1,
+        }
+        mod._write_state(pathlib.Path(workspace), state)
+        return network
+
+    def test_managed_credential_plan_is_resume_safe_and_migrates_external_state(self):
+        with tempfile.TemporaryDirectory() as td:
+            manifest = self._manifest_for_discovery(td)
+            profiles = write_json(
+                pathlib.Path(td) / "profiles.json",
+                {"schema_version": "0.4b.6", "profiles": []},
+                sidecar=False,
+            )
+            init = mod.init_workspace(
+                pathlib.Path(td) / "runs",
+                "A1",
+                "R1",
+                "NODE-01",
+                manifest=manifest,
+                profiles=profiles,
+            )
+            workspace = pathlib.Path(init["workspace"])
+            self._seed_completed_network(workspace)
+
+            state = mod._load_state(workspace)
+            state["steps"]["credential_plan"] = {
+                "status": "external_required",
+                "managed_from_version": "0.5e.1",
+            }
+            mod._write_state(workspace, state)
+
+            calls = {"builds": 0, "writes": 0}
+            fake = self._fake_planner(calls)
+            with mock.patch.object(mod, "_load_component", return_value=fake):
+                first = mod.run_credential_plan(workspace, max_candidates=2)
+                second = mod.run_credential_plan(workspace, max_candidates=2)
+
+            self.assertEqual(first["status"], "completed")
+            self.assertEqual(second["status"], "already_complete")
+            self.assertEqual(calls["builds"], 1)
+            self.assertEqual(calls["writes"], 1)
+            self.assertFalse(first["network_activity_performed"])
+            self.assertFalse(first["secret_resolution_performed"])
+            self.assertFalse(first["authentication_attempts_performed"])
+
+            state = mod._load_state(workspace)
+            self.assertEqual(state["steps"]["credential_plan"]["status"], "completed")
+            self.assertEqual(mod.status(workspace)["next_action"], "credentialed_execution_external")
+            artifact = state["artifacts"]["credential_plan"]
+            plan_path = mod._workspace_owned_path(workspace, artifact["path"])
+            self.assertTrue(plan_path.is_file())
+            self.assertTrue(mod.verify_sidecar(plan_path))
+
+    def test_managed_credential_plan_rejects_changed_network_artifact(self):
+        with tempfile.TemporaryDirectory() as td:
+            manifest = self._manifest_for_discovery(td)
+            profiles = write_json(
+                pathlib.Path(td) / "profiles.json",
+                {"schema_version": "0.4b.6", "profiles": []},
+                sidecar=False,
+            )
+            init = mod.init_workspace(
+                pathlib.Path(td) / "runs",
+                "A1",
+                "R1",
+                "NODE-01",
+                manifest=manifest,
+                profiles=profiles,
+            )
+            workspace = pathlib.Path(init["workspace"])
+            network = self._seed_completed_network(workspace)
+            network.write_text("{}\n", encoding="utf-8")
+
+            with self.assertRaises(mod.RuntimeErrorSafe) as ctx:
+                mod.run_credential_plan(workspace)
+            self.assertIn("SHA256", str(ctx.exception))
+
+    def test_managed_credential_plan_requires_profiles_reference(self):
+        with tempfile.TemporaryDirectory() as td:
+            manifest = self._manifest_for_discovery(td)
+            init = mod.init_workspace(
+                pathlib.Path(td) / "runs",
+                "A1",
+                "R1",
+                "NODE-01",
+                manifest=manifest,
+            )
+            workspace = pathlib.Path(init["workspace"])
+            self._seed_completed_network(workspace)
+
+            with self.assertRaises(mod.RuntimeErrorSafe) as ctx:
+                mod.run_credential_plan(workspace)
+            self.assertIn("Credential Profiles", str(ctx.exception))
 
     def test_force_rescan_refused_after_downstream_bundle_completion(self):
         with tempfile.TemporaryDirectory() as td:
