@@ -240,8 +240,9 @@ O LAB inicial usará P01-MGMT01 como Discovery Node por possuir acesso ao segmen
   checkpoint integrity and sanitized JSON/SHA256 journal. No service installation.
   Windows R1 partial evidence: completed-resume, progression through upload,
   FULL 5/5, separate grants, shared lock and real agent mTLS receipt passed.
-  Repeat returned already_complete with attempts=1. Server POST confirmation,
-  journal audit and remaining negatives pending;
+  Repeat returned already_complete with attempts=1; invalid policy and identity
+  mismatch rejected with exit 2; 17/17 journal hashes matched. Server POST
+  confirmation, journal content audit and tamper/interruption pending;
   [evidence record](validation/OPTIONAL_AGENT_P01LAB_R1_v0.5f.0.md).
 - **v0.5f.1:** planned — Windows Service lifecycle/install/uninstall/recovery.
 - **v0.5f.2:** planned — Linux/systemd lifecycle/install/uninstall/recovery.

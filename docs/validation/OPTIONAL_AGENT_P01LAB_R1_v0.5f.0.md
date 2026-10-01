@@ -2,7 +2,7 @@
 
 Revisão: 01/10/2026. **CANDIDATE — validação Windows parcial.**
 Implementação: PR #84, main `b85746a38295def054a3822fb152086fae9ef3b2`.
-Fonte: 22 capturas fornecidas pelo operador (17 iniciais + 5 de upload); resultados observados, sem execução
+Fonte: 23 capturas fornecidas pelo operador (17 iniciais + 5 de upload + 1 de negativos/hashes); resultados observados, sem execução
 remota pelo Codex. CI Windows/Ubuntu já aprovada na implementação, com fixtures
 para live AUTH/upload; não substitui os gates reais abaixo.
 
@@ -50,6 +50,7 @@ exibidas pelo host nem substitui sidecars dos journals.
 | 221128 | Upload completed, attempts=1, HTTP 201/imported, semantic_match=true, authenticated_node_id=P01-MGMT01, mTLS e verificação TLS true; automatic_retry_of_completed_step=false. |
 | 221139 | Oito referências do novo run, incluindo upload_receipt: exists=true e sha256_match=true; next_action=complete. |
 | 221147 | Status declara plaintext_credentials_persisted=false, private_key_material_persisted=false e secret_provider_references_persisted=false; zero_input_upload_resume_supported=true. Não substitui auditoria do conteúdo dos journals. |
+| 222234 | Policy schema inválido -> invalid_policy/exit 2; policy com run_id divergente -> workspace_identity_mismatch/exit 2; 17 journals do P01LAB-AGENT-R1, incluindo upload/repeat, mostram SHA256_OK=True. |
 
 Journals da prova no run concluído: `49adc374-0001-45e2-bdd3-39bc55befe93`
 e `702c2071-9bb9-41eb-ac8d-e99e325c6232`. Os hashes foram exibidos como válidos;
@@ -74,8 +75,10 @@ Seu sidecar corresponde conforme runtime status. Não foi recebido o JSON origin
 | Ausência de serviço/agendamento | Comprovada pelos flags do doctor |
 | Upload mTLS do agente | Comprovado no novo run: HTTP 201/imported, semantic_match=true, mTLS/TLS true e receipt íntegro |
 | Repeat sem inputs de transporte | Comprovado no cliente: already_complete e attempts=1; confirmação independente de nenhum segundo POST nos logs do servidor pendente |
-| Journals do novo run íntegros/sanitizados | Pendente; dois hashes do run antigo não cobrem o novo run inteiro |
-| Policy inválida / identidade divergente / tamper | Pendentes de evidência real |
+| Hashes dos journals do novo run | Comprovados na captura 222234: 17/17 SHA256_OK=True |
+| Sanitização do conteúdo dos journals | Pendente; hashes correspondentes não provam ausência de dados sensíveis |
+| Policy inválida / identidade divergente | Comprovados: invalid_policy e workspace_identity_mismatch, ambos exit 2 |
+| Tamper de config/artifact/target | Pendente de evidência real |
 | Interrupção com intent running / review_required | Pendente de evidência real em run isolado |
 | Linux real | Não executado nesta rodada; CI Ubuntu passou |
 
@@ -88,7 +91,8 @@ distinto do resultado 4/4 do run portátil anterior.
 Upload e repeat concluídos nas capturas 221101–221147. Os comandos abaixo ficam
 como referência da prova executada. Não repetir discovery/AUTH/FULL/export,
 reinicializar o workspace ou usar force-resend para esta prova.
-O próximo trabalho é o bloco de negativos/journals, não outro upload.
+Policies negativas e hashes concluídos. O próximo trabalho é tamper,
+interrupção, auditoria do conteúdo dos journals e confirmação de logs do servidor.
 
 Os caminhos PKI abaixo foram usados na homologação anterior. Confirmar sua
 existência antes de usar; o script para se faltarem arquivos. Não enviar a key.
@@ -133,7 +137,9 @@ w32tm /query /status
 
 ## Fechamento dos negativos e journals
 
-Este é o próximo bloco. O run P01LAB-AGENT-R1 já está completo.
+Policy inválida, identidade divergente e hashes já comprovados na captura
+222234. Os comandos abaixo documentam a prova; não é necessário repeti-los.
+O run P01LAB-AGENT-R1 já está completo.
 Na janela PowerShell com a .venv ativa, definir os caminhos antes dos comandos:
 
 ```powershell
@@ -184,8 +190,33 @@ e sidecars. Não anexar profiles, variáveis de ambiente ou material privado PKI
 
 ## Alterações documentais desta revisão
 
-Registro das 22 capturas, incluindo upload/receipt e FULL 5/5;
+Registro das 23 capturas, incluindo upload/receipt, FULL 5/5,
+negativos de policy/identidade e hashes 17/17;
 status/roadmap atualizados para aceite parcial;
 lock Windows com arquivo .py e variáveis explícitas em cada janela; validação
 de entrada vazia do escopo; comandos de upload com verificação dos paths PKI.
 Nenhuma mudança no motor/agente, nos grants do LAB ou na versão executável.
+
+## Próximo gate: tamper de configuração em run isolado
+
+O helper [OPTIONAL_AGENT_TAMPER_R1.ps1](OPTIONAL_AGENT_TAMPER_R1.ps1) cria um
+run novo com identidade própria e todos os grants falsos. Reutiliza referências
+do manifest/profiles, sem resolver secrets ou executar etapas live. Adiciona um
+byte ao runtime.json sem atualizar sidecar; doctor/run-once devem rejeitar.
+Restaura os bytes exatos em finally, mantém backup no novo run e confirma
+config restaurado/state inalterado. Não modifica o workspace de aceite.
+
+Na raiz do repositório, com .venv ativa e main atualizada:
+
+```powershell
+& .\docs\validation\OPTIONAL_AGENT_TAMPER_R1.ps1
+```
+
+Esperado: tamper_doctor e tamper_run_once com workspace_integrity_failed/exit 2;
+ConfigRestored=True e StateUnchanged=True; status final policy_denied/exit 3;
+mensagem CONFIG TAMPER PASS. Preservar o NegativeWorkspace exibido para a prova
+de interrupção seguinte. O helper não foi executado no Windows do operador
+nesta revisão; não marcar o gate como aprovado apenas por sua inclusão no repo.
+Se o processo/sessão terminar antes do finally, restaurar runtime.json pelos
+bytes do backup logs/runtime-original.bin do próprio run negativo, sem alterar
+sidecars. Tamper de artifact/target, interrupção e logs do servidor seguem pendentes.

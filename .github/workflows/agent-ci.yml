@@ -26,4 +26,23 @@ jobs:
         run: python agent/P01_Agent.py validate-policy --policy agent/agent-policy.example.json
       - name: Agent policy, journal and OS lock contracts
         run: python -m unittest discover -s tests -p "test_optional_agent.py" -v
-
+      - name: Parse LAB helper with Windows PowerShell
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          $Tokens = $null
+          $ParseErrors = $null
+          $File = Join-Path $PWD 'docs/validation/OPTIONAL_AGENT_TAMPER_R1.ps1'
+          [void][System.Management.Automation.Language.Parser]::ParseFile($File, [ref]$Tokens, [ref]$ParseErrors)
+          if ($ParseErrors.Count -gt 0) { throw ($ParseErrors.Message -join "`n") }
+      - name: Exercise isolated config tamper helper offline
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          $Root = Join-Path $env:RUNNER_TEMP ('canca-agent-lab-' + [guid]::NewGuid().ToString('N'))
+          python runtime/P01_Discovery_Node.py init --workspace-root $Root --assessment-id P01CI --run-id BASE --node-id P01-CI
+          if ($LASTEXITCODE -ne 0) { throw 'CI workspace initialization failed.' }
+          $Baseline = Join-Path (Join-Path $Root 'P01CI') 'BASE'
+          & .\docs\validation\OPTIONAL_AGENT_TAMPER_R1.ps1 -CompletedWorkspace $Baseline
+          if (-not $?) { throw 'LAB helper smoke test failed.' }
+          $global:LASTEXITCODE = 0
