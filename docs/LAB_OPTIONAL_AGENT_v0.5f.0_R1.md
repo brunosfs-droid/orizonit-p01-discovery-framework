@@ -3,10 +3,11 @@
 Data: 01/10/2026. Status: CANDIDATE; LAB Windows parcialmente comprovado.
 Baseline: portable runtime v0.5e.6 LAB VALIDATED; Issue #83.
 
-As 23 capturas do R1 comprovam completed-resume, progressão até upload,
+As 24 capturas do R1 comprovam completed-resume, progressão até upload,
 FULL 5/5, receipt mTLS HTTP 201/semantic_match=true, grants separados e lock
 agente/portátil. Policy inválida/identidade divergente falharam com exit 2;
-17/17 hashes de journals conferem. Tamper/interrupção, auditoria de conteúdo e
+17/17 hashes de journals conferem; config tamper rejeitado e restaurado no run
+negativo. Artifact/target tamper, interrupção, auditoria de conteúdo e
 confirmação de logs do servidor continuam pendentes.
 Ver [registro de evidências](validation/OPTIONAL_AGENT_P01LAB_R1_v0.5f.0.md).
 
@@ -268,7 +269,8 @@ python runtime/P01_Discovery_Node.py status --workspace $AgentWorkspace --json
 ```
 
 O [registro R1](validation/OPTIONAL_AGENT_P01LAB_R1_v0.5f.0.md) contém a prova mTLS
-concluída, os negativos de policy/hashes aprovados e o próximo helper de tamper isolado. Não repetir os gates
+concluída, policy/hashes/config tamper aprovados e os próximos comandos de
+interrupção isolada/auditoria de conteúdo. Não repetir os gates
 live concluídos para coletar esses negativos.
 
 ## Critério de aceite e evidências
