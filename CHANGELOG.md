@@ -1,6 +1,14 @@
 ## [Unreleased]
 
 ### Added
+- Portable runtime v0.5e.6 zero-input safe resume for completed connected uploads: after the first explicit mTLS upload, `upload --workspace ...` returns `already_complete` without transport parameters or network activity.
+
+### Validated
+- Portable runtime v0.5e.5 workspace-driven bundle in P01LAB-RUNTIME-R3: 7 payload artifacts, 4 EXEC-FULL credentialed files, valid SHA256 inventory and no AUTH evidence mixing.
+
+## [Unreleased]
+
+### Added
 - Portable runtime v0.5e.5 workspace-driven Evidence Bundle export: normal export derives Network, EXEC-FULL target set, Asset Resolver and Manifest from validated workspace state with no manual evidence paths.
 
 ### Validated
