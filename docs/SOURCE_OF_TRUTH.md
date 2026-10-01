@@ -1,10 +1,10 @@
-# P01 — Política de Source of Truth: GitHub x Google Drive
+# Cancã (P01) — Política de Source of Truth: GitHub x Google Drive
 
 Versão: 1.0
 
 ## Princípio
 
-O P01 passa a ter duas fontes de verdade complementares, sem manter cópias editáveis concorrentes.
+O Cancã, identificado internamente como P01 durante a transição, possui duas fontes de verdade complementares, sem manter cópias editáveis concorrentes.
 
 ### GitHub — fonte de verdade de engenharia
 
@@ -67,7 +67,7 @@ Pacotes de release no Drive são snapshots imutáveis, não fonte de desenvolvim
 8. Evidência de LAB/aceite e artefatos formais são arquivados no Drive.
 9. Documentos de governança/status no Drive apontam para a release/tag correspondente.
 
-## Regra para o P01
+## Regra para o Cancã
 
 - GitHub: software vivo.
 - Drive: empresa, produto, evidência e entrega.
