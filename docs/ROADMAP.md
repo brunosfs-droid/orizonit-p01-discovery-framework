@@ -200,3 +200,22 @@ O LAB inicial usará P01-MGMT01 como Discovery Node por possuir acesso ao segmen
 ### v0.5e — Optional Installed Service
 - portable remains default for one-shot assessments;
 - optional Windows/Linux service for recurring assessments.
+
+
+### v0.5d — Runtime validation status
+- **Status:** LAB VALIDATED.
+- Local R1: mTLS trust, mandatory client cert, Node-ID binding, spoof rejection, untrusted-client rejection, 201/imported and 200/already_imported.
+- Separate-host R2: P01-MGMT01 (192.168.100.20) -> P01-LNX-RKY01 (192.168.100.50) via HTTPS/mTLS, FQDN server validation, semantic_match=true and cross-host idempotency.
+
+### v0.5e — Portable Discovery Node Runtime
+- portable-first Windows/Linux runtime;
+- per-run workspace and state machine;
+- doctor/init/status;
+- then orchestrate discovery -> planner -> executor -> bundle -> export/upload;
+- no persistent service required.
+- **Status:** NEXT. Issue #60.
+
+### v0.5f — Optional Installed Service/Agent
+- reuse the same portable runtime core;
+- add service lifecycle, scheduling and unattended execution policy.
+- **Status:** planned.
