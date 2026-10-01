@@ -1,6 +1,14 @@
 ## [Unreleased]
 
 ### Added
+- Portable runtime v0.5e.5 workspace-driven Evidence Bundle export: normal export derives Network, EXEC-FULL target set, Asset Resolver and Manifest from validated workspace state with no manual evidence paths.
+
+### Validated
+- Portable runtime v0.5e.4 Asset Resolver in P01LAB-RUNTIME-R3: 5 network assets + 4 credentialed observations -> 5 logical assets, 0 unresolved/ambiguous/conflicts, offline resume with no second resolve.
+
+## [Unreleased]
+
+### Added
 - Portable runtime v0.5e.4 managed offline Asset Resolver after FULL credentialed enrichment, using workspace-bound Network Discovery + EXEC-FULL target evidence with SHA256 validation and resume protection.
 
 ### Validated
