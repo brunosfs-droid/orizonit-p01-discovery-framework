@@ -1,3 +1,11 @@
+## [Unreleased]
+
+### Added
+- Portable runtime v0.5e.2 managed Credential Planner stage after Network Discovery, with workspace-owned plan JSON/SHA256, resume protection and zero-auth planning semantics.
+
+### Validated
+- Portable runtime v0.5e.1 Network Discovery gate in P01LAB, including explicit authorization acknowledgement, manifest scope enforcement and no-second-scan resume behavior.
+
 # Changelog
 
 ## [0.5d.0-lab-validated] - 2026-09-30

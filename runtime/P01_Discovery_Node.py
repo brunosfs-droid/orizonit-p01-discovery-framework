@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Cancã / Orizon IT Portable Discovery Node Runtime v0.5e.1.
+"""Cancã / Orizon IT Portable Discovery Node Runtime v0.5e.2.
 
 Portable-first operator workflow foundation.
 
-v0.5e.1 internalizes authorized Network Discovery as the first managed active
-stage. Credential planning/execution and Asset Resolver remain externally
-managed until later incremental releases. Evidence Bundle and Connected Upload
-continue to reuse the already validated components.
+v0.5e.2 internalizes the Credential Planner after managed authorized Network
+Discovery. Credentialed execution and Asset Resolver remain externally managed
+until later incremental releases. Evidence Bundle and Connected Upload continue
+to reuse the already validated components.
 
 Security properties:
 - no plaintext credential values are accepted or persisted;
@@ -38,7 +38,7 @@ from urllib.parse import urlparse
 
 NAME = "Canca-Portable-Discovery-Node"
 DISPLAY_NAME = "Cancã Portable Discovery Node"
-VERSION = "0.5e.1"
+VERSION = "0.5e.2"
 SCHEMA_VERSION = "0.5e"
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -313,16 +313,16 @@ def init_workspace(
             "managed_by": VERSION,
         },
         "credential_plan": {
-            "status": "external_required",
-            "managed_from_version": "0.5e.1",
+            "status": "pending",
+            "managed_by": VERSION,
         },
         "credentialed_execution": {
             "status": "external_required",
-            "managed_from_version": "0.5e.1",
+            "managed_from_version": "0.5e.3",
         },
         "asset_resolver": {
             "status": "external_required",
-            "managed_from_version": "0.5e.1",
+            "managed_from_version": "0.5e.4",
         },
         "evidence_bundle": {"status": "pending"},
         "upload": {"status": "pending"},
@@ -352,6 +352,7 @@ def init_workspace(
             "private_key_material_persisted": False,
             "server_initiated_remote_execution": False,
             "active_discovery_managed_in_this_version": True,
+            "credential_planning_managed_in_this_version": True,
         },
         "steps": steps,
         "artifacts": {},
@@ -506,7 +507,7 @@ def _authorized_ipv4_networks(manifest: Mapping[str, Any]) -> List[ipaddress.IPv
         except ValueError as exc:
             raise RuntimeErrorSafe(f"invalid authorized scope {raw!r}: {exc}") from exc
         if not isinstance(net, ipaddress.IPv4Network):
-            raise RuntimeErrorSafe("v0.5e.1 managed discovery supports IPv4 only")
+            raise RuntimeErrorSafe("v0.5e.2 managed discovery supports IPv4 only")
         networks.append(net)
     return networks
 
@@ -745,6 +746,203 @@ def run_network_discovery(
         "hosts_discovered": hosts,
         "effective_ip_count": len(effective_ips),
         "network_activity_performed": True,
+        "authentication_attempts_performed": False,
+    }
+
+
+def run_credential_plan(
+    workspace: Path,
+    *,
+    max_candidates: int = 2,
+    force_replan: bool = False,
+) -> Dict[str, Any]:
+    workspace = workspace.expanduser().resolve()
+    state = _load_state(workspace)
+    state["runtime_version"] = VERSION
+    state.setdefault("security", {})["credential_planning_managed_in_this_version"] = True
+    step = state["steps"]["credential_plan"]
+
+    if step.get("status") == "completed" and not force_replan:
+        existing = state.get("artifacts", {}).get("credential_plan", {})
+        path_value = existing.get("path")
+        if path_value:
+            path = _workspace_owned_path(workspace, str(path_value))
+            if path.is_file() and digest_file(path) == existing.get("sha256"):
+                return {
+                    "status": "already_complete",
+                    "plan_json": str(path),
+                    "plan_sha256": existing.get("sha256"),
+                    "assets_seen": existing.get("assets_seen"),
+                    "adapter_candidates": existing.get("adapter_candidates"),
+                    "network_activity_performed": False,
+                    "secret_resolution_performed": False,
+                    "authentication_attempts_performed": False,
+                }
+        raise RuntimeErrorSafe(
+            "credential plan is completed but recorded evidence is missing or changed"
+        )
+
+    if not (1 <= int(max_candidates) <= 5):
+        raise RuntimeErrorSafe("--max-candidates must be 1..5")
+
+    network_step = state.get("steps", {}).get("network_discovery") or {}
+    if network_step.get("status") != "completed":
+        raise RuntimeErrorSafe(
+            "managed Credential Planner requires completed Network Discovery"
+        )
+
+    if force_replan:
+        downstream = ("credentialed_execution", "asset_resolver", "evidence_bundle", "upload")
+        completed = [
+            name
+            for name in downstream
+            if (state.get("steps", {}).get(name) or {}).get("status") == "completed"
+        ]
+        if completed:
+            raise RuntimeErrorSafe(
+                "refusing --force-replan because downstream completed steps would become stale: "
+                + ", ".join(completed)
+            )
+
+    network_artifact = (state.get("artifacts") or {}).get("network_discovery") or {}
+    network_value = network_artifact.get("path")
+    expected_network_sha = network_artifact.get("sha256")
+    if not network_value or not expected_network_sha:
+        raise RuntimeErrorSafe("Network Discovery artifact metadata is incomplete")
+    network_path = _workspace_owned_path(workspace, str(network_value))
+    if not network_path.is_file() or digest_file(network_path) != expected_network_sha:
+        raise RuntimeErrorSafe(
+            "Network Discovery artifact is missing or its SHA256 no longer matches state"
+        )
+
+    refs = state.get("source_refs") or {}
+    manifest_ref = refs.get("assessment_manifest")
+    profiles_ref = refs.get("credential_profiles")
+    if not manifest_ref:
+        raise RuntimeErrorSafe("managed Credential Planner requires an Assessment Manifest")
+    if not profiles_ref:
+        raise RuntimeErrorSafe("managed Credential Planner requires Credential Profiles")
+
+    manifest_path = Path(str(manifest_ref)).expanduser().resolve()
+    profiles_path = Path(str(profiles_ref)).expanduser().resolve()
+    if not manifest_path.is_file():
+        raise RuntimeErrorSafe(f"assessment manifest not found: {manifest_path}")
+    if not profiles_path.is_file():
+        raise RuntimeErrorSafe(f"credential profiles file not found: {profiles_path}")
+
+    planner = _load_component(
+        "orchestrator/P01_Credentialed_Discovery_Planner.py",
+        "p01_runtime_credential_planner",
+    )
+
+    output_dir = workspace / "evidence" / "credential_plan"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    run_label = f"{safe_label(state['run_id'], 'run_id')}-PLAN"
+
+    step.clear()
+    step.update({
+        "status": "running",
+        "started_at_utc": utc_now_iso(),
+        "managed_by": VERSION,
+    })
+    _append_event(
+        state,
+        "credential_plan",
+        "started",
+        {
+            "max_candidates": int(max_candidates),
+            "network_sha256": expected_network_sha,
+        },
+    )
+    _write_state(workspace, state)
+
+    try:
+        discovery = planner.load_json(network_path)
+        profiles = planner.load_profiles(profiles_path)
+        manifest = planner.load_manifest(manifest_path)
+        if str(manifest.get("assessment_id") or "") != str(state.get("assessment_id") or ""):
+            raise RuntimeErrorSafe(
+                "Assessment Manifest assessment_id does not match workspace assessment_id"
+            )
+        payload = planner.build_plan(
+            discovery,
+            profiles,
+            realm_map=None,
+            max_candidates=int(max_candidates),
+            manifest=manifest,
+        )
+        payload.setdefault("metadata", {})["assessment_manifest_sha256"] = digest_file(
+            manifest_path
+        )
+        assert_no_secret_material(payload)
+        plan_json, plan_sha = planner.write_output(output_dir, run_label, payload)
+    except Exception as exc:
+        step["status"] = "failed"
+        step["failed_at_utc"] = utc_now_iso()
+        step["last_error"] = str(exc)[:1200]
+        _append_event(state, "credential_plan", "failed", {"error": str(exc)[:500]})
+        _write_state(workspace, state)
+        if isinstance(exc, RuntimeErrorSafe):
+            raise
+        raise RuntimeErrorSafe(str(exc)) from exc
+
+    plan_json = Path(plan_json).resolve()
+    plan_sha = Path(plan_sha).resolve()
+    if not verify_sidecar(plan_json):
+        step["status"] = "failed"
+        step["failed_at_utc"] = utc_now_iso()
+        step["last_error"] = "Credential Planner output SHA256 sidecar is missing or invalid"
+        _append_event(state, "credential_plan", "failed")
+        _write_state(workspace, state)
+        raise RuntimeErrorSafe(step["last_error"])
+
+    plan_doc = load_json(plan_json)
+    assert_no_secret_material(plan_doc)
+    summary = plan_doc.get("summary") or {}
+    assets_seen = int(summary.get("assets_seen") or 0)
+    adapter_candidates = int(summary.get("adapter_candidates") or 0)
+
+    state["artifacts"]["credential_plan"] = {
+        "path": _relative_if_owned(workspace, plan_json),
+        "sha256_path": _relative_if_owned(workspace, plan_sha),
+        "sha256": digest_file(plan_json),
+        "source_network_sha256": expected_network_sha,
+        "assessment_manifest_sha256": digest_file(manifest_path),
+        "credential_profiles_sha256": digest_file(profiles_path),
+        "assets_seen": assets_seen,
+        "adapter_candidates": adapter_candidates,
+        "max_candidates": int(max_candidates),
+    }
+
+    step.clear()
+    step.update({
+        "status": "completed",
+        "completed_at_utc": utc_now_iso(),
+        "managed_by": VERSION,
+        "network_activity_performed": False,
+        "secret_resolution": False,
+        "authentication_attempts": False,
+        "assets_seen": assets_seen,
+        "adapter_candidates": adapter_candidates,
+    })
+    _append_event(
+        state,
+        "credential_plan",
+        "completed",
+        {
+            "assets_seen": assets_seen,
+            "adapter_candidates": adapter_candidates,
+        },
+    )
+    _write_state(workspace, state)
+    return {
+        "status": "completed",
+        "plan_json": str(plan_json),
+        "plan_sha256": digest_file(plan_json),
+        "assets_seen": assets_seen,
+        "adapter_candidates": adapter_candidates,
+        "network_activity_performed": False,
+        "secret_resolution_performed": False,
         "authentication_attempts_performed": False,
     }
 
@@ -998,8 +1196,12 @@ def next_action(state: Mapping[str, Any]) -> str:
         return "run_network_discovery"
     if network_status == "completed":
         plan_status = (steps.get("credential_plan") or {}).get("status")
-        if plan_status == "external_required":
-            return "credential_plan_external"
+        if plan_status in {"pending", "failed", "external_required"}:
+            return "run_credential_plan"
+        if plan_status == "completed":
+            execution_status = (steps.get("credentialed_execution") or {}).get("status")
+            if execution_status == "external_required":
+                return "credentialed_execution_external"
     if (steps.get("evidence_bundle") or {}).get("status") != "completed":
         return "export"
     if (steps.get("upload") or {}).get("status") == "failed":
@@ -1098,10 +1300,10 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
 
     run_p = sub.add_parser(
         "run",
-        help="Run the currently managed active stage (Network Discovery in v0.5e.1)",
+        help="Advance the managed runtime stage: Network Discovery then Credential Planner",
     )
     run_p.add_argument("--workspace", required=True)
-    run_p.add_argument("--target", action="append", required=True)
+    run_p.add_argument("--target", action="append", default=[])
     run_p.add_argument("--exclude", action="append", default=[])
     run_p.add_argument("--profile", choices=["safe", "standard"], default="safe")
     run_p.add_argument("--ports")
@@ -1112,6 +1314,8 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
     run_p.add_argument("--disable-ssdp", action="store_true")
     run_p.add_argument("--ack-authorized-scan", action="store_true")
     run_p.add_argument("--force-rescan", action="store_true")
+    run_p.add_argument("--max-candidates", type=int, default=2)
+    run_p.add_argument("--force-replan", action="store_true")
 
     export_p = sub.add_parser(
         "export",
@@ -1186,27 +1390,49 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
             return 0
 
         if args.command == "run":
-            result = run_network_discovery(
-                workspace=Path(args.workspace),
-                targets=args.target,
-                excludes=args.exclude,
-                ack_authorized_scan=args.ack_authorized_scan,
-                profile=args.profile,
-                ports=args.ports,
-                timeout=args.timeout,
-                workers=args.workers,
-                max_hosts=args.max_hosts,
-                allow_large_scope=args.allow_large_scope,
-                disable_ssdp=args.disable_ssdp,
-                force_rescan=args.force_rescan,
+            workspace = Path(args.workspace)
+            current_state = _load_state(workspace.expanduser().resolve())
+            network_status = (
+                (current_state.get("steps", {}).get("network_discovery") or {}).get("status")
+            )
+            if network_status != "completed" or args.force_rescan or bool(args.target):
+                result = run_network_discovery(
+                    workspace=workspace,
+                    targets=args.target,
+                    excludes=args.exclude,
+                    ack_authorized_scan=args.ack_authorized_scan,
+                    profile=args.profile,
+                    ports=args.ports,
+                    timeout=args.timeout,
+                    workers=args.workers,
+                    max_hosts=args.max_hosts,
+                    allow_large_scope=args.allow_large_scope,
+                    disable_ssdp=args.disable_ssdp,
+                    force_rescan=args.force_rescan,
+                )
+                print(f"{DISPLAY_NAME} v{VERSION}")
+                print(f"Network Discovery status: {result.get('status')}")
+                print(f"Hosts discovered: {result.get('hosts_discovered')}")
+                print(f"Effective IPs: {result.get('effective_ip_count')}")
+                print(f"JSON: {result.get('network_json')}")
+                print(f"SHA256: {result.get('network_sha256')}")
+                print(f"Network activity performed: {str(bool(result.get('network_activity_performed'))).lower()}")
+                print("Authentication attempts performed: false")
+                return 0
+
+            result = run_credential_plan(
+                workspace=workspace,
+                max_candidates=args.max_candidates,
+                force_replan=args.force_replan,
             )
             print(f"{DISPLAY_NAME} v{VERSION}")
-            print(f"Network Discovery status: {result.get('status')}")
-            print(f"Hosts discovered: {result.get('hosts_discovered')}")
-            print(f"Effective IPs: {result.get('effective_ip_count')}")
-            print(f"JSON: {result.get('network_json')}")
-            print(f"SHA256: {result.get('network_sha256')}")
-            print(f"Network activity performed: {str(bool(result.get('network_activity_performed'))).lower()}")
+            print(f"Credential Planner status: {result.get('status')}")
+            print(f"Assets: {result.get('assets_seen')}")
+            print(f"Adapter candidates: {result.get('adapter_candidates')}")
+            print(f"JSON: {result.get('plan_json')}")
+            print(f"SHA256: {result.get('plan_sha256')}")
+            print("Network activity performed: false")
+            print("Secret resolution performed: false")
             print("Authentication attempts performed: false")
             return 0
 

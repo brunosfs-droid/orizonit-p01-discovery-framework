@@ -364,3 +364,30 @@ Candidate acceptance:
 - repeat `run` after successful completion returns `already_complete` and performs zero network activity;
 - explicit force-rescan is rejected if downstream completed steps would become stale;
 - P01LAB acceptance: authorized `192.168.100.0/24` scan completes and second identical runtime command performs no second scan.
+
+
+## Portable Discovery Node Runtime v0.5e.1
+
+LAB VALIDATED on P01-MGMT01 using workspace `P01LAB-RUNTIME-R2`.
+
+Acceptance evidence:
+- workspace initialization and SHA256-protected state succeeded;
+- active discovery without `--ack-authorized-scan` was rejected before scanning;
+- effective scope outside the Assessment Manifest authorization was rejected;
+- authorized `192.168.100.0/24` discovery completed and produced workspace-owned JSON + SHA256;
+- 4 hosts were discovered in the observed LAB run;
+- runtime state advanced to `network_discovery: completed`;
+- a repeated `run` returned `already_complete` with no second network activity and no authentication attempts.
+
+## Portable Discovery Node Runtime v0.5e.2
+
+Candidate acceptance:
+- a completed Network Discovery workspace advances to managed Credential Planner on the next `run`;
+- planner input Network Discovery must exist and match the SHA256 recorded in runtime state;
+- Assessment Manifest and Credential Profiles references must exist;
+- planner output JSON + SHA256 are stored under the workspace;
+- planner output/state persist no secret values or Secret Provider locators;
+- planning performs no network activity, secret resolution or authentication;
+- repeated planning returns `already_complete` and does not rebuild the plan;
+- existing v0.5e.1 workspaces with `credential_plan: external_required` are adopted safely;
+- force-replan is rejected when completed downstream artifacts would become stale.
