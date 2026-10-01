@@ -1,5 +1,18 @@
 ## [Unreleased]
 
+## v0.5f.0 — Optional agent foundation (CANDIDATE)
+
+- Wrap canonical v0.5e.6 runtime with doctor/status/run-once and policy validation.
+- Versioned policy binds assessment/run/node identity; absent grants deny stages.
+- No OS service or scheduler installed; optional interval descriptor is metadata.
+- Share nonblocking Windows/Linux workspace lock with portable mutations.
+- Fail closed on invalid policy, stale artifacts/config or interrupted checkpoints.
+- Preserve completed-run resume; no automatic retry, rescan or reauthentication.
+- Reject interactive providers for unattended AUTH/FULL; strict SSH host keys.
+- Journal fixed status codes and policy SHA256, never secrets, transport or raw errors.
+- Add Windows/Linux CI and P01LAB acceptance procedure; real LAB pending.
+
+
 ### Validated
 - Portable runtime v0.5e.6 end-to-end P01LAB flow through mTLS upload: HTTP 201/imported, semantic match, authenticated node binding, receipt/state completion, zero-input no-second-upload resume and forced-resend transport gate.
 
@@ -769,3 +782,4 @@ Protocol availability does not authorize credential use. Credential selection st
 - JSON output
 - SHA-256 integrity file
 - Initial laboratory validation
+

@@ -34,6 +34,12 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 from urllib.parse import urlparse
 
+# One module identity shares reentrant lock ownership with the optional agent.
+_LOCK_ROOT = str(Path(__file__).resolve().parent)
+if _LOCK_ROOT not in sys.path:
+    sys.path.insert(0, _LOCK_ROOT)
+from P01_Workspace_Lock import locked_workspace, workspace_lock
+
 
 NAME = "Canca-Portable-Discovery-Node"
 DISPLAY_NAME = "Cancã Portable Discovery Node"
@@ -264,7 +270,7 @@ def _platform_metadata() -> Dict[str, Any]:
     }
 
 
-def init_workspace(
+def _init_workspace_unlocked(
     workspace_root: Path,
     assessment_id: str,
     run_id: str,
@@ -395,6 +401,17 @@ def init_workspace(
     }
 
 
+def init_workspace(
+    workspace_root: Path, assessment_id: str, run_id: str, node_id: str,
+    manifest: Optional[Path] = None, profiles: Optional[Path] = None,
+) -> Dict[str, Any]:
+    workspace = _workspace_path(workspace_root, assessment_id, run_id)
+    with workspace_lock(workspace):
+        return _init_workspace_unlocked(
+            workspace_root, assessment_id, run_id, node_id, manifest, profiles
+        )
+
+
 def _existing_parent(path: Path) -> Path:
     candidate = path.expanduser()
     while not candidate.exists() and candidate.parent != candidate:
@@ -518,6 +535,7 @@ def _authorized_ipv4_networks(manifest: Mapping[str, Any]) -> List[ipaddress.IPv
     return networks
 
 
+@locked_workspace
 def run_network_discovery(
     workspace: Path,
     targets: Sequence[str],
@@ -756,6 +774,7 @@ def run_network_discovery(
     }
 
 
+@locked_workspace
 def run_credential_plan(
     workspace: Path,
     *,
@@ -953,6 +972,7 @@ def run_credential_plan(
     }
 
 
+@locked_workspace
 def run_credentialed_execution_dry_run(
     workspace: Path,
     *,
@@ -1152,6 +1172,7 @@ def run_credentialed_execution_dry_run(
     }
 
 
+@locked_workspace
 def run_credentialed_execution_auth_only(
     workspace: Path,
     *,
@@ -1491,6 +1512,7 @@ def run_credentialed_execution_auth_only(
     }
 
 
+@locked_workspace
 def run_credentialed_execution_full(
     workspace: Path,
     *,
@@ -1863,6 +1885,7 @@ def run_credentialed_execution_full(
     }
 
 
+@locked_workspace
 def run_asset_resolver(
     workspace: Path,
     *,
@@ -2311,6 +2334,7 @@ def _workspace_bundle_inputs(
     return network, credentialed, manifest_path, resolver_path, bindings
 
 
+@locked_workspace
 def export_bundle(
     workspace: Path,
     network: Optional[Path] = None,
@@ -2541,6 +2565,7 @@ def export_bundle(
     }
 
 
+@locked_workspace
 def upload_bundle(
     workspace: Path,
     server_url: Optional[str] = None,
@@ -3178,3 +3203,4 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(cli())
+

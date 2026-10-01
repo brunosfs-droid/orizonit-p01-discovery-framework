@@ -1,0 +1,164 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:orizon:p01:agent-policy:0.5f",
+  "title": "Canc\u00e3 Optional Agent Policy v0.5f",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "identity"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "0.5f"
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "assessment_id",
+        "run_id",
+        "node_id"
+      ],
+      "properties": {
+        "assessment_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+        },
+        "run_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+        },
+        "node_id": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"
+        }
+      }
+    },
+    "grants": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "discovery": {
+          "type": "boolean",
+          "default": false
+        },
+        "planning": {
+          "type": "boolean",
+          "default": false
+        },
+        "dry_run": {
+          "type": "boolean",
+          "default": false
+        },
+        "auth_only": {
+          "type": "boolean",
+          "default": false
+        },
+        "full": {
+          "type": "boolean",
+          "default": false
+        },
+        "resolver": {
+          "type": "boolean",
+          "default": false
+        },
+        "export": {
+          "type": "boolean",
+          "default": false
+        },
+        "upload": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "discovery": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "targets": {
+          "type": "array",
+          "maxItems": 128,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "description": "IPv4 address or CIDR; validated with ipaddress at runtime."
+          }
+        }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "max_hosts": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2048
+        },
+        "max_actions": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 250
+        }
+      }
+    },
+    "schedule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "interval_seconds"
+      ],
+      "properties": {
+        "kind": {
+          "const": "interval"
+        },
+        "interval_seconds": {
+          "type": "integer",
+          "minimum": 60,
+          "maximum": 86400
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "required": [
+          "grants"
+        ],
+        "properties": {
+          "grants": {
+            "required": [
+              "discovery"
+            ],
+            "properties": {
+              "discovery": {
+                "const": true
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "discovery"
+        ],
+        "properties": {
+          "discovery": {
+            "required": [
+              "targets"
+            ],
+            "properties": {
+              "targets": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

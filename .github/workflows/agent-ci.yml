@@ -1,0 +1,29 @@
+name: Optional Agent CI
+
+on:
+  push:
+    branches: [ main, "feature/**", "fix/**", "chore/**" ]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  agent-contract:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Compile agent and canonical runtime
+        run: python -m py_compile agent/P01_Agent.py runtime/P01_Discovery_Node.py runtime/P01_Workspace_Lock.py
+      - name: Validate default policy
+        run: python agent/P01_Agent.py validate-policy --policy agent/agent-policy.example.json
+      - name: Agent policy, journal and OS lock contracts
+        run: python -m unittest discover -s tests -p "test_optional_agent.py" -v
+

@@ -277,3 +277,12 @@ The private-key path is used for the current invocation only and is not written 
 The runtime never silently repeats a completed bundle build or completed upload.
 
 Asset Resolver and workspace-driven Evidence Bundle export now follow the same checkpoint/resume discipline. Connected upload preserves no-silent-repeat behavior.
+
+
+## Shared workspace locking
+
+Portable init/discovery/planning/credentialed execution/resolver/export/upload now
+share a nonblocking OS lock with the optional [agent](../agent/README.md). A busy
+workspace is rejected; completed-checkpoint behavior and the v0.5e schema remain
+unchanged. The retained `.canca-workspace.lock` file is not evidence of a live
+process and must not be deleted while that workspace can be in use.
