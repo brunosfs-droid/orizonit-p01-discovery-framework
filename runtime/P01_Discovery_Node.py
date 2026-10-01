@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Cancã / Orizon IT Portable Discovery Node Runtime v0.5e.2.
+"""Cancã / Orizon IT Portable Discovery Node Runtime v0.5e.3.
 
 Portable-first operator workflow foundation.
 
-v0.5e.2 internalizes the Credential Planner after managed authorized Network
-Discovery. Credentialed execution and Asset Resolver remain externally managed
-until later incremental releases. Evidence Bundle and Connected Upload continue
-to reuse the already validated components.
+v0.5e.3 internalizes the Multi-target Credentialed Executor preflight/dry-run
+after managed Network Discovery and Credential Planning. Live credentialed
+execution and Asset Resolver remain external until later gated increments.
+Evidence Bundle and Connected Upload continue to reuse validated components.
 
 Security properties:
 - no plaintext credential values are accepted or persisted;
@@ -38,7 +38,7 @@ from urllib.parse import urlparse
 
 NAME = "Canca-Portable-Discovery-Node"
 DISPLAY_NAME = "Cancã Portable Discovery Node"
-VERSION = "0.5e.2"
+VERSION = "0.5e.3"
 SCHEMA_VERSION = "0.5e"
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -317,8 +317,8 @@ def init_workspace(
             "managed_by": VERSION,
         },
         "credentialed_execution": {
-            "status": "external_required",
-            "managed_from_version": "0.5e.3",
+            "status": "pending",
+            "managed_by": VERSION,
         },
         "asset_resolver": {
             "status": "external_required",
@@ -353,6 +353,7 @@ def init_workspace(
             "server_initiated_remote_execution": False,
             "active_discovery_managed_in_this_version": True,
             "credential_planning_managed_in_this_version": True,
+            "credentialed_execution_dry_run_managed_in_this_version": True,
         },
         "steps": steps,
         "artifacts": {},
@@ -507,7 +508,7 @@ def _authorized_ipv4_networks(manifest: Mapping[str, Any]) -> List[ipaddress.IPv
         except ValueError as exc:
             raise RuntimeErrorSafe(f"invalid authorized scope {raw!r}: {exc}") from exc
         if not isinstance(net, ipaddress.IPv4Network):
-            raise RuntimeErrorSafe("v0.5e.2 managed discovery supports IPv4 only")
+            raise RuntimeErrorSafe("v0.5e.3 managed discovery supports IPv4 only")
         networks.append(net)
     return networks
 
@@ -947,6 +948,199 @@ def run_credential_plan(
     }
 
 
+def run_credentialed_execution_dry_run(
+    workspace: Path,
+    *,
+    max_actions: int = 25,
+) -> Dict[str, Any]:
+    workspace = workspace.expanduser().resolve()
+    state = _load_state(workspace)
+    state["runtime_version"] = VERSION
+    state.setdefault("security", {})[
+        "credentialed_execution_dry_run_managed_in_this_version"
+    ] = True
+    step = state["steps"]["credentialed_execution"]
+
+    if step.get("status") == "preview_completed":
+        existing = state.get("artifacts", {}).get("credentialed_execution_preview", {})
+        path_value = existing.get("path")
+        if path_value:
+            path = _workspace_owned_path(workspace, str(path_value))
+            if path.is_file() and digest_file(path) == existing.get("sha256"):
+                return {
+                    "status": "already_complete",
+                    "job_json": str(path),
+                    "job_sha256": existing.get("sha256"),
+                    "actions_total": existing.get("actions_total"),
+                    "actions_ready": existing.get("actions_ready"),
+                    "network_activity_performed": False,
+                    "secret_resolution_performed": False,
+                    "authentication_attempts_performed": False,
+                }
+        raise RuntimeErrorSafe(
+            "credentialed execution preview is completed but recorded evidence is missing or changed"
+        )
+
+    if not (1 <= int(max_actions) <= 250):
+        raise RuntimeErrorSafe("--max-actions must be 1..250")
+
+    plan_step = state.get("steps", {}).get("credential_plan") or {}
+    if plan_step.get("status") != "completed":
+        raise RuntimeErrorSafe(
+            "managed Credentialed Executor dry-run requires completed Credential Plan"
+        )
+
+    plan_artifact = (state.get("artifacts") or {}).get("credential_plan") or {}
+    plan_value = plan_artifact.get("path")
+    expected_plan_sha = plan_artifact.get("sha256")
+    if not plan_value or not expected_plan_sha:
+        raise RuntimeErrorSafe("Credential Plan artifact metadata is incomplete")
+    plan_path = _workspace_owned_path(workspace, str(plan_value))
+    if not plan_path.is_file() or digest_file(plan_path) != expected_plan_sha:
+        raise RuntimeErrorSafe(
+            "Credential Plan artifact is missing or its SHA256 no longer matches state"
+        )
+
+    profiles_ref = (state.get("source_refs") or {}).get("credential_profiles")
+    if not profiles_ref:
+        raise RuntimeErrorSafe(
+            "managed Credentialed Executor dry-run requires Credential Profiles"
+        )
+    profiles_path = Path(str(profiles_ref)).expanduser().resolve()
+    if not profiles_path.is_file():
+        raise RuntimeErrorSafe(f"credential profiles file not found: {profiles_path}")
+
+    executor = _load_component(
+        "orchestrator/P01_Credentialed_Discovery_Executor.py",
+        "p01_runtime_credentialed_executor",
+    )
+    output_dir = workspace / "evidence" / "credentialed_execution"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    run_label = f"{safe_label(state['run_id'], 'run_id')}-EXEC-DRY"
+
+    step.clear()
+    step.update({
+        "status": "running",
+        "started_at_utc": utc_now_iso(),
+        "managed_by": VERSION,
+        "mode": "dry_run",
+    })
+    _append_event(
+        state,
+        "credentialed_execution",
+        "started",
+        {
+            "mode": "dry_run",
+            "max_actions": int(max_actions),
+            "plan_sha256": expected_plan_sha,
+        },
+    )
+    _write_state(workspace, state)
+
+    try:
+        plan_doc = executor.load(plan_path)
+        profiles = executor.load_profiles(profiles_path)
+        payload = executor.run_job(
+            plan_doc,
+            profiles,
+            expected_plan_sha,
+            output_dir,
+            run_label,
+            False,
+            False,
+            int(max_actions),
+            None,
+            "strict",
+        )
+        assert_no_secret_material(payload)
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        out = output_dir / (
+            f"P01-Credentialed-Job_{timestamp}_{safe_label(run_label, 'run_label')}.json"
+        )
+        job_json, job_sha, job_hash = executor.write(out, payload)
+    except Exception as exc:
+        step["status"] = "failed"
+        step["failed_at_utc"] = utc_now_iso()
+        step["last_error"] = str(exc)[:1200]
+        _append_event(
+            state,
+            "credentialed_execution",
+            "failed",
+            {"mode": "dry_run", "error": str(exc)[:500]},
+        )
+        _write_state(workspace, state)
+        if isinstance(exc, RuntimeErrorSafe):
+            raise
+        raise RuntimeErrorSafe(str(exc)) from exc
+
+    job_json = Path(job_json).resolve()
+    job_sha = Path(job_sha).resolve()
+    if not verify_sidecar(job_json):
+        step["status"] = "failed"
+        step["failed_at_utc"] = utc_now_iso()
+        step["last_error"] = "Credentialed Job output SHA256 sidecar is missing or invalid"
+        _append_event(state, "credentialed_execution", "failed", {"mode": "dry_run"})
+        _write_state(workspace, state)
+        raise RuntimeErrorSafe(step["last_error"])
+
+    job_doc = load_json(job_json)
+    assert_no_secret_material(job_doc)
+    metadata = job_doc.get("metadata") or {}
+    summary = job_doc.get("summary") or {}
+    if metadata.get("execution_mode") != "dry_run":
+        raise RuntimeErrorSafe("managed v0.5e.3 executor must remain in dry_run mode")
+    if bool(metadata.get("secret_resolution")) or bool(metadata.get("authentication_attempts")):
+        raise RuntimeErrorSafe(
+            "dry-run executor unexpectedly reported secret resolution/authentication"
+        )
+
+    actions_total = int(summary.get("actions_total") or 0)
+    actions_ready = int(summary.get("actions_ready") or 0)
+    state["artifacts"]["credentialed_execution_preview"] = {
+        "path": _relative_if_owned(workspace, job_json),
+        "sha256_path": _relative_if_owned(workspace, job_sha),
+        "sha256": job_hash,
+        "source_plan_sha256": expected_plan_sha,
+        "credential_profiles_sha256": digest_file(profiles_path),
+        "actions_total": actions_total,
+        "actions_ready": actions_ready,
+        "mode": "dry_run",
+    }
+
+    step.clear()
+    step.update({
+        "status": "preview_completed",
+        "completed_at_utc": utc_now_iso(),
+        "managed_by": VERSION,
+        "mode": "dry_run",
+        "network_activity_performed": False,
+        "secret_resolution": False,
+        "authentication_attempts": False,
+        "actions_total": actions_total,
+        "actions_ready": actions_ready,
+    })
+    _append_event(
+        state,
+        "credentialed_execution",
+        "preview_completed",
+        {
+            "actions_total": actions_total,
+            "actions_ready": actions_ready,
+        },
+    )
+    _write_state(workspace, state)
+    return {
+        "status": "preview_completed",
+        "job_json": str(job_json),
+        "job_sha256": job_hash,
+        "actions_total": actions_total,
+        "actions_ready": actions_ready,
+        "network_activity_performed": False,
+        "secret_resolution_performed": False,
+        "authentication_attempts_performed": False,
+    }
+
+
 def export_bundle(
     workspace: Path,
     network: Path,
@@ -1200,8 +1394,10 @@ def next_action(state: Mapping[str, Any]) -> str:
             return "run_credential_plan"
         if plan_status == "completed":
             execution_status = (steps.get("credentialed_execution") or {}).get("status")
-            if execution_status == "external_required":
-                return "credentialed_execution_external"
+            if execution_status in {"pending", "failed", "external_required"}:
+                return "run_credentialed_execution_dry_run"
+            if execution_status == "preview_completed":
+                return "credentialed_execution_live_external"
     if (steps.get("evidence_bundle") or {}).get("status") != "completed":
         return "export"
     if (steps.get("upload") or {}).get("status") == "failed":
@@ -1300,7 +1496,7 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
 
     run_p = sub.add_parser(
         "run",
-        help="Advance the managed runtime stage: Network Discovery then Credential Planner",
+        help="Advance managed runtime: Network Discovery, Credential Planner, then Executor dry-run",
     )
     run_p.add_argument("--workspace", required=True)
     run_p.add_argument("--target", action="append", default=[])
@@ -1316,6 +1512,7 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
     run_p.add_argument("--force-rescan", action="store_true")
     run_p.add_argument("--max-candidates", type=int, default=2)
     run_p.add_argument("--force-replan", action="store_true")
+    run_p.add_argument("--max-actions", type=int, default=25)
 
     export_p = sub.add_parser(
         "export",
@@ -1420,17 +1617,38 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
                 print("Authentication attempts performed: false")
                 return 0
 
-            result = run_credential_plan(
+            current_state = _load_state(workspace.expanduser().resolve())
+            plan_status = (
+                (current_state.get("steps", {}).get("credential_plan") or {}).get("status")
+            )
+            if plan_status != "completed" or args.force_replan:
+                result = run_credential_plan(
+                    workspace=workspace,
+                    max_candidates=args.max_candidates,
+                    force_replan=args.force_replan,
+                )
+                print(f"{DISPLAY_NAME} v{VERSION}")
+                print(f"Credential Planner status: {result.get('status')}")
+                print(f"Assets: {result.get('assets_seen')}")
+                print(f"Adapter candidates: {result.get('adapter_candidates')}")
+                print(f"JSON: {result.get('plan_json')}")
+                print(f"SHA256: {result.get('plan_sha256')}")
+                print("Network activity performed: false")
+                print("Secret resolution performed: false")
+                print("Authentication attempts performed: false")
+                return 0
+
+            result = run_credentialed_execution_dry_run(
                 workspace=workspace,
-                max_candidates=args.max_candidates,
-                force_replan=args.force_replan,
+                max_actions=args.max_actions,
             )
             print(f"{DISPLAY_NAME} v{VERSION}")
-            print(f"Credential Planner status: {result.get('status')}")
-            print(f"Assets: {result.get('assets_seen')}")
-            print(f"Adapter candidates: {result.get('adapter_candidates')}")
-            print(f"JSON: {result.get('plan_json')}")
-            print(f"SHA256: {result.get('plan_sha256')}")
+            print(f"Credentialed Executor status: {result.get('status')}")
+            print("Mode: dry_run")
+            print(f"Actions: {result.get('actions_total')}")
+            print(f"Ready: {result.get('actions_ready')}")
+            print(f"JSON: {result.get('job_json')}")
+            print(f"SHA256: {result.get('job_sha256')}")
             print("Network activity performed: false")
             print("Secret resolution performed: false")
             print("Authentication attempts performed: false")
