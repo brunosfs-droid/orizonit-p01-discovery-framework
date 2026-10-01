@@ -246,6 +246,17 @@ O LAB inicial usará P01-MGMT01 como Discovery Node por possuir acesso ao segmen
 - output JSON/SHA256 stored under the run workspace;
 - repeat run returns `already_complete` without a second scan;
 - force-rescan blocked when downstream completed artifacts would become stale.
+- **Status:** LAB VALIDATED no P01LAB. Ack obrigatório, rejeição de escopo não autorizado, execução autorizada em `192.168.100.0/24`, JSON/SHA256 no workspace e resume sem segundo scan foram confirmados.
+
+### v0.5e.2 — Managed Credential Planner
+- segundo `run` avança do Network Discovery concluído para o Credential Planner;
+- usa somente o artifact/hash do Network Discovery registrado no workspace;
+- consome Assessment Manifest + Credential Profiles referenciados no `init`;
+- gera Credential Plan JSON/SHA256 dentro do workspace;
+- zero network activity, zero secret resolution e zero authentication;
+- workspaces v0.5e.1 com `credential_plan: external_required` podem ser continuados in-place;
+- repeat plan retorna `already_complete`;
+- force-replan é bloqueado quando invalidaria etapas downstream concluídas.
 - **Status:** CANDIDATE / CI gate pending; P01LAB runtime validation next.
 
-Follow-up: Credential Planner, Executor and Asset Resolver are internalized in separate gated increments.
+Follow-up: Credentialed Executor e Asset Resolver serão internalizados em incrementos separados.
