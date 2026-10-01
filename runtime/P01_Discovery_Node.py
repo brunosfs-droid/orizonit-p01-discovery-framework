@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Cancã / Orizon IT Portable Discovery Node Runtime v0.5e.4.
+"""Cancã / Orizon IT Portable Discovery Node Runtime v0.5e.5.
 
 Portable-first operator workflow foundation.
 
-v0.5e.4 internalizes the offline Asset Resolver after managed Network Discovery,
-Credential Planning and credentialed execution. Evidence Bundle and Connected
-Upload continue to reuse validated components.
+v0.5e.5 makes Evidence Bundle export workspace-driven after the managed Asset
+Resolver. The normal export path derives and validates all evidence inputs from
+runtime state; explicit-path export remains available for backwards compatibility.
 
 Security properties:
 - no plaintext credential values are accepted or persisted;
@@ -37,7 +37,7 @@ from urllib.parse import urlparse
 
 NAME = "Canca-Portable-Discovery-Node"
 DISPLAY_NAME = "Cancã Portable Discovery Node"
-VERSION = "0.5e.4"
+VERSION = "0.5e.5"
 SCHEMA_VERSION = "0.5e"
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -357,6 +357,7 @@ def init_workspace(
             "credentialed_execution_auth_only_managed_in_this_version": True,
             "credentialed_execution_full_managed_in_this_version": True,
             "asset_resolver_managed_in_this_version": True,
+            "workspace_driven_bundle_managed_in_this_version": True,
         },
         "steps": steps,
         "artifacts": {},
@@ -511,7 +512,7 @@ def _authorized_ipv4_networks(manifest: Mapping[str, Any]) -> List[ipaddress.IPv
         except ValueError as exc:
             raise RuntimeErrorSafe(f"invalid authorized scope {raw!r}: {exc}") from exc
         if not isinstance(net, ipaddress.IPv4Network):
-            raise RuntimeErrorSafe("v0.5e.4 managed discovery supports IPv4 only")
+            raise RuntimeErrorSafe("v0.5e.5 managed discovery supports IPv4 only")
         networks.append(net)
     return networks
 
@@ -2137,18 +2138,194 @@ def run_asset_resolver(
     }
 
 
+def _workspace_bundle_inputs(
+    workspace: Path,
+    state: Mapping[str, Any],
+    *,
+    require_sidecars: bool,
+) -> Tuple[Path, List[Path], Optional[Path], Path, Dict[str, Any]]:
+    if not require_sidecars:
+        raise RuntimeErrorSafe(
+            "workspace-driven export requires source SHA256 sidecars"
+        )
+
+    steps = state.get("steps") or {}
+    for name, expected in (
+        ("network_discovery", "completed"),
+        ("credentialed_execution", "full_completed"),
+        ("asset_resolver", "completed"),
+    ):
+        actual = (steps.get(name) or {}).get("status")
+        if actual != expected:
+            raise RuntimeErrorSafe(
+                f"workspace-driven export requires {name}: {expected}; got {actual!r}"
+            )
+
+    workspace_root = workspace.resolve()
+    artifacts = state.get("artifacts") or {}
+
+    network_info = artifacts.get("network_discovery") or {}
+    network_value = network_info.get("path")
+    network_sha = network_info.get("sha256")
+    if not network_value or not network_sha:
+        raise RuntimeErrorSafe("Network Discovery artifact metadata is incomplete")
+    network = _workspace_owned_path(workspace, str(network_value)).resolve()
+    if not network.is_relative_to(workspace_root):
+        raise RuntimeErrorSafe("workspace Network Discovery artifact is outside the workspace")
+    if (
+        not network.is_file()
+        or digest_file(network) != str(network_sha).lower()
+        or not verify_sidecar(network)
+    ):
+        raise RuntimeErrorSafe(
+            "workspace Network Discovery artifact is missing or failed SHA256 verification"
+        )
+
+    full_info = artifacts.get("credentialed_execution_full") or {}
+    full_value = full_info.get("path")
+    full_sha = full_info.get("sha256")
+    if not full_value or not full_sha:
+        raise RuntimeErrorSafe("FULL credentialed execution artifact metadata is incomplete")
+    full_job = _workspace_owned_path(workspace, str(full_value)).resolve()
+    if not full_job.is_relative_to(workspace_root):
+        raise RuntimeErrorSafe("workspace FULL job artifact is outside the workspace")
+    if (
+        not full_job.is_file()
+        or digest_file(full_job) != str(full_sha).lower()
+        or not verify_sidecar(full_job)
+    ):
+        raise RuntimeErrorSafe(
+            "workspace FULL job artifact is missing or failed SHA256 verification"
+        )
+
+    full_doc = load_json(full_job)
+    assert_no_secret_material(full_doc)
+    full_meta = full_doc.get("metadata") or {}
+    if full_meta.get("execution_mode") != "execute" or bool(full_meta.get("auth_only")):
+        raise RuntimeErrorSafe(
+            "recorded credentialed job is not a validated FULL execution"
+        )
+
+    credentialed: List[Path] = []
+    target_hashes: List[str] = []
+    for action in full_doc.get("actions") or []:
+        if not isinstance(action, Mapping):
+            continue
+        if action.get("execution_status") != "completed":
+            continue
+        if action.get("collection_status") != "collected":
+            continue
+        value = action.get("target_result_file")
+        if not value:
+            raise RuntimeErrorSafe(
+                "FULL job contains a collected action without target_result_file"
+            )
+        target = Path(str(value)).expanduser().resolve()
+        if not target.is_relative_to(workspace_root):
+            raise RuntimeErrorSafe(
+                f"FULL target evidence is outside the runtime workspace: {target}"
+            )
+        if not target.is_file() or not verify_sidecar(target):
+            raise RuntimeErrorSafe(
+                f"FULL target evidence missing or failed SHA256 verification: {target}"
+            )
+        actual_sha = digest_file(target)
+        expected_sha = action.get("target_result_sha256")
+        if expected_sha and actual_sha != str(expected_sha).lower():
+            raise RuntimeErrorSafe(
+                f"FULL target evidence SHA256 differs from aggregate job: {target}"
+            )
+        assert_no_secret_material(load_json(target))
+        credentialed.append(target)
+        target_hashes.append(actual_sha)
+
+    expected_target_count = int(full_info.get("target_evidence_count") or 0)
+    if not credentialed:
+        raise RuntimeErrorSafe("FULL job contains no collected target evidence")
+    if expected_target_count and len(credentialed) != expected_target_count:
+        raise RuntimeErrorSafe(
+            "FULL target evidence count does not match runtime state"
+        )
+
+    resolver_info = artifacts.get("asset_resolver") or {}
+    resolver_value = resolver_info.get("path")
+    resolver_sha = resolver_info.get("sha256")
+    if not resolver_value or not resolver_sha:
+        raise RuntimeErrorSafe("Asset Resolver artifact metadata is incomplete")
+    resolver_path = _workspace_owned_path(workspace, str(resolver_value)).resolve()
+    if not resolver_path.is_relative_to(workspace_root):
+        raise RuntimeErrorSafe("workspace Asset Resolver artifact is outside the workspace")
+    if (
+        not resolver_path.is_file()
+        or digest_file(resolver_path) != str(resolver_sha).lower()
+        or not verify_sidecar(resolver_path)
+    ):
+        raise RuntimeErrorSafe(
+            "workspace Asset Resolver artifact is missing or failed SHA256 verification"
+        )
+    if (
+        resolver_info.get("source_network_sha256")
+        and resolver_info.get("source_network_sha256") != network_sha
+    ):
+        raise RuntimeErrorSafe(
+            "Asset Resolver artifact is not bound to the current Network Discovery"
+        )
+    if (
+        resolver_info.get("source_full_job_sha256")
+        and resolver_info.get("source_full_job_sha256") != full_sha
+    ):
+        raise RuntimeErrorSafe(
+            "Asset Resolver artifact is not bound to the current FULL job"
+        )
+    resolver_target_hashes = resolver_info.get("source_full_target_sha256")
+    if resolver_target_hashes:
+        if sorted(str(x).lower() for x in resolver_target_hashes) != sorted(target_hashes):
+            raise RuntimeErrorSafe(
+                "Asset Resolver artifact is not bound to the current FULL target set"
+            )
+
+    manifest_path: Optional[Path] = None
+    manifest_sha: Optional[str] = None
+    manifest_ref = (state.get("source_refs") or {}).get("assessment_manifest")
+    if manifest_ref:
+        manifest_path = Path(str(manifest_ref)).expanduser().resolve()
+        if not manifest_path.is_file():
+            raise RuntimeErrorSafe(f"assessment manifest not found: {manifest_path}")
+        manifest_sha = digest_file(manifest_path)
+        bound_manifest_sha = resolver_info.get("assessment_manifest_sha256")
+        if bound_manifest_sha and manifest_sha != str(bound_manifest_sha).lower():
+            raise RuntimeErrorSafe(
+                "Assessment Manifest changed after Asset Resolver completion"
+            )
+        assert_no_secret_material(load_json(manifest_path))
+
+    bindings = {
+        "selection_mode": "workspace_state",
+        "network_sha256": str(network_sha).lower(),
+        "full_job_sha256": str(full_sha).lower(),
+        "full_target_sha256": sorted(target_hashes),
+        "asset_resolver_sha256": str(resolver_sha).lower(),
+        "assessment_manifest_sha256": manifest_sha,
+    }
+    return network, credentialed, manifest_path, resolver_path, bindings
+
+
 def export_bundle(
     workspace: Path,
-    network: Path,
-    evidence_dir: Path,
-    evidence_run_label: Optional[str],
-    asset_resolver: Optional[Path],
-    manifest: Optional[Path],
+    network: Optional[Path] = None,
+    evidence_dir: Optional[Path] = None,
+    evidence_run_label: Optional[str] = None,
+    asset_resolver: Optional[Path] = None,
+    manifest: Optional[Path] = None,
     require_sidecars: bool = True,
     force_rebuild: bool = False,
 ) -> Dict[str, Any]:
     workspace = workspace.expanduser().resolve()
     state = _load_state(workspace)
+    state["runtime_version"] = VERSION
+    state.setdefault("security", {})[
+        "workspace_driven_bundle_managed_in_this_version"
+    ] = True
     step = state["steps"]["evidence_bundle"]
 
     if step.get("status") == "completed" and not force_rebuild:
@@ -2162,27 +2339,104 @@ def export_bundle(
                     "bundle": str(bundle_path),
                     "bundle_id": existing.get("bundle_id"),
                     "bundle_sha256": existing.get("sha256"),
+                    "artifact_count": existing.get("artifact_count"),
+                    "credentialed_evidence_count": existing.get(
+                        "credentialed_evidence_count"
+                    ),
+                    "selection_mode": existing.get("selection_mode"),
+                    "network_activity_performed": False,
+                    "secret_resolution_performed": False,
+                    "authentication_attempts_performed": False,
                 }
         raise RuntimeErrorSafe(
             "bundle step is completed but recorded artifact is missing or changed; "
             "use --force-rebuild only after review"
         )
 
-    manifest_path = manifest
-    if manifest_path is None:
-        ref = state.get("source_refs", {}).get("assessment_manifest")
-        manifest_path = Path(ref) if ref else None
+    workspace_driven = (
+        network is None
+        and evidence_dir is None
+        and asset_resolver is None
+        and evidence_run_label is None
+        and manifest is None
+    )
+
+    bindings: Dict[str, Any]
+    full_job_for_binding: Optional[Path] = None
+    if workspace_driven:
+        (
+            network_path,
+            credentialed,
+            manifest_path,
+            asset_resolver_path,
+            bindings,
+        ) = _workspace_bundle_inputs(
+            workspace,
+            state,
+            require_sidecars=require_sidecars,
+        )
+        full_info = (state.get("artifacts") or {}).get(
+            "credentialed_execution_full"
+        ) or {}
+        full_value = full_info.get("path")
+        if full_value:
+            full_job_for_binding = _workspace_owned_path(
+                workspace, str(full_value)
+            ).resolve()
+        selection_mode = "workspace_state"
+    else:
+        if network is None or evidence_dir is None:
+            raise RuntimeErrorSafe(
+                "explicit export requires both --network and --evidence-dir; "
+                "or omit all evidence-path options for workspace-driven export"
+            )
+        network_path = network.expanduser().resolve()
+        evidence_dir = evidence_dir.expanduser().resolve()
+        manifest_path = manifest.expanduser().resolve() if manifest else None
+        if manifest_path is None:
+            ref = state.get("source_refs", {}).get("assessment_manifest")
+            manifest_path = Path(ref).expanduser().resolve() if ref else None
+        asset_resolver_path = (
+            asset_resolver.expanduser().resolve()
+            if asset_resolver is not None
+            else None
+        )
+
+        bundle_mod = _load_component(
+            "evidence_bundle/P01_Evidence_Bundle.py",
+            "p01_runtime_evidence_bundle",
+        )
+        credentialed = bundle_mod.collect_credentialed_paths(
+            evidence_dir,
+            evidence_run_label,
+        )
+        if not credentialed:
+            raise RuntimeErrorSafe(
+                "no credentialed evidence files matched the requested run"
+            )
+        bindings = {
+            "selection_mode": "explicit_paths",
+            "network_sha256": digest_file(network_path) if network_path.is_file() else None,
+            "full_target_sha256": [
+                digest_file(path) for path in credentialed if path.is_file()
+            ],
+            "asset_resolver_sha256": (
+                digest_file(asset_resolver_path)
+                if asset_resolver_path is not None and asset_resolver_path.is_file()
+                else None
+            ),
+            "assessment_manifest_sha256": (
+                digest_file(manifest_path)
+                if manifest_path is not None and manifest_path.is_file()
+                else None
+            ),
+        }
+        selection_mode = "explicit_paths"
 
     bundle_mod = _load_component(
         "evidence_bundle/P01_Evidence_Bundle.py",
         "p01_runtime_evidence_bundle",
     )
-    credentialed = bundle_mod.collect_credentialed_paths(
-        evidence_dir,
-        evidence_run_label,
-    )
-    if not credentialed:
-        raise RuntimeErrorSafe("no credentialed evidence files matched the requested run")
 
     output = workspace / "bundle" / (
         f"{safe_label(state['assessment_id'], 'assessment_id')}_"
@@ -2195,10 +2449,10 @@ def export_bundle(
             assessment_id=state["assessment_id"],
             run_id=state["run_id"],
             node_id=state["node_id"],
-            network_path=network,
+            network_path=network_path,
             credentialed_paths=credentialed,
             manifest_path=manifest_path,
-            asset_resolver_path=asset_resolver,
+            asset_resolver_path=asset_resolver_path,
             require_evidence_sidecars=require_sidecars,
         )
         validation = bundle_mod.validate_bundle(output)
@@ -2206,28 +2460,48 @@ def export_bundle(
         step["status"] = "failed"
         step["failed_at_utc"] = utc_now_iso()
         step["last_error"] = str(exc)[:1200]
+        step["selection_mode"] = selection_mode
         _append_event(state, "export", "failed", {"error": str(exc)[:500]})
         _write_state(workspace, state)
         raise RuntimeErrorSafe(str(exc)) from exc
 
+    if not bool(validation.get("valid")):
+        step["status"] = "failed"
+        step["failed_at_utc"] = utc_now_iso()
+        step["last_error"] = "Evidence Bundle validation did not return valid=true"
+        step["selection_mode"] = selection_mode
+        _append_event(state, "export", "failed", {"error": step["last_error"]})
+        _write_state(workspace, state)
+        raise RuntimeErrorSafe(step["last_error"])
+
     inputs: Dict[str, Any] = {
-        "network_discovery": _artifact_ref(network),
+        "selection_mode": selection_mode,
+        "network_discovery": _artifact_ref(network_path),
         "credentialed_evidence": [_artifact_ref(path) for path in credentialed],
+        "input_bindings": bindings,
     }
+    if full_job_for_binding is not None:
+        inputs["credentialed_execution_full_job"] = _artifact_ref(
+            full_job_for_binding
+        )
     if manifest_path:
         inputs["assessment_manifest"] = _artifact_ref(manifest_path)
-    if asset_resolver:
-        inputs["asset_resolver"] = _artifact_ref(asset_resolver)
+    if asset_resolver_path:
+        inputs["asset_resolver"] = _artifact_ref(asset_resolver_path)
 
     step.clear()
     step.update({
         "status": "completed",
         "completed_at_utc": utc_now_iso(),
         "managed_by": VERSION,
+        "selection_mode": selection_mode,
         "source_sidecars_required": bool(require_sidecars),
         "input_count": 1 + len(credentialed)
         + (1 if manifest_path else 0)
-        + (1 if asset_resolver else 0),
+        + (1 if asset_resolver_path else 0),
+        "network_activity_performed": False,
+        "secret_resolution": False,
+        "authentication_attempts": False,
     })
 
     state["artifacts"]["export_inputs"] = inputs
@@ -2242,6 +2516,7 @@ def export_bundle(
         "artifact_count": result["artifact_count"],
         "credentialed_evidence_count": result["credentialed_evidence_count"],
         "validated": bool(validation.get("valid")),
+        "selection_mode": selection_mode,
     }
     _append_event(
         state,
@@ -2250,11 +2525,16 @@ def export_bundle(
         {
             "bundle_id": result["bundle_id"],
             "artifact_count": result["artifact_count"],
+            "selection_mode": selection_mode,
         },
     )
     _write_state(workspace, state)
     return {
         "status": "completed",
+        "selection_mode": selection_mode,
+        "network_activity_performed": False,
+        "secret_resolution_performed": False,
+        "authentication_attempts_performed": False,
         **result,
         "validation": validation,
     }
@@ -2543,11 +2823,11 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
 
     export_p = sub.add_parser(
         "export",
-        help="Create the validated .p01bundle from existing evidence",
+        help="Create a validated .p01bundle from workspace state or explicit evidence paths",
     )
     export_p.add_argument("--workspace", required=True)
-    export_p.add_argument("--network", required=True)
-    export_p.add_argument("--evidence-dir", required=True)
+    export_p.add_argument("--network")
+    export_p.add_argument("--evidence-dir")
     export_p.add_argument("--evidence-run-label")
     export_p.add_argument("--asset-resolver")
     export_p.add_argument("--manifest")
@@ -2797,8 +3077,8 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
         if args.command == "export":
             result = export_bundle(
                 workspace=Path(args.workspace),
-                network=Path(args.network),
-                evidence_dir=Path(args.evidence_dir),
+                network=Path(args.network) if args.network else None,
+                evidence_dir=Path(args.evidence_dir) if args.evidence_dir else None,
                 evidence_run_label=args.evidence_run_label,
                 asset_resolver=Path(args.asset_resolver) if args.asset_resolver else None,
                 manifest=Path(args.manifest) if args.manifest else None,
@@ -2810,6 +3090,15 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
             print(f"Bundle: {result.get('bundle_path') or result.get('bundle')}")
             print(f"Bundle ID: {result.get('bundle_id')}")
             print(f"SHA256: {result.get('bundle_sha256')}")
+            print(f"Selection mode: {result.get('selection_mode')}")
+            print(f"Artifacts: {result.get('artifact_count')}")
+            print(
+                "Credentialed evidence: "
+                f"{result.get('credentialed_evidence_count')}"
+            )
+            print("Network activity performed: false")
+            print("Secret resolution performed: false")
+            print("Authentication attempts performed: false")
             return 0
 
         if args.command == "upload":

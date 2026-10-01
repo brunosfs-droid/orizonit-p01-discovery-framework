@@ -1,10 +1,10 @@
-# Cancã Portable Discovery Node — v0.5e.4
+# Cancã Portable Discovery Node — v0.5e.5
 
 The portable runtime is the first unified operator workflow for the Cancã Discovery Node.
 
 It is intentionally **portable-first**: no Windows service or systemd installation is required.
 
-## Scope of v0.5e.4
+## Scope of v0.5e.5
 
 Implemented:
 
@@ -22,11 +22,12 @@ Implemented:
 - gated live **AUTH-only** execution with explicit authorization acknowledgement;
 - gated live **FULL enrichment** after successful AUTH validation;
 - managed offline **Asset Resolver** consuming only the workspace Network Discovery + recorded FULL target evidence;
+- workspace-driven **Evidence Bundle export** derived from validated runtime state with no manual evidence paths required;
 - resume guards that prevent silent re-scan/re-plan/re-preview/re-auth/re-full/re-resolve/re-export/re-upload of completed steps.
 
-Still separate after v0.5e.4:
+Still explicit after v0.5e.5:
 
-- Evidence Bundle export remains an explicit operator command, although its implementation is already runtime-managed.
+- Connected upload remains an explicit operator command because server URL and mTLS material are transport inputs.
 
 ## Workspace
 
@@ -85,7 +86,7 @@ python .\runtime\P01_Discovery_Node.py doctor `
   --client-key C:\P01\pki-v05d-r1\p01-mgmt01.key
 ```
 
-Doctor performs no network activity in v0.5e.4.
+Doctor performs no network activity in v0.5e.5.
 
 ## Init
 
@@ -198,6 +199,21 @@ The runtime selects the Network Discovery artifact from state and **only** the p
 
 The existing Asset Resolver v0.4c.0 runs offline/read-only and writes JSON + SHA256 under `resolved`. It performs no network access, secret resolution or authentication. A repeated `run` returns `already_complete`; `--force-reresolve` is refused once downstream bundle/upload steps are complete.
 
+## Workspace-driven Evidence Bundle export
+
+After `asset_resolver: completed`, the normal export no longer requires artifact paths:
+
+```powershell
+python .\runtime\P01_Discovery_Node.py export `
+  --workspace C:\Canca\runs\P01LAB-CTX-R1\P01LAB-RUNTIME-R3
+```
+
+The runtime derives Network Discovery, the EXEC-FULL aggregate job, exactly the collected target evidence referenced by that job, the completed Asset Resolver artifact, and the Assessment Manifest from workspace state. Every workspace evidence input is hash/sidecar validated before packaging.
+
+AUTH-only target files and unrelated JSONs in the evidence directory are never selected by workspace-driven export.
+
+Explicit-path export remains available for backward compatibility.
+
 ## Status
 
 ```powershell
@@ -207,7 +223,7 @@ python .\runtime\P01_Discovery_Node.py status `
 
 ## Export existing evidence
 
-Explicit export can still package validated workspace or previously collected evidence:
+Legacy explicit-path export can still package previously collected evidence:
 
 ```powershell
 python .\runtime\P01_Discovery_Node.py export `
@@ -238,4 +254,4 @@ The private-key path is used for the current invocation only and is not written 
 
 The runtime never silently repeats a completed bundle build or completed upload.
 
-Asset Resolver now follows the same checkpoint/resume discipline. Evidence Bundle export and upload already preserve no-silent-repeat behavior.
+Asset Resolver and workspace-driven Evidence Bundle export now follow the same checkpoint/resume discipline. Connected upload preserves no-silent-repeat behavior.
