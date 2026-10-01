@@ -210,25 +210,27 @@ O LAB inicial usará P01-MGMT01 como Discovery Node por possuir acesso ao segmen
 - retries limitados apenas a falhas de transporte;
 - nenhum retry automático de 4xx/TLS-auth failures;
 - no server-initiated arbitrary execution.
-- **Status:** CANDIDATE implementado; primeiro gate será mTLS local usando o bundle P01LAB já homologado, seguido por client/server em hosts distintos.
+- **Status:** LAB VALIDATED. Local R1 validou trust/mTLS/Node-ID/spoof/untrusted-client/idempotência. Separate-host R2 validou P01-MGMT01 (192.168.100.20) -> P01-LNX-RKY01 (192.168.100.50), FQDN server validation, semantic_match=true e cross-host idempotency.
 
-### v0.5e — Optional Installed Service
-- portable remains default for one-shot assessments;
-- optional Windows/Linux service for recurring assessments.
-
-
-### v0.5d — Runtime validation status
-- **Status:** LAB VALIDATED.
-- Local R1: mTLS trust, mandatory client cert, Node-ID binding, spoof rejection, untrusted-client rejection, 201/imported and 200/already_imported.
-- Separate-host R2: P01-MGMT01 (192.168.100.20) -> P01-LNX-RKY01 (192.168.100.50) via HTTPS/mTLS, FQDN server validation, semantic_match=true and cross-host idempotency.
-
-### v0.5e — Portable Discovery Node Runtime
+### v0.5e.0 — Portable Discovery Node Runtime Foundation
 - portable-first Windows/Linux runtime;
-- per-run workspace and state machine;
-- doctor/init/status;
-- then orchestrate discovery -> planner -> executor -> bundle -> export/upload;
-- no persistent service required.
-- **Status:** NEXT. Issue #60.
+- `doctor`, `init`, `status`, `export` e `upload`;
+- workspace isolado por assessment/run;
+- state/config JSON + SHA256;
+- checkpoints determinísticos e auditáveis;
+- Evidence Bundle v0.5a e uploader mTLS v0.5d reutilizados sem pipeline paralelo;
+- completed bundle/upload não são repetidos silenciosamente;
+- private-key path é invocation-only e não entra no state;
+- Network Discovery/Planner/Executor/Asset Resolver permanecem `external_required` nesta primeira versão.
+- **Status:** CANDIDATE em CI. Issue #60.
+
+### v0.5e.1 — Unified Discovery Orchestration
+- incorporar Network Discovery -> Planner -> Executor -> Asset Resolver à mesma state machine;
+- explicit authorized-scan acknowledgement;
+- safe resume sem repetir autenticações concluídas;
+- artifacts/hashes propagados entre etapas;
+- `run` como fluxo operacional principal.
+- **Status:** planned após LAB v0.5e.0.
 
 ### v0.5f — Optional Installed Service/Agent
 - reuse the same portable runtime core;

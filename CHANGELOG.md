@@ -96,6 +96,42 @@ All notable changes to the P01 Discovery Framework are documented here.
 - health endpoint
 - unsupported content-type rejection
 
+## [0.5e.0-candidate] - 2026-09-30
+
+### Added
+- portable-first Discovery Node runtime entry point
+- `doctor`, `init`, `status`, `export` and `upload`
+- isolated per-assessment/per-run workspace
+- SHA256-protected runtime state and runtime config
+- deterministic step/checkpoint model
+- artifact hash tracking and bounded event history
+- wrapper around the validated v0.5a Evidence Bundle
+- wrapper around the validated v0.5d connected uploader
+- portable runtime state JSON schema
+
+### Safety
+- runtime state/config reject plaintext password fields, Secret Provider locators and private-key material
+- doctor performs no network activity
+- active discovery/authentication orchestration is explicitly deferred to v0.5e.1
+- completed bundle creation is never repeated silently
+- completed connected upload is never repeated silently
+- private-key path is used only for the upload invocation and is not stored in runtime state
+- explicit `--force-rebuild` / `--force-resend` required to repeat completed transport/package work
+
+### Tests
+- workspace creation with spaces/cross-platform path handling
+- init idempotency
+- state/config SHA256 integrity
+- state tamper detection
+- secret-material guard
+- export resume behavior
+- connected-upload no-silent-repeat behavior
+- doctor no-network invariant
+
+### Next
+- P01LAB runtime gate using existing validated evidence and v0.5d server
+- v0.5e.1 orchestration of Network Discovery -> Planner -> Executor -> Asset Resolver
+
 ## [0.5d.0-candidate] - 2026-09-30
 
 ### Added

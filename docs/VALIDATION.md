@@ -327,3 +327,25 @@ Separate-host R2:
 - server observed source 192.168.100.20;
 - semantic_match=true;
 - same .p01bundle and same server-side ingestion/Asset Resolver pipeline reused.
+
+
+## Portable Discovery Node Runtime v0.5e.0
+
+Candidate acceptance:
+
+- same entry point runs on Windows and Linux with Python 3.10+;
+- `doctor` performs no customer-network scan, secret resolution or authentication;
+- `init` creates an isolated assessment/run workspace;
+- runtime config and state each have SHA256 sidecars;
+- state/config contain no plaintext password, Secret Provider locator or private-key material;
+- `status` detects state-sidecar tampering;
+- existing evidence can be wrapped into the validated v0.5a `.p01bundle`;
+- source evidence sidecars are required by default;
+- completed bundle export is not silently rebuilt;
+- completed connected upload is not silently repeated;
+- `--force-rebuild` and `--force-resend` are explicit operator actions;
+- client private-key path is invocation-only and is not persisted in runtime state;
+- connected upload continues to use the v0.5d HTTPS/mTLS uploader and same server ingestion pipeline;
+- Network Discovery, Planner, Executor and Asset Resolver remain `external_required` in v0.5e.0 and are not run automatically.
+
+Initial P01LAB gate: doctor -> init -> status -> export existing validated evidence -> status -> upload to the existing Rocky server -> status, then rerun status/upload to prove resume protection.
