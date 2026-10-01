@@ -267,6 +267,17 @@ O LAB inicial usará P01-MGMT01 como Discovery Node por possuir acesso ao segmen
 - checkpoint `preview_completed` não é confundido com autenticação real concluída;
 - zero secret resolution e zero authentication attempts;
 - repeat dry-run retorna `already_complete`.
+- **Status:** LAB VALIDATED no P01LAB-RUNTIME-R3. 5 assets descobertos, 4 adapter candidates, 4 actions ready, JSON/SHA256 no workspace e resume `already_complete` confirmados.
+
+### v0.5e.3.1 — Managed Credentialed Executor AUTH-only
+- continua o workspace `preview_completed` sem refazer discovery/planning;
+- live execution exige `--execute --auth-only --ack-authorized-access`;
+- Credential Plan, dry-run preview e Credential Profiles são revalidados antes de autenticar;
+- executor existente permanece sequencial (`concurrency=1`) e preserva failure budget/circuit breaker;
+- AUTH evidence por target + aggregate job permanece JSON/SHA256;
+- checkpoint `auth_validated` não é confundido com FULL enrichment;
+- repeat AUTH-only retorna `already_complete` sem nova autenticação;
+- falha/parcial exige retry explícito com `--force-auth-retry`.
 - **Status:** CANDIDATE / CI gate pending; P01LAB validation next.
 
-Follow-up: live credentialed execution e Asset Resolver serão internalizados em incrementos separados.
+Follow-up: FULL credentialed enrichment e Asset Resolver serão internalizados em incrementos separados.

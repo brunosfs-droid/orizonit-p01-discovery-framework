@@ -64,7 +64,8 @@
         "server_initiated_remote_execution",
         "active_discovery_managed_in_this_version",
         "credential_planning_managed_in_this_version",
-        "credentialed_execution_dry_run_managed_in_this_version"
+        "credentialed_execution_dry_run_managed_in_this_version",
+        "credentialed_execution_auth_only_managed_in_this_version"
       ],
       "properties": {
         "plaintext_credentials_persisted": { "const": false },
@@ -73,7 +74,8 @@
         "server_initiated_remote_execution": { "const": false },
         "active_discovery_managed_in_this_version": { "type": "boolean" },
         "credential_planning_managed_in_this_version": { "type": "boolean" },
-        "credentialed_execution_dry_run_managed_in_this_version": { "type": "boolean" }
+        "credentialed_execution_dry_run_managed_in_this_version": { "type": "boolean" },
+        "credentialed_execution_auth_only_managed_in_this_version": { "type": "boolean" }
       },
       "additionalProperties": false
     },
