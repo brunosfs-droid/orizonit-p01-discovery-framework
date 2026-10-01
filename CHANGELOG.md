@@ -1,6 +1,14 @@
 ## [Unreleased]
 
 ### Added
+- Portable runtime v0.5e.3.1 gated AUTH-only credentialed execution after a validated dry-run preview, with explicit authorization acknowledgement, plan/preview/profile integrity checks and no-silent-retry safeguards.
+
+### Validated
+- Portable runtime v0.5e.3 Executor dry-run in P01LAB-RUNTIME-R3: 5 assets discovered, 4 adapter candidates, 4 ready actions, JSON/SHA256 evidence and resume `already_complete`.
+
+## [Unreleased]
+
+### Added
 - Portable runtime v0.5e.2 managed Credential Planner stage after Network Discovery, with workspace-owned plan JSON/SHA256, resume protection and zero-auth planning semantics.
 
 ### Validated
