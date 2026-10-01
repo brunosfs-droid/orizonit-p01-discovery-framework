@@ -1,7 +1,12 @@
-# Orizon IT — P01 Discovery Framework
+# Cancã — Open Infrastructure Assessment & Intelligence Platform
 
-> **Produto 01 — Infrastructure Assessment**  
-> Plataforma em desenvolvimento para discovery, inventário, análise de configuração, assessment e evidência técnica de ambientes de infraestrutura.
+![Cancã — identidade visual conceito v1](docs/branding/canca-brand-concept-v1.jpg)
+
+> **Orizon IT — Produto 01 (P01)**  
+> **Cancã — Open Infrastructure Assessment & Intelligence Platform**  
+> Plataforma open-source em desenvolvimento para discovery, inventário, análise de configuração, assessment, evidência técnica e inteligência de infraestrutura.
+
+**Cancã** é o nome oficial do produto. O identificador **P01** permanece temporariamente em nomes de arquivos, schemas, headers e artefatos internos durante a fase Technical Alpha para preservar compatibilidade e rastreabilidade dos testes. A migração dos identificadores internos será feita de forma controlada, sem quebrar contratos já validados.
 
 ## Status de engenharia
 
@@ -162,6 +167,17 @@ O **Google Drive é a fonte de verdade de produto, governança e evidência**: C
 
 Não devem existir duas cópias editáveis concorrentes do mesmo código. Veja [docs/SOURCE_OF_TRUTH.md](docs/SOURCE_OF_TRUTH.md).
 
+
+## Licenciamento e comunidade
+
+Cancã adota a **GNU Affero General Public License v3.0 (AGPLv3)** como licença do projeto open-source.
+
+A estratégia definida pela Orizon IT é construir o Cancã como base tecnológica de um ecossistema comercial sustentado por suporte, assessments, serviços profissionais, integrações, treinamento, serviços gerenciados e, futuramente, SaaS.
+
+Contribuições externas serão regidas por um **Contributor License Agreement (CLA) da Orizon IT**. O texto final do CLA e a política pública de contribuição serão fechados antes do Community Beta.
+
+A marca **Cancã**, a identidade visual e os sinais distintivos da **Orizon IT** não são licenciados automaticamente pela AGPLv3. Uma política de uso de marca será publicada antes da abertura pública do projeto.
+
 ## Segurança
 
 - nunca commitar credenciais, tokens, chaves privadas ou outputs reais de clientes;
@@ -191,4 +207,5 @@ Mais detalhes: [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ---
 
+**Cancã — Open Infrastructure Assessment & Intelligence Platform**  
 **Orizon IT — Tecnologia que transforma negócios.**
