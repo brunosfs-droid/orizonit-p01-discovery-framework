@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.5d.0-lab-validated] - 2026-09-30
+
+### Validated
+- local mTLS server/client authentication
+- server certificate validation and client certificate trust enforcement
+- node identity binding between certificate SAN, X-P01-Node-ID and bundle node_id
+- missing/untrusted client certificates rejected before HTTP ingestion
+- forged node header rejected with HTTP 403
+- first connected upload -> 201/imported
+- repeated upload -> 200/already_imported
+- cross-host Windows Discovery Node -> Rocky Linux ingestion server over HTTPS/mTLS
+- semantic_match=true using the same .p01bundle and server ingestion pipeline
+
+### Next
+- v0.5e portable Discovery Node runtime and unified operator workflow
+
+
 All notable changes to the P01 Discovery Framework are documented here.
 
 ## [Unreleased]
