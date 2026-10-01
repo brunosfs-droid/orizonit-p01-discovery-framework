@@ -44,8 +44,10 @@ class PortableRuntimeTests(unittest.TestCase):
             self.assertTrue(mod.verify_sidecar(workspace / mod.STATE_REL))
             self.assertTrue(mod.verify_sidecar(workspace / mod.CONFIG_REL))
             state = mod._load_state(workspace)
+            self.assertEqual(state["steps"]["network_discovery"]["status"], "pending")
             self.assertEqual(state["steps"]["evidence_bundle"]["status"], "pending")
             self.assertEqual(state["steps"]["upload"]["status"], "pending")
+            self.assertTrue(state["security"]["active_discovery_managed_in_this_version"])
             self.assertFalse(state["security"]["plaintext_credentials_persisted"])
 
     def test_init_is_idempotent_for_same_identity(self):
@@ -74,18 +76,18 @@ class PortableRuntimeTests(unittest.TestCase):
             with self.assertRaises(mod.RuntimeErrorSafe):
                 mod._load_state(workspace)
 
-    def test_status_next_action_export_then_upload(self):
+    def test_status_next_action_starts_with_managed_discovery(self):
         with tempfile.TemporaryDirectory() as td:
             result = mod.init_workspace(pathlib.Path(td), "A1", "R1", "N1")
             workspace = pathlib.Path(result["workspace"])
             current = mod.status(workspace)
-            self.assertEqual(current["next_action"], "export")
+            self.assertEqual(current["next_action"], "run_network_discovery")
 
             state = mod._load_state(workspace)
-            state["steps"]["evidence_bundle"] = {"status": "completed"}
+            state["steps"]["network_discovery"] = {"status": "completed"}
             mod._write_state(workspace, state)
             current = mod.status(workspace)
-            self.assertEqual(current["next_action"], "upload_or_copy_bundle_offline")
+            self.assertEqual(current["next_action"], "credential_plan_external")
 
     def _synthetic_inputs(self, td):
         td = pathlib.Path(td)
@@ -140,6 +142,180 @@ class PortableRuntimeTests(unittest.TestCase):
             sidecar=False,
         )
         return network, evidence_dir, cred, resolver, manifest
+
+    def _manifest_for_discovery(self, td, authorized=None, excludes=None):
+        td = pathlib.Path(td)
+        manifest = td / "assessment-discovery.json"
+        return write_json(
+            manifest,
+            {
+                "schema_version": "0.4b.6",
+                "assessment_id": "A1",
+                "authorized_scopes": authorized or ["192.0.2.0/24"],
+                "exclude_scopes": excludes or [],
+                "domains": [],
+                "allowed_protocols": ["ssh", "winrm"],
+                "safety_policy": {
+                    "default_concurrency": 1,
+                    "max_actions": 25,
+                    "require_authorized_ack": True,
+                    "auto_expand_scope": False,
+                },
+            },
+            sidecar=False,
+        )
+
+    def _fake_scanner(self, calls):
+        import ipaddress
+
+        def resolve_scope(targets, excludes):
+            target_ips = []
+            for raw in targets:
+                net = ipaddress.ip_network(raw, strict=False)
+                target_ips.extend(str(ip) for ip in net.hosts())
+                if net.prefixlen == 32:
+                    target_ips.append(str(net.network_address))
+            excluded = set()
+            for raw in excludes:
+                net = ipaddress.ip_network(raw, strict=False)
+                excluded.update(str(ip) for ip in net.hosts())
+                if net.prefixlen == 32:
+                    excluded.add(str(net.network_address))
+            values = sorted(set(target_ips) - excluded, key=ipaddress.ip_address)
+            return values, sorted(excluded, key=ipaddress.ip_address)
+
+        def main(argv):
+            calls["runs"] += 1
+            output_dir = pathlib.Path(argv[argv.index("--output-dir") + 1])
+            run_label = argv[argv.index("--run-label") + 1]
+            targets = [argv[i + 1] for i, value in enumerate(argv) if value == "--target"]
+            effective, _ = resolve_scope(
+                targets,
+                [argv[i + 1] for i, value in enumerate(argv) if value == "--exclude"],
+            )
+            path = output_dir / f"P01-Network-Discovery_TEST_{run_label}.json"
+            write_json(
+                path,
+                {
+                    "metadata": {
+                        "scanner_name": "P01-Network-Discovery-Scanner",
+                        "scanner_version": "0.4.1",
+                        "schema_version": "0.4",
+                        "run_label": run_label,
+                    },
+                    "summary": {"hosts_discovered": len(effective)},
+                    "assets": [{"ip": ip} for ip in effective],
+                },
+                sidecar=True,
+            )
+            return 0
+
+        return types.SimpleNamespace(resolve_scope=resolve_scope, main=main)
+
+    def test_managed_discovery_requires_ack_and_authorized_scope(self):
+        with tempfile.TemporaryDirectory() as td:
+            manifest = self._manifest_for_discovery(td)
+            init = mod.init_workspace(
+                pathlib.Path(td) / "runs",
+                "A1",
+                "R1",
+                "NODE-01",
+                manifest=manifest,
+            )
+            workspace = pathlib.Path(init["workspace"])
+            calls = {"runs": 0}
+            fake = self._fake_scanner(calls)
+
+            with mock.patch.object(mod, "_load_component", return_value=fake):
+                with self.assertRaises(mod.RuntimeErrorSafe):
+                    mod.run_network_discovery(
+                        workspace,
+                        ["192.0.2.0/30"],
+                        [],
+                        ack_authorized_scan=False,
+                    )
+                with self.assertRaises(mod.RuntimeErrorSafe):
+                    mod.run_network_discovery(
+                        workspace,
+                        ["198.51.100.0/30"],
+                        [],
+                        ack_authorized_scan=True,
+                    )
+            self.assertEqual(calls["runs"], 0)
+
+    def test_managed_discovery_is_resume_safe_and_honors_manifest_excludes(self):
+        with tempfile.TemporaryDirectory() as td:
+            manifest = self._manifest_for_discovery(
+                td,
+                authorized=["192.0.2.0/29"],
+                excludes=["192.0.2.2/32"],
+            )
+            init = mod.init_workspace(
+                pathlib.Path(td) / "runs",
+                "A1",
+                "R1",
+                "NODE-01",
+                manifest=manifest,
+            )
+            workspace = pathlib.Path(init["workspace"])
+            calls = {"runs": 0}
+            fake = self._fake_scanner(calls)
+
+            with mock.patch.object(mod, "_load_component", return_value=fake):
+                first = mod.run_network_discovery(
+                    workspace,
+                    ["192.0.2.0/29"],
+                    [],
+                    ack_authorized_scan=True,
+                )
+                second = mod.run_network_discovery(
+                    workspace,
+                    ["192.0.2.0/29"],
+                    [],
+                    ack_authorized_scan=True,
+                )
+
+            self.assertEqual(first["status"], "completed")
+            self.assertEqual(second["status"], "already_complete")
+            self.assertTrue(first["network_activity_performed"])
+            self.assertFalse(second["network_activity_performed"])
+            self.assertEqual(calls["runs"], 1)
+
+            state = mod._load_state(workspace)
+            self.assertEqual(state["steps"]["network_discovery"]["status"], "completed")
+            artifact = state["artifacts"]["network_discovery"]
+            self.assertIn("192.0.2.2/32", artifact["excludes"])
+            self.assertEqual(mod.status(workspace)["next_action"], "credential_plan_external")
+
+    def test_force_rescan_refused_after_downstream_bundle_completion(self):
+        with tempfile.TemporaryDirectory() as td:
+            manifest = self._manifest_for_discovery(td)
+            init = mod.init_workspace(
+                pathlib.Path(td) / "runs",
+                "A1",
+                "R1",
+                "NODE-01",
+                manifest=manifest,
+            )
+            workspace = pathlib.Path(init["workspace"])
+            state = mod._load_state(workspace)
+            state["steps"]["network_discovery"] = {"status": "completed"}
+            state["steps"]["evidence_bundle"] = {"status": "completed"}
+            state["artifacts"]["network_discovery"] = {
+                "path": "missing.json",
+                "sha256": "0" * 64,
+            }
+            mod._write_state(workspace, state)
+
+            with self.assertRaises(mod.RuntimeErrorSafe) as ctx:
+                mod.run_network_discovery(
+                    workspace,
+                    ["192.0.2.0/30"],
+                    [],
+                    ack_authorized_scan=True,
+                    force_rescan=True,
+                )
+            self.assertIn("downstream completed steps", str(ctx.exception))
 
     def test_export_wraps_existing_bundle_and_is_resume_safe(self):
         with tempfile.TemporaryDirectory() as td:

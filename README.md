@@ -34,7 +34,7 @@
 - **Offline Import:** 0.5b.0 — LAB VALIDATED; import idempotente, raw evidence preservation, receipt JSON/SHA256 e server-side Asset Resolver replay com semantic_match=true.
 - **Central Ingestion API:** 0.5c.1 — LAB VALIDATED; localhost ingestion, idempotência, status lookup, semantic equivalence, negative gates e connection hygiene.
 - **Connected Discovery Node Upload:** 0.5d.0 — LAB VALIDATED; HTTPS/mTLS, identidade do node ligada ao certificado e ao bundle, upload outbound, idempotência e transporte cross-host Windows→Linux validados.
-- **Portable Discovery Node Runtime:** 0.5e.0 — CANDIDATE; `doctor/init/status/export/upload`, workspace por assessment/run, state/checkpoints com SHA256 e proteção contra reexecução silenciosa de etapas concluídas.
+- **Portable Discovery Node Runtime:** 0.5e.1 — CANDIDATE; `doctor/init/run/status/export/upload`, Network Discovery gerenciado com autorização por Assessment Manifest, workspace por assessment/run, state/checkpoints SHA256 e resume guards.
 - **Reporting Engine:** planejado após Network Discovery + Asset Resolver.
 
 > Saídas reais de discovery devem ser tratadas como **CONFIDENCIAL — DADOS DO CLIENTE**.
@@ -113,15 +113,15 @@ O scanner **descobre**. Os collectors **aprofundam**. O Asset Resolver **dedupli
 
 ## Uso — Portable Discovery Node v0.5e
 
-A v0.5e.0 introduz o primeiro entry point unificado e portable-first:
+A v0.5e.1 mantém o entry point unificado e passa a gerenciar Network Discovery diretamente:
 
 ```powershell
 python .\runtime\P01_Discovery_Node.py doctor --workspace-root C:\Canca\runs
 ```
 
-Em seguida, o operador cria um workspace isolado com `init`, consulta checkpoints com `status`, gera o mesmo `.p01bundle` homologado com `export` e pode enviá-lo pelo transporte mTLS v0.5d com `upload`.
+Em seguida, o operador cria um workspace isolado com `init`, executa Network Discovery autorizado com `run`, consulta checkpoints com `status`, gera o mesmo `.p01bundle` homologado com `export` e pode enviá-lo pelo transporte mTLS v0.5d com `upload`.
 
-Network Discovery, Planner, Executor e Asset Resolver entram na orquestração automática somente na v0.5e.1; em v0.5e.0 continuam como evidências externas já revisadas.
+Planner, Executor e Asset Resolver ainda permanecem externos nesta iteração e serão internalizados incrementalmente.
 
 Veja [runtime/README.md](runtime/README.md).
 

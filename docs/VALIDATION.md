@@ -349,3 +349,18 @@ Candidate acceptance:
 - Network Discovery, Planner, Executor and Asset Resolver remain `external_required` in v0.5e.0 and are not run automatically.
 
 Initial P01LAB gate: doctor -> init -> status -> export existing validated evidence -> status -> upload to the existing Rocky server -> status, then rerun status/upload to prove resume protection.
+
+
+## Portable Discovery Node v0.5e.1
+
+Candidate acceptance:
+
+- `run` refuses active discovery without `--ack-authorized-scan`;
+- effective target IPs must all fall inside Assessment Manifest `authorized_scopes`;
+- manifest `exclude_scopes` are always honored;
+- managed discovery writes JSON + SHA256 inside the workspace;
+- state transitions `network_discovery: pending -> running -> completed`;
+- no credential resolution or authentication occurs;
+- repeat `run` after successful completion returns `already_complete` and performs zero network activity;
+- explicit force-rescan is rejected if downstream completed steps would become stale;
+- P01LAB acceptance: authorized `192.168.100.0/24` scan completes and second identical runtime command performs no second scan.

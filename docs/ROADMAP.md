@@ -236,3 +236,16 @@ O LAB inicial usará P01-MGMT01 como Discovery Node por possuir acesso ao segmen
 - reuse the same portable runtime core;
 - add service lifecycle, scheduling and unattended execution policy.
 - **Status:** planned.
+
+
+### v0.5e.1 — Managed Network Discovery
+- Portable runtime `run` command controls Network Discovery;
+- explicit authorized-scan acknowledgement;
+- effective IPv4 scope constrained by Assessment Manifest `authorized_scopes`;
+- manifest excludes automatically applied;
+- output JSON/SHA256 stored under the run workspace;
+- repeat run returns `already_complete` without a second scan;
+- force-rescan blocked when downstream completed artifacts would become stale.
+- **Status:** CANDIDATE / CI gate pending; P01LAB runtime validation next.
+
+Follow-up: Credential Planner, Executor and Asset Resolver are internalized in separate gated increments.

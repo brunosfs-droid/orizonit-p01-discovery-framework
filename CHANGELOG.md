@@ -96,6 +96,30 @@ All notable changes to the P01 Discovery Framework are documented here.
 - health endpoint
 - unsupported content-type rejection
 
+## [0.5e.1-candidate] - 2026-09-30
+
+### Added
+- managed Network Discovery stage in the Portable Discovery Node runtime
+- `run` command with scanner profile/ports/timeout/workers/max-hosts controls
+- explicit `--ack-authorized-scan` gate
+- Assessment Manifest authorized-scope enforcement
+- automatic application of manifest exclude scopes
+- Network Discovery evidence stored inside the run workspace
+- state/hash checkpoint for the managed discovery artifact
+- resume guard: completed discovery returns `already_complete` with zero second scan
+- explicit `--force-rescan` guarded against stale downstream completed steps
+
+### Security
+- no credential resolution or authentication in managed discovery
+- no scan outside effective manifest-authorized IPv4 scope
+- no dynamic scope expansion
+- no server-initiated remote execution
+- manifest authorization remains required before active discovery
+
+### Next
+- P01LAB runtime validation of managed Network Discovery on 192.168.100.0/24
+- then internalize Credential Planner as the next managed stage
+
 ## [0.5e.0-candidate] - 2026-09-30
 
 ### Added
