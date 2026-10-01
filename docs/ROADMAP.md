@@ -301,6 +301,16 @@ O LAB inicial usará P01-MGMT01 como Discovery Node por possuir acesso ao segmen
 - checkpoint `asset_resolver: completed` inclui contagens e bindings dos inputs;
 - repeat resolver retorna `already_complete`;
 - `--force-reresolve` é bloqueado se Bundle/Upload já estiverem concluídos.
+- **Status:** LAB VALIDATED no P01LAB-RUNTIME-R3. 5 Network assets + 4 EXEC-FULL observations -> 5 logical assets, 0 unresolved, 0 ambiguous, 0 conflicts; JSON/SHA256 e resume `already_complete` confirmados.
+
+### v0.5e.5 — Workspace-driven Evidence Bundle
+- `export --workspace <path>` não exige paths de Network/evidence/resolver;
+- deriva inputs somente dos artifacts/checkpoints validados no state;
+- usa somente targets explicitamente referenciados pelo EXEC-FULL;
+- valida Network, FULL job, FULL targets e Asset Resolver por SHA256/sidecar;
+- preserva export explícito/manual para compatibilidade;
+- grava `selection_mode=workspace_state` e bindings exatos dos inputs;
+- repeat export retorna `already_complete` sem reconstrução.
 - **Status:** CANDIDATE / CI gate pending; P01LAB validation next.
 
-Follow-up: tornar o Evidence Bundle completamente workspace-driven no fluxo unificado e então validar export/upload end-to-end sem parâmetros de artefatos manuais.
+Follow-up: validar upload conectado end-to-end a partir do bundle workspace-driven e reduzir os últimos parâmetros operacionais do fluxo.
