@@ -3,9 +3,10 @@
 Data: 01/10/2026. Status: CANDIDATE; LAB Windows parcialmente comprovado.
 Baseline: portable runtime v0.5e.6 LAB VALIDATED; Issue #83.
 
-As 17 capturas do R1 comprovam completed-resume, progressão até export,
-grants separados e lock agente/portátil. Upload mTLS do novo run e os demais
-negativos continuam pendentes. Ver [registro de evidências](validation/OPTIONAL_AGENT_P01LAB_R1_v0.5f.0.md).
+As 22 capturas do R1 comprovam completed-resume, progressão até upload,
+FULL 5/5, receipt mTLS HTTP 201/semantic_match=true, grants separados e lock
+agente/portátil. Negativos, auditoria de journals e confirmação de logs do
+servidor continuam pendentes. Ver [registro de evidências](validation/OPTIONAL_AGENT_P01LAB_R1_v0.5f.0.md).
 
 ## Objetivo e limites
 
@@ -264,8 +265,9 @@ python agent/P01_Agent.py status --workspace $AgentWorkspace --policy $AgentPoli
 python runtime/P01_Discovery_Node.py status --workspace $AgentWorkspace --json
 ```
 
-O [registro R1](validation/OPTIONAL_AGENT_P01LAB_R1_v0.5f.0.md) contém o próximo
-comando mTLS com os caminhos usados anteriormente no LAB e verificação de existência.
+O [registro R1](validation/OPTIONAL_AGENT_P01LAB_R1_v0.5f.0.md) contém a prova mTLS
+concluída e o próximo bloco de testes de policy/journals. Não repetir os gates
+live concluídos para coletar esses negativos.
 
 ## Critério de aceite e evidências
 

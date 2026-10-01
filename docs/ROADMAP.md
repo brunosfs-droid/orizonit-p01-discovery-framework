@@ -238,9 +238,11 @@ O LAB inicial usará P01-MGMT01 como Discovery Node por possuir acesso ao segmen
 - **v0.5f.0:** CANDIDATE — cross-platform agent doctor/status/run-once,
   strict versioned default-deny policy, independent stage grants, shared OS lock,
   checkpoint integrity and sanitized JSON/SHA256 journal. No service installation.
-  Windows R1 partial evidence: completed-resume, progression through export,
-  separate grants and shared lock passed. Agent mTLS upload, journal audit and
-  remaining negatives pending; [evidence record](validation/OPTIONAL_AGENT_P01LAB_R1_v0.5f.0.md).
+  Windows R1 partial evidence: completed-resume, progression through upload,
+  FULL 5/5, separate grants, shared lock and real agent mTLS receipt passed.
+  Repeat returned already_complete with attempts=1. Server POST confirmation,
+  journal audit and remaining negatives pending;
+  [evidence record](validation/OPTIONAL_AGENT_P01LAB_R1_v0.5f.0.md).
 - **v0.5f.1:** planned — Windows Service lifecycle/install/uninstall/recovery.
 - **v0.5f.2:** planned — Linux/systemd lifecycle/install/uninstall/recovery.
 - **v0.5f.3:** planned — scheduling/restart/recovery hardening and soak.
