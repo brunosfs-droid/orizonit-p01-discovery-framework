@@ -76,18 +76,18 @@ class PortableRuntimeTests(unittest.TestCase):
             with self.assertRaises(mod.RuntimeErrorSafe):
                 mod._load_state(workspace)
 
-    def test_status_next_action_export_then_upload(self):
+    def test_status_next_action_starts_with_managed_discovery(self):
         with tempfile.TemporaryDirectory() as td:
             result = mod.init_workspace(pathlib.Path(td), "A1", "R1", "N1")
             workspace = pathlib.Path(result["workspace"])
             current = mod.status(workspace)
-            self.assertEqual(current["next_action"], "export")
+            self.assertEqual(current["next_action"], "run_network_discovery")
 
             state = mod._load_state(workspace)
-            state["steps"]["evidence_bundle"] = {"status": "completed"}
+            state["steps"]["network_discovery"] = {"status": "completed"}
             mod._write_state(workspace, state)
             current = mod.status(workspace)
-            self.assertEqual(current["next_action"], "upload_or_copy_bundle_offline")
+            self.assertEqual(current["next_action"], "credential_plan_external")
 
     def _synthetic_inputs(self, td):
         td = pathlib.Path(td)
