@@ -1371,7 +1371,9 @@ def run_credentialed_execution_auth_only(
         target_files.append(target_path)
 
     actions_total = int(summary.get("actions_total") or 0)
+    actions_ready = int(summary.get("actions_ready") or 0)
     completed = int(summary.get("completed") or 0)
+    skipped = int(summary.get("skipped") or 0)
     auth_successes = int(summary.get("authentication_successes") or 0)
     auth_failures = int(summary.get("authentication_failures") or 0)
     open_circuits = int(summary.get("open_credential_circuits") or 0)
@@ -1384,13 +1386,63 @@ def run_credentialed_execution_auth_only(
         "source_preview_sha256": preview_sha,
         "credential_profiles_sha256": current_profiles_sha,
         "actions_total": actions_total,
+        "actions_ready": actions_ready,
         "completed": completed,
+        "skipped": skipped,
         "authentication_successes": auth_successes,
         "authentication_failures": auth_failures,
         "open_credential_circuits": open_circuits,
         "target_evidence_count": len(target_files),
         "mode": "auth_only",
     }
+
+    auth_success = (
+        actions_total > 0
+        and actions_ready == actions_total
+        and completed == actions_total
+        and auth_successes == actions_total
+        and auth_failures == 0
+        and skipped == 0
+        and open_circuits == 0
+        and len(target_files) == actions_total
+    )
+    if not auth_success:
+        step.clear()
+        step.update({
+            "status": "failed",
+            "failed_at_utc": utc_now_iso(),
+            "managed_by": VERSION,
+            "mode": "auth_only",
+            "authorization_acknowledged": True,
+            "network_activity_performed": True,
+            "secret_resolution": True,
+            "authentication_attempts": True,
+            "actions_total": actions_total,
+            "actions_ready": actions_ready,
+            "completed": completed,
+            "skipped": skipped,
+            "authentication_successes": auth_successes,
+            "authentication_failures": auth_failures,
+            "open_credential_circuits": open_circuits,
+            "last_error": "AUTH-only execution completed with partial/failed target results",
+        })
+        _append_event(
+            state,
+            "credentialed_execution",
+            "failed",
+            {
+                "mode": "auth_only",
+                "actions_total": actions_total,
+                "completed": completed,
+                "authentication_failures": auth_failures,
+                "skipped": skipped,
+            },
+        )
+        _write_state(workspace, state)
+        raise RuntimeErrorSafe(
+            "AUTH-only execution produced partial/failed results; evidence was preserved. "
+            "Review it before an explicit --force-auth-retry."
+        )
 
     step.clear()
     step.update({
@@ -1403,6 +1455,7 @@ def run_credentialed_execution_auth_only(
         "secret_resolution": True,
         "authentication_attempts": True,
         "actions_total": actions_total,
+        "actions_ready": actions_ready,
         "completed": completed,
         "authentication_successes": auth_successes,
         "authentication_failures": auth_failures,
