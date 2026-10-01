@@ -517,3 +517,30 @@ Candidate acceptance:
 - runtime records workspace-state selection mode and exact input hashes;
 - repeated export returns `already_complete` without rebuilding;
 - manual explicit-path export remains backwards compatible.
+
+
+## Portable Discovery Node Runtime v0.5e.5 — P01LAB
+
+LAB VALIDATED on P01-MGMT01 using workspace `P01LAB-RUNTIME-R3`.
+
+Acceptance evidence:
+- workspace-driven export required only `export --workspace ...`;
+- bundle selection mode was `workspace_state`;
+- bundle contained 7 payload artifacts and 4 credentialed evidence files;
+- formal validation returned valid=true, verified_inventory_entries=8 and outer_sha256_verified=true;
+- internal inventory contained only the four EXEC-FULL target files, plus Network Discovery, Assessment Manifest and Asset Resolver;
+- no EXEC-AUTH target evidence was packaged;
+- state advanced to `evidence_bundle: completed`;
+- repeated export returned `already_complete` with the same bundle ID/SHA256.
+
+## Portable Discovery Node Runtime v0.5e.6
+
+Candidate acceptance:
+- first live connected upload still requires explicit HTTPS endpoint, CA certificate, client certificate and client private key;
+- client private-key path remains invocation-only and is not persisted;
+- upload uses the already validated workspace-driven bundle and v0.5d mTLS uploader;
+- successful server response preserves semantic_match and authenticated node identity;
+- receipt JSON + SHA256 are written under the workspace;
+- state advances to `upload: completed` and next action `complete`;
+- repeated upload with only `--workspace` returns `already_complete` before any network/TLS activity;
+- forced resend without explicit transport inputs is rejected locally.
