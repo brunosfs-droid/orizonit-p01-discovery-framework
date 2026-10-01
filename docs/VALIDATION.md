@@ -391,3 +391,44 @@ Candidate acceptance:
 - repeated planning returns `already_complete` and does not rebuild the plan;
 - existing v0.5e.1 workspaces with `credential_plan: external_required` are adopted safely;
 - force-replan is rejected when completed downstream artifacts would become stale.
+
+
+## Portable Discovery Node Runtime v0.5e.2 — P01LAB
+
+LAB VALIDATED on P01-MGMT01 using workspace `P01LAB-RUNTIME-R2`.
+
+Acceptance evidence:
+- existing v0.5e.1 state with `credential_plan: external_required` was adopted in place;
+- managed planner processed 4 assets and produced Credential Plan JSON + SHA256;
+- planning reported zero network activity, secret resolution and authentication;
+- runtime state advanced to `credential_plan: completed`;
+- repeated planner run returned `already_complete`.
+
+The observed `adapter_candidates=0` was specific to that isolated v0.4b.6 profile file and was not a planner-runtime failure.
+
+## Portable Discovery Node Runtime v0.5e.3 — P01LAB
+
+LAB VALIDATED on P01-MGMT01 using fresh workspace `P01LAB-RUNTIME-R3`.
+
+Acceptance evidence:
+- managed Network Discovery found 5 hosts;
+- managed Credential Planner produced 4 adapter candidates from 5 assets;
+- Executor dry-run produced 4 actions and 4 ready actions;
+- Credentialed Job JSON + SHA256 were written under `evidence\credentialed_execution`;
+- runtime reported zero network activity, secret resolution and authentication during dry-run;
+- state advanced to `credentialed_execution: preview_completed`;
+- repeated dry-run returned `already_complete` without rebuilding or authenticating.
+
+## Portable Discovery Node Runtime v0.5e.3.1
+
+Candidate acceptance:
+- AUTH-only live execution is available only after a validated Executor dry-run preview;
+- live execution requires explicit `--execute --auth-only --ack-authorized-access`;
+- FULL enrichment is rejected in this increment;
+- Credential Plan, preview and Credential Profiles hashes are revalidated before authentication;
+- executor remains sequential with concurrency 1 and keeps shared-credential failure budgets/circuit breaker;
+- AUTH-only job and per-target evidence require JSON + SHA256 integrity;
+- evidence/state must contain no plaintext credentials or Secret Provider locators;
+- successful live run advances to `credentialed_execution: auth_validated`;
+- repeated AUTH-only run returns `already_complete` and performs zero additional authentication;
+- failed/partial AUTH execution cannot be retried silently; explicit `--force-auth-retry` plus authorization acknowledgement is required.
