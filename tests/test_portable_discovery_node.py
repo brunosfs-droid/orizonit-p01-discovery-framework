@@ -47,6 +47,7 @@ class PortableRuntimeTests(unittest.TestCase):
             self.assertEqual(state["steps"]["network_discovery"]["status"], "pending")
             self.assertEqual(state["steps"]["credential_plan"]["status"], "pending")
             self.assertEqual(state["steps"]["credentialed_execution"]["status"], "pending")
+            self.assertEqual(state["steps"]["asset_resolver"]["status"], "pending")
             self.assertEqual(state["steps"]["evidence_bundle"]["status"], "pending")
             self.assertEqual(state["steps"]["upload"]["status"], "pending")
             self.assertTrue(state["security"]["active_discovery_managed_in_this_version"])
@@ -58,6 +59,9 @@ class PortableRuntimeTests(unittest.TestCase):
             )
             self.assertTrue(
                 state["security"]["credentialed_execution_full_managed_in_this_version"]
+            )
+            self.assertTrue(
+                state["security"]["asset_resolver_managed_in_this_version"]
             )
             self.assertFalse(state["security"]["plaintext_credentials_persisted"])
 
@@ -1260,7 +1264,7 @@ class PortableRuntimeTests(unittest.TestCase):
             )
             self.assertEqual(
                 mod.status(workspace)["next_action"],
-                "asset_resolver_external",
+                "run_asset_resolver",
             )
             artifact = state["artifacts"]["credentialed_execution_full"]
             job_path = mod._workspace_owned_path(workspace, artifact["path"])
@@ -1341,6 +1345,234 @@ class PortableRuntimeTests(unittest.TestCase):
                 )
             self.assertIn("--force-full-retry", str(ctx2.exception))
             self.assertEqual(calls["runs"], 1)
+
+    def _seed_full_completed(self, workspace):
+        workspace = pathlib.Path(workspace)
+        target = write_json(
+            workspace
+            / "evidence"
+            / "credentialed_execution"
+            / "targets"
+            / "P01-Credentialed-Target_192.0.2.10_ssh_R1-EXEC-FULL.json",
+            {
+                "metadata": {
+                    "executor_name": "P01-Credentialed-Discovery-Executor",
+                    "executor_version": "0.4b.5",
+                    "secret_values_persisted_to_output": False,
+                },
+                "action": {
+                    "target_ip": "192.0.2.10",
+                    "hostname": "node-01.example.test",
+                    "protocol": "ssh",
+                    "port": 22,
+                    "os_family": "Linux/Unix-like",
+                    "device_type": "Linux/Unix Host",
+                },
+                "authentication": {"success": True},
+                "enrichment": {
+                    "identity": {
+                        "hostname": "node-01",
+                        "fqdn": "node-01.example.test",
+                    },
+                    "network": {
+                        "interfaces": [
+                            {"name": "eth0", "ipv4": ["192.0.2.10"]}
+                        ]
+                    },
+                },
+            },
+            sidecar=True,
+        )
+        full = write_json(
+            workspace
+            / "evidence"
+            / "credentialed_execution"
+            / "P01-Credentialed-Job_FULL.json",
+            {
+                "metadata": {
+                    "executor_name": "P01-Credentialed-Discovery-Executor",
+                    "executor_version": "0.4b.5",
+                    "execution_mode": "execute",
+                    "auth_only": False,
+                    "secret_resolution": True,
+                    "authentication_attempts": True,
+                    "concurrency": 1,
+                },
+                "summary": {
+                    "actions_total": 1,
+                    "actions_ready": 1,
+                    "completed": 1,
+                    "skipped": 0,
+                    "authentication_successes": 1,
+                    "authentication_failures": 0,
+                    "open_credential_circuits": 0,
+                },
+                "actions": [
+                    {
+                        "execution_status": "completed",
+                        "authentication_success": True,
+                        "collection_status": "collected",
+                        "target_result_file": str(target.resolve()),
+                        "target_result_sha256": mod.digest_file(target),
+                    }
+                ],
+            },
+            sidecar=True,
+        )
+        state = mod._load_state(workspace)
+        state["steps"]["credential_plan"] = {
+            "status": "completed",
+            "completed_at_utc": mod.utc_now_iso(),
+            "managed_by": "0.5e.2",
+        }
+        state["steps"]["credentialed_execution"] = {
+            "status": "full_completed",
+            "completed_at_utc": mod.utc_now_iso(),
+            "managed_by": "0.5e.3.2",
+            "mode": "full",
+        }
+        state["artifacts"]["credentialed_execution_full"] = {
+            "path": mod._relative_if_owned(workspace, full),
+            "sha256_path": mod._relative_if_owned(
+                workspace, full.with_suffix(full.suffix + ".sha256")
+            ),
+            "sha256": mod.digest_file(full),
+            "target_evidence_count": 1,
+            "mode": "full",
+        }
+        mod._write_state(workspace, state)
+        return full, target
+
+    def _fake_asset_resolver(self, calls):
+        def resolve(
+            network_path,
+            evidence_paths,
+            manifest_path=None,
+            require_evidence_sidecars=False,
+        ):
+            calls["resolves"] += 1
+            self.assertTrue(require_evidence_sidecars)
+            self.assertEqual(len(evidence_paths), 1)
+            self.assertIn("EXEC-FULL", evidence_paths[0].name)
+            return {
+                "metadata": {
+                    "resolver_name": "P01-Asset-Resolver",
+                    "resolver_version": "0.4c.0",
+                    "schema_version": "0.4c",
+                    "offline_only": True,
+                    "read_only_mode": True,
+                    "secret_resolution": False,
+                    "authentication_attempts": False,
+                    "network_access_performed": False,
+                },
+                "summary": {
+                    "network_assets_seen": 1,
+                    "credentialed_observations_seen": 1,
+                    "logical_assets_resolved": 1,
+                    "correlated_observations": 1,
+                    "unresolved_observations": 0,
+                    "ambiguous_correlations": 0,
+                    "assets_with_conflicts": 0,
+                    "assets_with_strong_identifiers": 1,
+                },
+                "assets": [{"asset_id": "ast-test"}],
+                "unresolved_observations": [],
+                "ambiguous_correlations": [],
+                "limitations": [],
+            }
+
+        def write_output(output_dir, run_label, payload):
+            calls["writes"] += 1
+            path = pathlib.Path(output_dir) / f"P01-Asset-Resolver_TEST_{run_label}.json"
+            write_json(path, payload, sidecar=True)
+            return path, path.with_suffix(path.suffix + ".sha256")
+
+        return types.SimpleNamespace(resolve=resolve, write_output=write_output)
+
+    def test_managed_asset_resolver_is_resume_safe_and_adopts_external_state(self):
+        with tempfile.TemporaryDirectory() as td:
+            manifest = self._manifest_for_discovery(td)
+            init = mod.init_workspace(
+                pathlib.Path(td) / "runs",
+                "A1",
+                "R1",
+                "NODE-01",
+                manifest=manifest,
+            )
+            workspace = pathlib.Path(init["workspace"])
+            self._seed_completed_network(workspace)
+            self._seed_full_completed(workspace)
+
+            state = mod._load_state(workspace)
+            state["steps"]["asset_resolver"] = {
+                "status": "external_required",
+                "managed_from_version": "0.5e.4",
+            }
+            mod._write_state(workspace, state)
+
+            calls = {"resolves": 0, "writes": 0}
+            fake = self._fake_asset_resolver(calls)
+            with mock.patch.object(mod, "_load_component", return_value=fake):
+                first = mod.run_asset_resolver(workspace)
+                second = mod.run_asset_resolver(workspace)
+
+            self.assertEqual(first["status"], "completed")
+            self.assertEqual(second["status"], "already_complete")
+            self.assertEqual(calls["resolves"], 1)
+            self.assertEqual(calls["writes"], 1)
+            self.assertEqual(first["logical_assets_resolved"], 1)
+            self.assertFalse(first["network_activity_performed"])
+            self.assertFalse(first["secret_resolution_performed"])
+            self.assertFalse(first["authentication_attempts_performed"])
+
+            state = mod._load_state(workspace)
+            self.assertEqual(state["steps"]["asset_resolver"]["status"], "completed")
+            self.assertEqual(mod.status(workspace)["next_action"], "export")
+            artifact = state["artifacts"]["asset_resolver"]
+            resolver_path = mod._workspace_owned_path(workspace, artifact["path"])
+            self.assertTrue(resolver_path.is_file())
+            self.assertTrue(mod.verify_sidecar(resolver_path))
+
+    def test_managed_asset_resolver_rejects_changed_full_target(self):
+        with tempfile.TemporaryDirectory() as td:
+            manifest = self._manifest_for_discovery(td)
+            init = mod.init_workspace(
+                pathlib.Path(td) / "runs",
+                "A1",
+                "R1",
+                "NODE-01",
+                manifest=manifest,
+            )
+            workspace = pathlib.Path(init["workspace"])
+            self._seed_completed_network(workspace)
+            _full, target = self._seed_full_completed(workspace)
+            target.write_text("{}\n", encoding="utf-8")
+
+            with self.assertRaises(mod.RuntimeErrorSafe) as ctx:
+                mod.run_asset_resolver(workspace)
+            self.assertIn("FULL target evidence", str(ctx.exception))
+
+    def test_managed_asset_resolver_force_rejected_after_bundle_completion(self):
+        with tempfile.TemporaryDirectory() as td:
+            manifest = self._manifest_for_discovery(td)
+            init = mod.init_workspace(
+                pathlib.Path(td) / "runs",
+                "A1",
+                "R1",
+                "NODE-01",
+                manifest=manifest,
+            )
+            workspace = pathlib.Path(init["workspace"])
+            self._seed_completed_network(workspace)
+            self._seed_full_completed(workspace)
+            state = mod._load_state(workspace)
+            state["steps"]["asset_resolver"] = {"status": "completed"}
+            state["steps"]["evidence_bundle"] = {"status": "completed"}
+            mod._write_state(workspace, state)
+
+            with self.assertRaises(mod.RuntimeErrorSafe) as ctx:
+                mod.run_asset_resolver(workspace, force_reresolve=True)
+            self.assertIn("downstream completed steps", str(ctx.exception))
 
     def test_force_rescan_refused_after_downstream_bundle_completion(self):
         with tempfile.TemporaryDirectory() as td:

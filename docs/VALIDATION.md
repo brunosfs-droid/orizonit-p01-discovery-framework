@@ -462,3 +462,32 @@ Candidate acceptance:
 - partial/failed FULL evidence is preserved but the stage becomes `failed` and requires explicit `--force-full-retry`;
 - repeated successful FULL invocation returns `already_complete` and performs zero additional network/authentication activity;
 - next action after `full_completed` is Asset Resolver.
+
+
+## Portable Discovery Node Runtime v0.5e.3.2 — P01LAB
+
+LAB VALIDATED on P01-MGMT01 using workspace `P01LAB-RUNTIME-R3`.
+
+Acceptance evidence:
+- state resumed from `credentialed_execution: auth_validated`;
+- FULL execution without `--ack-authorized-access` was rejected before live collection;
+- authorized FULL execution completed 4 of 4 planned actions;
+- collected = 4, authentication successes = 4, failures = 0, open credential circuits = 0;
+- aggregate EXEC-FULL JSON/SHA256 and four per-target FULL JSON/SHA256 pairs were generated;
+- state advanced to `credentialed_execution: full_completed`;
+- repeated FULL invocation returned `already_complete` with zero additional network activity, secret resolution or authentication.
+
+## Portable Discovery Node Runtime v0.5e.4
+
+Candidate acceptance:
+- a `full_completed` workspace advances to managed Asset Resolver on a plain `run`;
+- Network Discovery and aggregate FULL job must match hashes recorded in runtime state;
+- only collected target evidence explicitly referenced by the aggregate FULL job is selected;
+- every target must remain inside the workspace and pass SHA256 sidecar/in-job digest validation;
+- AUTH-only target evidence is not selected as resolver input;
+- Assessment Manifest is reused from the workspace source reference when present;
+- resolver remains offline/read-only with zero network activity, secret resolution and authentication;
+- resolver JSON + SHA256 are written under `resolved`;
+- repeated resolve returns `already_complete` without a second resolver run;
+- force-reresolve is rejected after completed Evidence Bundle or Upload;
+- state advances to `asset_resolver: completed` and next action is Evidence Bundle export.

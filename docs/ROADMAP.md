@@ -289,6 +289,18 @@ O LAB inicial usará P01-MGMT01 como Discovery Node por possuir acesso ao segmen
 - partial/failure preserva evidência e exige `--force-full-retry`;
 - repeat FULL retorna `already_complete` sem novo acesso/autenticação;
 - checkpoint final da etapa: `credentialed_execution: full_completed`.
+- **Status:** LAB VALIDATED no P01LAB-RUNTIME-R3. Gate sem acknowledgement bloqueado; 4/4 actions completed/collected, 4 auth successes, 0 failures/circuits, FULL JSON/SHA256 por target e resume sem segunda coleta confirmados.
+
+### v0.5e.4 — Managed Asset Resolver
+- continua o workspace `full_completed` sem repetir etapas live;
+- consome o Network Discovery registrado no state e somente os target JSON referenciados pelo EXEC-FULL;
+- rejeita target evidence fora do workspace ou com sidecar/hash inválido;
+- AUTH-only evidence não é misturado ao conjunto de correlação;
+- executa o Asset Resolver v0.4c.0 offline/read-only;
+- grava JSON/SHA256 em `resolved`;
+- checkpoint `asset_resolver: completed` inclui contagens e bindings dos inputs;
+- repeat resolver retorna `already_complete`;
+- `--force-reresolve` é bloqueado se Bundle/Upload já estiverem concluídos.
 - **Status:** CANDIDATE / CI gate pending; P01LAB validation next.
 
-Follow-up: Asset Resolver será internalizado no próximo incremento v0.5e.4.
+Follow-up: tornar o Evidence Bundle completamente workspace-driven no fluxo unificado e então validar export/upload end-to-end sem parâmetros de artefatos manuais.
