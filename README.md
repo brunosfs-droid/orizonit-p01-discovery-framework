@@ -8,6 +8,15 @@
 
 **Cancã** é o nome oficial do produto. O identificador **P01** permanece temporariamente em nomes de arquivos, schemas, headers e artefatos internos durante a fase Technical Alpha para preservar compatibilidade e rastreabilidade dos testes. A migração dos identificadores internos será feita de forma controlada, sem quebrar contratos já validados.
 
+## Product baseline
+
+- [MVP 1.0](docs/MVP.md)
+- [Project Governance](docs/PROJECT_GOVERNANCE.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Engineering Roadmap](docs/ROADMAP.md)
+- [Source of Truth — GitHub x Google Drive](docs/SOURCE_OF_TRUTH.md)
+- [Brand identity](docs/branding/README.md)
+
 ## Status de engenharia
 
 - **Windows / AD Collector:** 0.3.0 — candidate, validado em LAB para coleta local/AD, FTP e SMB; teste específico de AD stale ainda precisa de validação com técnica compatível com atributos system-managed.
