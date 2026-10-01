@@ -758,6 +758,8 @@ def run_credential_plan(
 ) -> Dict[str, Any]:
     workspace = workspace.expanduser().resolve()
     state = _load_state(workspace)
+    state["runtime_version"] = VERSION
+    state.setdefault("security", {})["credential_planning_managed_in_this_version"] = True
     step = state["steps"]["credential_plan"]
 
     if step.get("status") == "completed" and not force_replan:
@@ -1393,7 +1395,7 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
             network_status = (
                 (current_state.get("steps", {}).get("network_discovery") or {}).get("status")
             )
-            if network_status != "completed" or args.force_rescan:
+            if network_status != "completed" or args.force_rescan or bool(args.target):
                 result = run_network_discovery(
                     workspace=workspace,
                     targets=args.target,
