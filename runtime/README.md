@@ -1,27 +1,27 @@
-# Cancã Portable Discovery Node — v0.5e.1
+# Cancã Portable Discovery Node — v0.5e.2
 
 The portable runtime is the first unified operator workflow for the Cancã Discovery Node.
 
 It is intentionally **portable-first**: no Windows service or systemd installation is required.
 
-## Scope of v0.5e.1
+## Scope of v0.5e.2
 
 Implemented:
 
 - `doctor` — validate runtime prerequisites without scanning or authentication;
 - `init` — create an isolated assessment/run workspace;
-- `run` — execute the managed Network Discovery stage;
+- `run` — advance the managed workflow: Network Discovery first, then Credential Planner;
 - `status` — show deterministic checkpoints, artifacts and next action;
 - `export` — wrap the validated v0.5a Evidence Bundle using existing evidence;
 - `upload` — wrap the validated v0.5d HTTPS/mTLS uploader;
 - Assessment Manifest authorization enforcement before active discovery;
 - manifest excludes automatically honored by runtime discovery;
 - SHA256-protected runtime state/config;
-- resume guards that prevent silent re-scan/re-export/re-upload of completed steps.
+- managed Credential Planner using the workspace Network Discovery artifact plus Assessment Manifest/Credential Profiles;
+- resume guards that prevent silent re-scan/re-plan/re-export/re-upload of completed steps.
 
-Still external in v0.5e.1:
+Still external in v0.5e.2:
 
-- Credential Planner orchestration;
 - Credentialed Executor orchestration;
 - Asset Resolver orchestration.
 
@@ -53,7 +53,7 @@ It does **not** persist plaintext passwords, Secret Provider locators (`wincred:
 ```text
 initialized               completed
 network_discovery         pending -> running -> completed / failed
-credential_plan           external_required
+credential_plan           pending -> running -> completed / failed
 credentialed_execution    external_required
 asset_resolver            external_required
 evidence_bundle           pending -> completed / failed
@@ -82,7 +82,7 @@ python .\runtime\P01_Discovery_Node.py doctor `
   --client-key C:\P01\pki-v05d-r1\p01-mgmt01.key
 ```
 
-Doctor performs no network activity in v0.5e.1.
+Doctor performs no network activity in v0.5e.2.
 
 ## Init
 
@@ -100,7 +100,7 @@ The profiles file is referenced by path only. Its contents are not copied into r
 
 ## Managed Network Discovery
 
-v0.5e.1 manages the first active stage directly:
+v0.5e.2 keeps managed Network Discovery as the first active stage:
 
 ```powershell
 python .\runtime\P01_Discovery_Node.py run `
@@ -114,6 +114,22 @@ The runtime refuses to scan without explicit acknowledgement and rejects effecti
 
 A completed discovery is not repeated unless the operator explicitly passes `--force-rescan`. Force-rescan is rejected once downstream completed steps would become stale.
 
+## Managed Credential Planner
+
+After Network Discovery is completed, run the same operational command again:
+
+```powershell
+python .\runtime\P01_Discovery_Node.py run `
+  --workspace C:\Canca\runs\P01LAB-CTX-R1\P01LAB-RUNTIME-R2 `
+  --max-candidates 2
+```
+
+The runtime reuses the Network Discovery artifact recorded in state and the Assessment Manifest / Credential Profiles references captured at `init`. Planning performs **no network activity, no secret resolution and no authentication**.
+
+The generated Credential Plan JSON + SHA256 are stored under `evidence\credential_plan`. A repeated `run` returns `already_complete`; `--force-replan` is refused if completed downstream stages would become stale.
+
+Existing v0.5e.1 workspaces with `credential_plan: external_required` can be continued in place; the stage is adopted safely by v0.5e.2 when invoked.
+
 ## Status
 
 ```powershell
@@ -123,7 +139,7 @@ python .\runtime\P01_Discovery_Node.py status `
 
 ## Export existing evidence
 
-v0.5e.1 uses already collected evidence while the orchestration stages are still external:
+v0.5e.2 still accepts already collected credentialed/resolved evidence while Executor and Asset Resolver remain external:
 
 ```powershell
 python .\runtime\P01_Discovery_Node.py export `
@@ -154,4 +170,4 @@ The private-key path is used for the current invocation only and is not written 
 
 The runtime never silently repeats a completed bundle build or completed upload.
 
-Credential Planner, Credentialed Executor and Asset Resolver will gain the same checkpoint discipline in the next incremental runtime releases.
+Credentialed Executor and Asset Resolver will gain the same checkpoint discipline in the next incremental runtime releases.
