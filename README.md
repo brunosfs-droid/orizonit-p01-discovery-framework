@@ -255,3 +255,10 @@ WinRM de Firewall e secure channel e replay imutável. Sem fechamento automátic
 Consulta somente leitura de lifecycle, identidade, cobertura e ocorrências
 históricas por assessment, com paginação vinculada a um escopo consistente.
 [Guia](docs/ASSESSMENT_REPORT_v0.6.5.md) · [Status](docs/STATUS_ASSESSMENT_REPORT_v0.6.5.md).
+
+### Backup/restore v0.6.6 CANDIDATE
+
+Qualificação CI do par banco/store com dump e restauração reais em PostgreSQL 16/17,
+comparação das 14 tabelas, relatório, revalidação de evidências e replay sem mutação.
+Fixture exclusiva descartável; recuperação operacional e roles do LAB ainda pendentes.
+[Guia](docs/BACKUP_RESTORE_v0.6.6.md) · [Status](docs/STATUS_BACKUP_RESTORE_v0.6.6.md).

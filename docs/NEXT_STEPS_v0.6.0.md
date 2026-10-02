@@ -1,6 +1,6 @@
 # P01 — Próximos passos da Product Alpha
 
-Atualizado em 02/10/2026 (-03), após v0.6.5 e resultados do soak estendido.
+Atualizado em 02/10/2026 (-03), após v0.6.6 e resultados do soak estendido.
 
 ## Preciso testar alguma coisa agora?
 
@@ -25,13 +25,14 @@ com revisão, idempotência e histórico transacional. v0.6.3 entrega identidade
 persistente de assets por assessment, com origem verificável e revisão de
 ambiguidades. v0.6.4 adiciona findings de duas regras WinRM com origem, cobertura explícita e
 ocorrências imutáveis, sem fechar findings de runs anteriores. v0.6.5 consolida consultas de lifecycle, identidade, cobertura e ocorrências
-históricas, com paginação consistente. Todas as funções PostgreSQL
+históricas, com paginação consistente. v0.6.6 qualifica a recuperação de banco/store
+em CI descartável, com comparação integral, hashes e replay. Todas as funções PostgreSQL
 permanecem **CANDIDATE para LAB**, com CI sintético em PostgreSQL 16/17 real.
 
-Não instale PostgreSQL nem altere o store atual por causa deste guia. A qualificação
-do servidor terá um roteiro separado para base isolada, contas, TLS e backup/restore.
-Nenhuma migração é automática. O próximo desenvolvimento independente é a
-fixture e validação de backup/restore do par banco/store, antes da UI. Resolução manual e
+O roteiro R1 abaixo orienta a instalação em base/store isolados; não altere o store atual.
+Nenhuma migração é automática. A recuperação sintética em CI está implementada;
+o harness destrutivo de CI não deve ser executado no LAB. Recuperação operacional,
+contas e TLS remoto requerem qualificação própria após o gate inicial. Resolução manual e
 continuidade de IDs entre assessments terão decisões próprias.
 
 [Findings v0.6.4](FINDINGS_v0.6.4.md) ·
@@ -48,6 +49,8 @@ sem ferramentas no PATH nem units PostgreSQL listadas. Store ativo identificado:
 para LAB pequeno; não altera a API ativa. Sem novo diagnóstico solicitado aqui.
 
 [Relatório v0.6.5](ASSESSMENT_REPORT_v0.6.5.md).
+
+[Backup/restore v0.6.6](BACKUP_RESTORE_v0.6.6.md).
 
 [Roteiro LAB PostgreSQL R1](LAB_POSTGRESQL_R1_v0.6.5.md): executar primeiro as
 etapas 1–3 (PostgreSQL 16 nativo/local e memória); fixture offline e reader seguem
