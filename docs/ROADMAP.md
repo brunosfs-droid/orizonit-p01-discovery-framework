@@ -405,3 +405,12 @@ Follow-up: após fechar v0.5e, iniciar v0.5f Optional Installed Service/Agent e 
 - Migração 0003 explícita; CI PostgreSQL 16/17 real, com upgrade, rollback, replay e concorrência entre bundles.
 - LAB PostgreSQL e resolução manual de identidades seguem separados; próxima modelagem independente: findings e sua origem verificável.
 - [ADR 0014](ADR_0014_Persistent_Assets_v0.6.3.md), [guia](ASSET_REGISTRY_v0.6.3.md), [status](STATUS_ASSET_REGISTRY_v0.6.3.md).
+
+### v0.6.4 — Source-bound findings and explicit coverage (CANDIDATE)
+
+- Duas regras para enrichment WinRM atual, sem presumir compatibilidade com collectors locais.
+- Fonte inventariada, catálogo/engine por hash, resultados de cobertura e ligação conservadora a assets.
+- Migração 0004 explícita; ocorrências Open imutáveis e replay, sem auto-close entre runs.
+- CI PostgreSQL 16/17 real: fonte/drift, upgrade, rollback, concorrência, roles e paginação.
+- Próximo trabalho independente: qualificação do servidor, backup/restore e relatório com cobertura.
+- [ADR 0015](ADR_0015_Findings_v0.6.4.md), [guia](FINDINGS_v0.6.4.md), [status](STATUS_FINDINGS_v0.6.4.md).

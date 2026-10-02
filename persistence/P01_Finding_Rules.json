@@ -1,0 +1,27 @@
+{
+  "ruleset_name": "Cancã-Bundle-WinRM-Findings",
+  "ruleset_version": "0.6.4",
+  "input_contract": "inventoried_credentialed_winrm",
+  "rules": [
+    {
+      "id": "WIN-AD-001",
+      "handler": "windows_secure_channel_broken",
+      "enabled": true,
+      "title": "Secure channel com o domínio apresenta falha",
+      "category": "Identity & Access Management",
+      "severity": "High",
+      "recommendation": "Validar DNS, conectividade, horário e objeto de computador. Reparar a relação de confiança somente após confirmar a causa e o procedimento de mudança aplicável.",
+      "version": "0.6.4"
+    },
+    {
+      "id": "WIN-FW-001",
+      "handler": "windows_firewall_disabled",
+      "enabled": true,
+      "title": "Windows Firewall com perfil desabilitado",
+      "category": "Host Security",
+      "severity": "High",
+      "recommendation": "Validar a necessidade operacional e habilitar os perfis aplicáveis do Windows Defender Firewall com regras explícitas e gerenciamento centralizado.",
+      "version": "0.6.4"
+    }
+  ]
+}

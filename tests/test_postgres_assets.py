@@ -162,7 +162,7 @@ class PostgreSQLAssetTests(unittest.TestCase):
         before=life.show_assessment(self.conn,'LAB-001')
         with self.assertRaisesRegex(pg.PersistenceError,'schema_required'):
             registry.project_import(self.conn,p)
-        self.assertEqual(pg.migrate(self.conn)['migration'],3)
+        self.assertEqual(pg.migrate(self.conn)['migration'],len(pg.MIGRATIONS))
         self.assertEqual(self.counts(),(0,0,0,0))
         self.project(p)
         self.assertEqual(life.show_assessment(self.conn,'LAB-001'),before)

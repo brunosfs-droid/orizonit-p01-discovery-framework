@@ -17,10 +17,10 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'evidence_bundle'))
 import P01_Evidence_Bundle as bundle
 
-VERSION = '0.6.3'
+VERSION = '0.6.4'
 SQL_PATH = Path(__file__).resolve().parent / 'migrations/0001_metadata.sql'
 MIGRATIONS = (SQL_PATH, SQL_PATH.with_name('0002_assessment_lifecycle.sql'),
-              SQL_PATH.with_name('0003_asset_registry.sql'))
+              SQL_PATH.with_name('0003_asset_registry.sql'), SQL_PATH.with_name('0004_findings.sql'))
 IDENTITY = ('assessment_id', 'run_id', 'node_id')
 ROLES = {'network_discovery', 'credentialed_evidence', 'assessment_manifest', 'asset_resolver'}
 ERRORS = {'input_invalid', 'receipt_integrity_failed', 'bundle_integrity_failed', 'identity_mismatch',
