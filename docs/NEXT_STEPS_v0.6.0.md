@@ -1,6 +1,6 @@
 # P01 — Próximos passos da Product Alpha
 
-Atualizado em 02/10/2026 (-03), após aceite da recuperação v0.6.7 e implementação v0.6.8.
+Atualizado em 02/10/2026 (-03), após aceite de lifecycle/paginação v0.6.8 e exportação v0.6.9.
 
 ## Preciso testar alguma coisa agora?
 
@@ -28,7 +28,8 @@ ocorrências imutáveis, sem fechar findings de runs anteriores. v0.6.5 consolid
 históricas, com paginação consistente. v0.6.6 qualifica a recuperação de banco/store
 em CI descartável, com comparação integral, hashes e replay. v0.6.7 adiciona um helper somente leitura para verificar a recuperação na fixture R1.
 O R1 básico e a recuperação do par sintético estão **LAB VALIDATED** em PostgreSQL 16.15.
-v0.6.8 prepara exercício limitado de lifecycle/paginação na base recuperada.
+v0.6.8 está LAB VALIDATED para lifecycle/paginação na base recuperada.
+v0.6.9 adiciona exportação consolidada somente leitura em JSON/Markdown com hashes.
 TLS/roles completos e restante da Product Alpha continuam CANDIDATE.
 
 O roteiro R1 abaixo orienta a instalação em base/store isolados; não altere o store atual.
@@ -58,13 +59,19 @@ Recuperação R1 aprovada por sete capturas: destino canca_p01_restore_r1, 14 ta
 revalidação de fontes e replay sem mudança do snapshot. [Aceite e limites](validation/POSTGRESQL_P01LAB_RECOVERY_R1_v0.6.7.md).
 Não repetir instalação, dump ou restore.
 
-Próximo teste do operador: [lifecycle/paginação R1 v0.6.8](LAB_POSTGRESQL_LIFECYCLE_R1_v0.6.8.md).
-Retomar na etapa 2 corrigida: helper já instalado; as três capturas seguintes mostram caminho
-de referência não encontrado, sem conexão ou transição. Localização por SHA/sidecar substitui
-o sufixo transcrito da imagem. Só avançar a exercise depois de inspect PASS; não repetir restore.
-inspect somente lê; exercise muda quatro estados administrativos explicitamente na base recuperada,
-com retomada/replay sem duplicar eventos e comparação das outras 12 tabelas/store.
-Esse resultado LAB não bloqueia desenvolvimento de código/CI. Próximo incremento independente:
-exportação consolidada somente leitura, antes da superfície API/Web autenticada.
+Lifecycle/paginação aprovado nas quatro capturas seguintes: inspect PASS;
+primeiro exercise registered/0→completed/4, quatro transições e quatro rejeições
+de cursor; replay sem novas transições/eventos. Dois exit 0, quatro replays e
+três conflitos esperados; 12 tabelas invariantes/store/fontes preservados.
+[Aceite e limites](validation/POSTGRESQL_P01LAB_LIFECYCLE_R1_v0.6.8.md).
+Não repetir esse gate nem restore. Completed não fecha os findings históricos.
+
+Exportação v0.6.9 implementa JSON completo, Markdown e manifesto/SHA256 em diretório
+privado novo. Só SELECT via relatório canônico, todas as páginas e verificação
+terminal sob a mesma cerca; mudança de escopo interrompe antes de gerar arquivos.
+[Guia e limites](REPORT_EXPORT_v0.6.9.md). Qualificação CI é independente do host LAB;
+aceite de exportação no Rocky ainda depende do teste somente leitura dessa entrega.
+Próxima frente: definir autenticação/autorização para a superfície API/Web; ainda
+não há principal de produto, tenancy ou RBAC implementados. Roles/TLS continuam gates próprios.
 
 [Relatório v0.6.5](ASSESSMENT_REPORT_v0.6.5.md) · [Backup/restore CI v0.6.6](BACKUP_RESTORE_v0.6.6.md).

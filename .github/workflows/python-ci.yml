@@ -33,7 +33,7 @@ jobs:
           python -m py_compile asset_resolver/P01_Asset_Resolver.py
           python -m py_compile evidence_bundle/P01_Evidence_Bundle.py
 
-          python -m py_compile persistence/P01_PostgreSQL.py persistence/P01_Ingestion_Index.py persistence/P01_Assessment_Lifecycle.py persistence/P01_Asset_Registry.py persistence/P01_Findings.py persistence/P01_Assessment_Report.py docs/validation/POSTGRESQL_LAB_FIXTURE_R1_v0.6.5.py docs/validation/POSTGRESQL_LAB_RECOVERY_R1_v0.6.7.py tests/test_postgres_recovery.py docs/validation/POSTGRESQL_LAB_LIFECYCLE_R1_v0.6.8.py tests/test_postgres_lab_lifecycle.py ingestion/P01_Ingestion_API.py
+          python -m py_compile persistence/P01_PostgreSQL.py persistence/P01_Ingestion_Index.py persistence/P01_Assessment_Lifecycle.py persistence/P01_Asset_Registry.py persistence/P01_Findings.py persistence/P01_Assessment_Report.py persistence/P01_Report_Export.py tests/test_postgres_export.py docs/validation/POSTGRESQL_LAB_FIXTURE_R1_v0.6.5.py docs/validation/POSTGRESQL_LAB_RECOVERY_R1_v0.6.7.py tests/test_postgres_recovery.py docs/validation/POSTGRESQL_LAB_LIFECYCLE_R1_v0.6.8.py tests/test_postgres_lab_lifecycle.py ingestion/P01_Ingestion_API.py
 
       - name: Validate JSON artifacts
         run: |
