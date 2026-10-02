@@ -11,3 +11,5 @@ Bounds R1: 200 linhas por tabela, 1 MiB por linha, 8 MiB de representações por
 Saída de capture: novo diretório privado com snapshot JSON e sidecar SHA256, sem senha, corpo da evidência ou linhas do banco. Verify só lê; nenhum output é sobrescrito. SHA256 identifica bytes mas não autentica o operador nem impede DBA/atacante de forjar manifesto e sidecar. Capture/verify dependem de escritores parados durante todo o par dump/cópia; não são snapshot distribuído ou proteção contra concorrência adversarial.
 
 CI: integrar o helper no smoke de recuperação existente em PostgreSQL 16/17 e testar recusa de base errada, origem alterada, fixture fora do escopo, limites, referência corrompida e erro redigido. O helper permanece candidato até o operador executar o novo roteiro no Rocky.
+
+Proveniência do código no Rocky: o engine hash mostrado é o hash CRLF do código original v0.6.5. O roteiro adiciona apenas o helper novo ao deployment original, preservando os módulos que produziram as projeções; não normaliza EOL, substitui engine ou reescreve fingerprints persistidas. CI LF e LAB CRLF são qualificados dentro da sua própria cadeia de bytes.

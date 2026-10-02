@@ -38,3 +38,5 @@ Reader recebeu somente USAGE/SELECT nas tabelas do relatório; consulta passou e
 | 195614 | UPDATE negado e PGPASSWORD removida |
 
 As capturas estão no pacote de evidências com inventário SHA256. Não foram enviados journals/raw JSON do LAB; não tratá-los como recebidos ou auditados. Não foi demonstrada paginação com cursor/fence em várias chamadas, transição lifecycle, TLS remoto, roles separados de escrita, restore operacional, retenção/PITR/HA ou carga prolongada. Backup/restore CI v0.6.6 permanece evidência própria; próxima etapa é o [roteiro de recuperação LAB v0.6.7](../LAB_POSTGRESQL_RECOVERY_R1_v0.6.7.md).
+
+O fixture_script_sha256 apresentado (`0f7c981aae31c1427f11eeb7c35373eb2efc72af8239a923756e3af19e2bce2a`) e o engine_sha256 (`57c0b7834095d00512e6046bd884c03556f46738e97d7fdb4dcb9847efcc2365`) correspondem aos arquivos do merge v0.6.5 com finais CRLF. A comparação foi calculada sobre os bytes; não indica mudança semântica. Essa distinção precisa ser preservada na revalidação futura de projeções, cujo engine hash é parte da fingerprint.

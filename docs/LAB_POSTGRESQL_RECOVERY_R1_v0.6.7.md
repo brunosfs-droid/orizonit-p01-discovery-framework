@@ -2,7 +2,7 @@
 
 **R1 básico já aprovado; não repetir instalação/import/reader.** [Aceite](validation/POSTGRESQL_P01LAB_R1_v0.6.5.md). Esta etapa compara backup/restauração do par banco/store isolado; execução LAB pendente. O helper só lê banco/store e cria captura nova; os comandos de dump/restore são ações explícitas do operador. Nunca executar `tests/postgres_backup_restore_smoke.py` no LAB.
 
-Preserve origem `canca_p01_lab_r1`, fixture `P01-PG-R1-06230404e329` e deployment v0.6.5. Destino: **nova base canca_p01_restore_r1**, owner canca_lab_admin, store copiado em diretório novo. Se destino já existir ou qualquer comando falhar, parar e enviar a saída; não usar DROP, --clean, --create ou initdb.
+Preserve origem `canca_p01_lab_r1`, fixture `P01-PG-R1-06230404e329` e arquivos existentes do deployment v0.6.5. Destino: **nova base canca_p01_restore_r1**, owner canca_lab_admin, store copiado em diretório novo. Se destino já existir ou qualquer comando falhar, parar e enviar a saída; não usar DROP, --clean, --create ou initdb.
 
 ## 1. Entregar código v0.6.7 separado
 
@@ -23,14 +23,25 @@ No Rocky como root, conferir SHA igual ao Windows; novo diretório não deve exi
 sha256sum /root/p01/canca-postgres-lab-v0.6.7.tar
 mkdir /root/p01/canca-postgres-lab-v0.6.7
 tar -xf /root/p01/canca-postgres-lab-v0.6.7.tar -C /root/p01/canca-postgres-lab-v0.6.7
-cd /root/p01/canca-postgres-lab-v0.6.7
-python3 -m venv .venv
+python3 - <<'PYHELPER'
+from pathlib import Path
+source = Path('/root/p01/canca-postgres-lab-v0.6.7/docs/validation/POSTGRESQL_LAB_RECOVERY_R1_v0.6.7.py')
+target = Path('/root/p01/canca-postgres-lab-v0.6.5/docs/validation/POSTGRESQL_LAB_RECOVERY_R1_v0.6.7.py')
+with target.open('xb') as output:
+    output.write(source.read_bytes())
+print('HELPER COPIED — existing deployment files preserved')
+PYHELPER
+cd /root/p01/canca-postgres-lab-v0.6.5
 source .venv/bin/activate
-python -m pip install -r persistence/requirements-postgres.txt
+sha256sum persistence/P01_Findings.py
 psql --version
 pg_dump --version
 pg_restore --version
 ```
+
+A cópia adiciona somente o helper novo ao deployment original e recusa sobrescrever um helper existente. Se o arquivo já existir, parar e enviar a saída. As CLIs e módulos de projeção continuam exatamente os que produziram os dados aprovados; não substitua os arquivos de persistence do v0.6.5.
+
+SHA esperado de persistence/P01_Findings.py no deployment original: **57c0b7834095d00512e6046bd884c03556f46738e97d7fdb4dcb9847efcc2365**, apresentado no relatório do LAB. As capturas correspondem a CRLF; converter esse código para LF muda o hash do engine. Se o SHA divergir, não editar o banco/sidecars para forçar igualdade: enviar a saída antes de seguir. CI exercita o helper com os módulos originais de sua própria fixture, em LF; isso não autoriza recalcular o histórico do LAB.
 
 As três ferramentas devem ser 16.15/major 16. Não migre ou gere outra fixture: utilize os dados já aprovados. Mantenha a API existente com seu store atual; ela não escreve nesta base/fixture. Não execute import/lifecycle/assets/findings na origem durante toda esta etapa; aguarde operações pendentes terminarem. Não há snapshot distribuído com escritores ativos.
 
