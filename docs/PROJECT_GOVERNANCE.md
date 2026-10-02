@@ -9,7 +9,7 @@ Cancã is the open-source product identity of Orizon IT Product 01 (P01).
 - **Contribution model:** external contributions will require the Orizon IT Contributor License Agreement (CLA) when public contribution is opened.
 - **Trademark:** the software license does not grant unrestricted use of the Cancã or Orizon IT brands, logos, or visual identity.
 - **Engineering source of truth:** GitHub.
-- **Product governance and validation evidence:** Orizon IT controlled repositories and Google Drive.
+- **Product governance and validation evidence:** Orizon IT controlled repositories and OneDrive/SharePoint (Google Drive is legacy).
 
 ## Product principles
 
@@ -99,3 +99,4 @@ Cancã is an infrastructure assessment platform, not an exploitation framework.
 **Cancã** is the official product name.
 
 P01 remains temporarily valid inside filenames, schemas, headers and validated artifacts during Technical Alpha. Internal renaming will be performed as a controlled compatibility change rather than a global search/replace.
+

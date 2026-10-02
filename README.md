@@ -14,7 +14,7 @@
 - [Project Governance](docs/PROJECT_GOVERNANCE.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Engineering Roadmap](docs/ROADMAP.md)
-- [Source of Truth — GitHub x Google Drive](docs/SOURCE_OF_TRUTH.md)
+- [Source of Truth — GitHub x OneDrive/SharePoint](docs/SOURCE_OF_TRUTH.md)
 - [Brand identity](docs/branding/README.md)
 
 ## Status de engenharia
@@ -35,7 +35,7 @@
 - **Central Ingestion API:** 0.5c.1 — LAB VALIDATED; localhost ingestion, idempotência, status lookup, semantic equivalence, negative gates e connection hygiene.
 - **Connected Discovery Node Upload:** 0.5d.0 — LAB VALIDATED; HTTPS/mTLS, identidade do node ligada ao certificado e ao bundle, upload outbound, idempotência e transporte cross-host Windows→Linux validados.
 - **Portable Discovery Node Runtime:** 0.5e.6 — LAB VALIDATED; fluxo end-to-end completo no P01LAB, incluindo Evidence Bundle workspace-driven, Connected Upload mTLS e zero-input resume sem segunda conexão.
-- **Central Persistence:** 0.6.0 — CANDIDATE para LAB; índice PostgreSQL opcional e transacional de imports verificados. [Guia](persistence/README.md) e [próximos passos](docs/NEXT_STEPS_v0.6.0.md).
+- **Central Persistence:** 0.6.1 — CANDIDATE para LAB; índice PostgreSQL com integração opt-in à API e reconciliação explícita. [Guia](docs/INGESTION_INDEX_v0.6.1.md) e [próximos passos](docs/NEXT_STEPS_v0.6.0.md).
 - **Optional Service Scheduler:** 0.5f.3 — LAB VALIDATED para R1 offline de ciclos limitados em Windows/Rocky; default off, revisão após interrupção e zero replay. Soak estendido e etapas live pendentes. [Status](docs/STATUS_SCHEDULER_v0.5f.3.md).
 - **Reporting Engine:** planejado após Network Discovery + Asset Resolver.
 
@@ -188,11 +188,11 @@ python3 ./analyzer/P01_Discovery_Analyzer.py \
 
 `lastLogonTimestamp` é administrado pelo Active Directory e não deve ser tratado como um campo livremente editável para simulação. A validação do caminho de stale deve usar threshold reduzido em objetos que nunca logaram e testes sintéticos. O threshold operacional padrão permanece 90 dias. Veja [docs/validation/AD_STALE_v0.3.md](docs/validation/AD_STALE_v0.3.md).
 
-## GitHub x Google Drive
+## GitHub x OneDrive/SharePoint
 
 O **GitHub é a fonte de verdade de engenharia**: código, testes, schemas, rulesets, documentação técnica, CI, issues e histórico de commits.
 
-O **Google Drive é a fonte de verdade de produto, governança e evidência**: CI do produto, oferta comercial, LAB, resultados brutos, JSON/SHA256 de validação, relatórios, entregáveis e snapshots formais de release.
+O **OneDrive/SharePoint é a fonte de verdade de produto, governança e evidência**: CI do produto, oferta comercial, LAB, resultados brutos, JSON/SHA256 de validação, relatórios, entregáveis e snapshots formais de release. Google Drive pessoal permanece legado durante a migração autorizada.
 
 Não devem existir duas cópias editáveis concorrentes do mesmo código. Veja [docs/SOURCE_OF_TRUTH.md](docs/SOURCE_OF_TRUTH.md).
 
@@ -223,7 +223,7 @@ O repositório preserva histórico por **commits, branches, tags e releases**. O
 
 ## Próximas fases
 
-1. v0.6.x — Product Alpha: PostgreSQL, lifecycle, identidade persistente, API/UI mínima e reporting. Fundação v0.6.0 CANDIDATE.
+1. v0.6.x — Product Alpha: PostgreSQL, lifecycle, identidade persistente, API/UI mínima e reporting. Fundação v0.6.0 e integração v0.6.1 CANDIDATE.
 2. Em paralelo: soak estendido do scheduler v0.5f.3; R1 curto Windows/Rocky já aprovado.
 3. v0.7.x — Design Partner Alpha em ambientes externos controlados.
 4. v0.8.x — Community Beta; v0.9.x — Release Candidate; v1.0 — GA.

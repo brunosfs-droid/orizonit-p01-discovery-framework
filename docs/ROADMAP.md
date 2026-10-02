@@ -377,3 +377,11 @@ Follow-up: após fechar v0.5e, iniciar v0.5f Optional Installed Service/Agent e 
 - Recibo/bundle/identidade verificados antes da conexão; transação atômica, idempotência e conflitos sem overwrite.
 - CI de banco real; servidor PostgreSQL no LAB, backup/restore e integração de ingestão ainda pendentes.
 - [Status](STATUS_PERSISTENCE_v0.6.0.md), [ADR 0011](ADR_0011_PostgreSQL_Foundation_v0.6.0.md), [guia](../persistence/README.md), [próximos passos e soak](NEXT_STEPS_v0.6.0.md).
+
+### v0.6.1 — Opt-in API indexing and reconciliation (CANDIDATE)
+
+- API `--metadata-index postgres`, default off; filesystem acknowledgment permanece independente do índice.
+- Estado de índice explícito no POST/GET, erros fixos, identidade e fonte verificadas antes do banco.
+- Reconciliação explícita de um import com `index-import`; sem migração automática, sweep ou retries.
+- Testes reais de interrupção após publicação dos arquivos e após commit PostgreSQL, preservando replay idempotente.
+- [ADR 0012](ADR_0012_Ingestion_Index_v0.6.1.md), [guia](INGESTION_INDEX_v0.6.1.md), [status](STATUS_INGESTION_INDEX_v0.6.1.md).

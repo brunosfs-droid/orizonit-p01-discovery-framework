@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Orizon IT P01 Central Ingestion API v0.5d.0.
+"""Orizon IT P01 Central Ingestion API v0.6.1.
 
 Central ingestion API for .p01bundle.
 
@@ -24,6 +24,10 @@ Security boundaries:
 - no customer-network access, authentication, secret resolution or command execution.
 
 No server-initiated discovery or arbitrary remote execution is introduced by connected mode.
+
+v0.6.1 optionally indexes committed imports in PostgreSQL. HTTP import status
+continues to acknowledge the filesystem; metadata_index separately reports the
+index outcome. Default off, no automatic migration or reconciliation loop.
 """
 
 from __future__ import annotations
@@ -47,7 +51,7 @@ from typing import Any, Dict, Mapping, Optional, Sequence
 from urllib.parse import unquote, urlparse
 
 NAME = "P01-Central-Ingestion-API"
-VERSION = "0.5d.0"
+VERSION = "0.6.1"
 API_VERSION = "v1"
 
 DEFAULT_BIND = "127.0.0.1"
@@ -183,6 +187,7 @@ class IngestionService:
         max_upload_bytes: int = DEFAULT_MAX_UPLOAD_MIB * 1024 * 1024,
         process_run_label: str = "P01LAB-API-SERVER-REPROCESS",
         transport_mode: str = "localhost",
+        metadata_index: str = "off",
     ) -> None:
         if max_upload_bytes < 1:
             raise ValueError("max_upload_bytes must be positive")
@@ -193,6 +198,14 @@ class IngestionService:
         self.transport_mode = str(transport_mode).lower()
         if self.transport_mode not in TRANSPORT_MODES:
             raise ValueError("invalid transport_mode")
+        if metadata_index not in {"off", "postgres"}:
+            raise ValueError("invalid metadata_index")
+        self.metadata_index = metadata_index
+        self.metadata_indexer = None
+        if metadata_index == "postgres":
+            sys.path.insert(0, str(ROOT / "persistence"))
+            from P01_Ingestion_Index import MetadataIndexer
+            self.metadata_indexer = MetadataIndexer()
         self.staging_dir = self.store_dir / ".api-staging"
         self.staging_dir.mkdir(parents=True, exist_ok=True)
         self._lock_guard = threading.Lock()
@@ -294,15 +307,24 @@ class IngestionService:
                     encoding="utf-8",
                 )
 
-                result = import_bundle(
-                    staged,
-                    self.store_dir,
-                    process=self.process,
-                    require_outer_sidecar=True,
-                    process_run_label=self.process_run_label,
-                )
+                try:
+                    result = import_bundle(
+                        staged,
+                        self.store_dir,
+                        process=self.process,
+                        require_outer_sidecar=True,
+                        process_run_label=self.process_run_label,
+                    )
+                finally:
+                    # Clean the canonical staging name before releasing its lock.
+                    # A concurrent duplicate must never lose its bytes to this
+                    # request's outer cleanup after it acquires the same lock.
+                    staged.unlink(missing_ok=True)
+                    sidecar.unlink(missing_ok=True)
+                    staged = None
+                    sidecar = None
 
-            return {
+            response = {
                 "api_version": API_VERSION,
                 "status": result["status"],
                 "bundle_id": result["bundle_id"],
@@ -315,8 +337,15 @@ class IngestionService:
                 "processing_requested": self.process,
                 "authenticated_node_id": authenticated_node_id,
             }
+            if self.metadata_indexer is not None:
+                response["metadata_index"] = self.metadata_indexer.index(
+                    self.store_dir, Path(result["import_dir"]),
+                    {key: manifest.get(key) for key in ("assessment_id", "run_id", "node_id", "bundle_id")},
+                )
+            return response
         finally:
-            staged.unlink(missing_ok=True)
+            if staged is not None:
+                staged.unlink(missing_ok=True)
             if sidecar:
                 sidecar.unlink(missing_ok=True)
 
@@ -339,7 +368,7 @@ class IngestionService:
         if authenticated_node_id and receipt_node_id.lower() != authenticated_node_id.lower():
             raise IngestionError("bundle is not owned by the authenticated node", 403)
         processing = receipt.get("processing") if isinstance(receipt.get("processing"), Mapping) else {}
-        return {
+        response = {
             "api_version": API_VERSION,
             "status": receipt.get("status"),
             "bundle_id": receipt.get("bundle_id"),
@@ -359,6 +388,12 @@ class IngestionService:
                 "server_semantic_sha256": processing.get("server_semantic_sha256"),
             },
         }
+        if self.metadata_indexer is not None:
+            response["metadata_index"] = self.metadata_indexer.lookup(
+                self.store_dir, matches[0].parents[1],
+                {key: receipt.get(key) for key in ("assessment_id", "run_id", "node_id", "bundle_id")},
+            )
+        return response
 
 
 class P01HTTPServer(http.server.ThreadingHTTPServer):
@@ -551,6 +586,7 @@ def serve(
     tls_cert: Optional[Path] = None,
     tls_key: Optional[Path] = None,
     client_ca: Optional[Path] = None,
+    metadata_index: str = "off",
 ) -> None:
     mode = validate_transport_config(bind, transport_mode, tls_cert, tls_key, client_ca)
     if port < 1 or port > 65535:
@@ -564,6 +600,7 @@ def serve(
         max_upload_bytes=max_upload_mib * 1024 * 1024,
         process_run_label=process_run_label,
         transport_mode=mode,
+        metadata_index=metadata_index,
     )
     server = P01HTTPServer((bind, port), P01IngestionHandler, service)
 
@@ -587,6 +624,7 @@ def serve(
     print(f"Store: {store_dir}")
     print(f"Process imported bundles: {str(process).lower()}")
     print(f"Max upload MiB: {max_upload_mib}")
+    print(f"Metadata index: {metadata_index}")
     print("Press Ctrl+C to stop.")
 
     try:
@@ -612,6 +650,7 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
     srv.add_argument("--tls-cert")
     srv.add_argument("--tls-key")
     srv.add_argument("--client-ca")
+    srv.add_argument("--metadata-index", choices=["off", "postgres"], default="off")
 
     args = p.parse_args(argv)
 
@@ -628,6 +667,7 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
                 tls_cert=Path(args.tls_cert) if args.tls_cert else None,
                 tls_key=Path(args.tls_key) if args.tls_key else None,
                 client_ca=Path(args.client_ca) if args.client_ca else None,
+                metadata_index=args.metadata_index,
             )
         except Exception as exc:
             p.error(str(exc))
