@@ -4,9 +4,9 @@
 
 ## Product maturity path
 
-1. **Technical Alpha — current:** core discovery, credentialed enrichment, Asset Resolver, Evidence Bundle, offline/connected ingestion and mTLS contracts.
-2. **Distributed Technical Alpha — next gate:** Discovery Node and Cancã Server on separate hosts with outbound-only mTLS.
-3. **Product Alpha:** PostgreSQL persistence, assessment lifecycle, minimal Web/API surface and end-to-end reporting.
+1. **Technical Alpha — validated baseline:** core discovery, credentialed enrichment, Asset Resolver, Evidence Bundle, offline/connected ingestion and mTLS contracts.
+2. **Distributed Technical Alpha — R2 LAB VALIDATED:** Discovery Node and Cancã Server on separate hosts with outbound-only mTLS.
+3. **Product Alpha — v0.6.x, started:** PostgreSQL persistence, assessment lifecycle, minimal Web/API surface and end-to-end reporting.
 4. **Design Partner Alpha:** controlled external environments and support-matrix expansion.
 5. **Community Beta:** public open-source readiness, installation, CLA process, SECURITY/CONTRIBUTING, SBOM and third-party license inventory.
 6. **Release Candidate:** feature freeze, hardening, upgrade/rollback, backup/restore and blocker closure.
@@ -261,7 +261,7 @@ O LAB inicial usará P01-MGMT01 como Discovery Node por possuir acesso ao segmen
   3.12.13/systemd 257, SELinux Enforcing at preflight, PASS/exit 0, four starts,
   two denials/two reviews, preserved state/intent, released lock, removed unit,
   seven audited journals, retained fixture and corroborating systemd journal.
-- **v0.5f.3:** planned — scheduling/restart/recovery hardening and soak.
+- **v0.5f.3:** R1 offline LAB VALIDATED em Windows/Rocky; soak estendido pendente. Scheduling explícito e limitado, sem replay ou recovery automático.
   Gates: explicit default-off scheduling; reread identity/policy/integrity at each
   tick; shared lock with no overlapping dispatch; halt on failure/running intent
   until operator reconciliation; never auto-replay AUTH/FULL/POST; cooperative
@@ -369,3 +369,11 @@ Follow-up: após fechar v0.5e, iniciar v0.5f Optional Installed Service/Agent e 
 - [Status](STATUS_SCHEDULER_v0.5f.3.md), [ADR 0010](ADR_0010_Scheduler_v0.5f.3.md), [LAB R1](LAB_SCHEDULER_v0.5f.3_R1.md).
 - Windows/Rocky short offline R1 passed on 02/10/2026 (-03): PASS/exit 0, real 60s interval, retained interrupted intent and zero replay. [Acceptance](validation/SCHEDULER_P01LAB_R1_v0.5f.3.md).
 - Extended/multi-day soak and live service principal qualification remain separate unqualified gates.
+
+### v0.6.0 — PostgreSQL metadata foundation (CANDIDATE)
+
+- Primeiro incremento da Product Alpha, issue #63; R2 distribuído já aprovado.
+- Migração e indexação explícita de imports em PostgreSQL 16/17, sem alterar o store ou a API atual.
+- Recibo/bundle/identidade verificados antes da conexão; transação atômica, idempotência e conflitos sem overwrite.
+- CI de banco real; servidor PostgreSQL no LAB, backup/restore e integração de ingestão ainda pendentes.
+- [Status](STATUS_PERSISTENCE_v0.6.0.md), [ADR 0011](ADR_0011_PostgreSQL_Foundation_v0.6.0.md), [guia](../persistence/README.md), [próximos passos e soak](NEXT_STEPS_v0.6.0.md).

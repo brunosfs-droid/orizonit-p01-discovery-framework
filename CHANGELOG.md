@@ -1,3 +1,13 @@
+## v0.6.0 — PostgreSQL metadata foundation (CANDIDATE)
+
+- Add explicit migrate/index-import/show-import CLI for existing validated filesystem imports.
+- Bind receipt/hash/identity and a private bundle snapshot before any database connection.
+- Store assessment/node/run/import/artifact metadata atomically with replay, conflict rejection and advisory locks.
+- Track migration checksum; require verified remote TLS and fixed redacted errors.
+- Add real PostgreSQL 16/17 CI for rollback, concurrency, indexing role permissions and readback.
+- Start Product Alpha; PostgreSQL server LAB and backup/restore remain pending.
+- Clarify scheduler R1 accepted, extended soak optional for this increment.
+
 ## [Unreleased]
 
 ## v0.5f.0 — Optional agent foundation (CANDIDATE)

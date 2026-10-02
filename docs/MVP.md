@@ -69,19 +69,17 @@ The MVP ends at **recommendation**. General-purpose automation and remediation a
 
 ## Current gate
 
-### Distributed mTLS R2
+Distributed mTLS R2 passed on separate hosts, including certificate/hostname
+trust, node binding, semantic equivalence and cross-host idempotency.
 
-The next engineering gate is to separate the two roles physically:
+Product Alpha v0.6.x now starts with the PostgreSQL metadata foundation v0.6.0
+(CANDIDATE): explicit indexing of validated imports, versioned migration and
+atomic/idempotent transactions. The filesystem store and ingestion API remain
+independent. PostgreSQL LAB qualification and backup/restore are pending.
 
-- keep the Discovery Node on P01-MGMT01;
-- run the Cancã Server on a second host;
-- prove outbound-only node-to-server mTLS;
-- validate hostname/certificate trust;
-- bind node identity to client certificate and bundle;
-- preserve SHA256, receipt and idempotency;
-- distinguish transport failures from TLS/auth/application failures.
-
-This gate must pass before central persistence and Product Alpha become the main focus.
+The scheduler v0.5f.3 short offline R1 passed on Windows/Rocky. Extended soak
+remains a separate pending gate and does not block synthetic persistence work.
+See [status](STATUS_PERSISTENCE_v0.6.0.md) and [next steps](NEXT_STEPS_v0.6.0.md).
 
 ## Community Beta exit criteria
 
@@ -101,3 +99,4 @@ Before Community Beta the project must have:
 - architecture documentation;
 - documented known limitations;
 - basic backup/restore procedure.
+
