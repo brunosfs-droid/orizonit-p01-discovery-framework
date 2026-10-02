@@ -15,6 +15,8 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
+            python: "3.9"
+          - os: ubuntu-latest
             python: "3.12"
           - os: windows-latest
             python: "3.12"
@@ -27,13 +29,19 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - name: Compile agent and canonical runtime
-        run: python -m py_compile agent/P01_Agent.py runtime/P01_Discovery_Node.py runtime/P01_Workspace_Lock.py
+        run: python -m py_compile agent/P01_Agent.py agent/P01_Linux_Service.py agent/P01_Windows_Service.py runtime/P01_Discovery_Node.py runtime/P01_Workspace_Lock.py
       - name: Validate default policy
         run: python agent/P01_Agent.py validate-policy --policy agent/agent-policy.example.json
       - name: Agent policy, journal and OS lock contracts
         run: python -m unittest discover -s tests -p "test_optional_agent.py" -v
       - name: Windows service worker and configuration contracts
         run: python -m unittest discover -s tests -p "test_windows_service.py" -v
+      - name: Linux service worker and unit ownership contracts
+        if: runner.os == 'Linux'
+        run: python -m unittest discover -s tests -p "test_linux_service.py" -v
+      - name: Real Linux systemd lifecycle and crash review
+        if: runner.os == 'Linux'
+        run: sudo "$(which python)" tests/linux_service_systemd_smoke.py
       - name: Offline process interruption and journal content audit
         run: python docs/validation/OPTIONAL_AGENT_INTERRUPTION_R1.py --self-test
       - name: Offline isolated artifact and nested target tamper

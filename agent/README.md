@@ -57,9 +57,12 @@ Architecture decision: [ADR 0007](../docs/ADR_0007_Optional_Agent_v0.5f.md).
 Foundation v0.5f.0: Windows P01LAB R1 LAB VALIDATED (27 screenshots); Linux CI
 passed, real Linux not claimed.
 
-Windows host v0.5f.1 is a separate CANDIDATE component:
+Windows host v0.5f.1 is LAB VALIDATED for manual lifecycle on P01-MGMT01:
 [service guide](WINDOWS_SERVICE.md). It keeps this agent version/journal contract,
 manual usage and runtime v0.5e.6 intact. Use the service CLI query for actual SCM
 installation state; this foundation doctor does not query SCM.
 
-Next: v0.5f.1 service LAB -> v0.5f.2 Linux/systemd -> v0.5f.3 scheduling/recovery/soak.
+Linux host v0.5f.2 is a separate CANDIDATE component:
+[systemd guide](LINUX_SERVICE.md), native Ubuntu CI and a separate Rocky LAB gate.
+
+Next: Linux lifecycle LAB -> v0.5f.3 scheduling/recovery/soak.

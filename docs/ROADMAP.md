@@ -248,11 +248,16 @@ O LAB inicial usará P01-MGMT01 como Discovery Node por possuir acesso ao segmen
   tamper passed with 75 unchanged source files; active API console shows no POST
   after client repeats in the observed process/window; 27 captures reviewed;
   [evidence record](validation/OPTIONAL_AGENT_P01LAB_R1_v0.5f.0.md).
-- **v0.5f.1:** CANDIDATE — Windows SCM host, LocalService/service SID, manual
+- **v0.5f.1:** LAB VALIDATED (Windows Server 2022 P01LAB R1 manual lifecycle) — Windows SCM host, LocalService/service SID, manual
   start, one invocation per start, cooperative stop/remove, no automatic recovery
   or scheduling. Canonical journals/review gate preserved after restart.
-  [Service LAB](LAB_WINDOWS_SERVICE_v0.5f.1_R1.md) acceptance pending.
-- **v0.5f.2:** planned — Linux/systemd lifecycle/install/uninstall/recovery.
+  [Service evidence](validation/WINDOWS_SERVICE_P01LAB_R1_v0.5f.1.md): 4 starts,
+  2 denials/2 reviews, state/intent preserved, lock reacquired, removed service,
+  7/7 journal audit. No live service-account AUTH/FULL/upload or soak claim.
+- **v0.5f.2:** CANDIDATE — Linux/systemd manual lifecycle, dedicated account,
+  exact unit checks, one invocation/start, cooperative stop, preserved review gate,
+  no automatic recovery/timer. Native Ubuntu CI is a merge gate;
+  [Rocky LAB R1](LAB_LINUX_SERVICE_v0.5f.2_R1.md) pending.
 - **v0.5f.3:** planned — scheduling/restart/recovery hardening and soak.
 - Issue #83; [agent guide](../agent/README.md) and
   [LAB gate](LAB_OPTIONAL_AGENT_v0.5f.0_R1.md).
