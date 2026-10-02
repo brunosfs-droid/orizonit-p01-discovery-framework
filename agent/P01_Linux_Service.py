@@ -95,6 +95,7 @@ def worker(config, stop_event, done_event, output):
 
 def host(config):
     require(sys.platform == "linux", "linux_required")
+    require(sys.version_info >= (3, 10), "python_version_unsupported")
     stop, done, output = threading.Event(), threading.Event(), {}
     previous = {sig: signal.signal(sig, lambda *_: stop.set()) for sig in (signal.SIGTERM, signal.SIGINT)}
     try:
@@ -126,7 +127,7 @@ def unit_text(config):
     return "\n".join([
         "[Unit]", "Description=Canca P01 Optional Agent (one invocation per manual start)", "",
         "[Service]", "Type=simple", "User=" + ACCOUNT, "Group=" + ACCOUNT,
-        "ExecStart=" + command, "Restart=no", "KillSignal=SIGTERM", "TimeoutStopSec=infinity",
+        "ExecStart=" + command, "Restart=no", "KillSignal=SIGTERM", "KillMode=mixed", "TimeoutStopSec=infinity",
         "UMask=0077", "NoNewPrivileges=yes", "PrivateTmp=yes", "ProtectSystem=strict",
         "ProtectHome=yes", "ReadWritePaths=" + " ".join(quote(path) for path in paths),
         "StandardOutput=journal", "StandardError=journal", "",
@@ -175,6 +176,7 @@ def inspect_service(config=None):
 
 
 def preflight(config):
+    require(sys.version_info >= (3, 10), "python_version_unsupported")
     workspace, policy = load_config(config)
     status = agent.agent_status(workspace, policy)
     parsed, _ = agent.load_policy(policy)

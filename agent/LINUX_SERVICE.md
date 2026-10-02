@@ -1,6 +1,6 @@
 # Linux/systemd host v0.5f.2
 
-Optional manual host for agent v0.5f.0 / runtime v0.5e.6. Python 3.9+ on a
+Optional manual host for agent v0.5f.0 / runtime v0.5e.6. Python 3.10+ on a
 Linux host whose PID 1 is systemd. No additional Python dependency.
 Name: `canca-p01-agent.service`; dedicated unprivileged user/group `canca-agent`.
 No timer, enablement, retry, inbound API or stored transport/credentials.
@@ -38,7 +38,8 @@ Each start calls canonical `run_once` at most once, then stays idle until SIGTER
 or SIGINT. Result written to journal stdout includes only fixed status/stage/error
 codes. Full audit evidence remains the canonical JSON/SHA256 journals. Policy deny
 or review does not make the idle host inactive: inspect agent journals separately.
-Stop is cooperative and waits for an in-flight invocation. `TimeoutStopSec=infinity`
+Stop is cooperative and waits for an in-flight invocation. KillMode=mixed sends
+the initial stop signal only to the main host, so it can wait for its call. `TimeoutStopSec=infinity`
 prevents systemd timeout escalation; a hung stage can therefore leave stop pending
 until operator review. There is no promise of cancellation inside AUTH/FULL/POST.
 Abrupt kill preserves running intent; next manual start requires review, no replay.
@@ -68,5 +69,5 @@ requires explicit env provisioning for any separately authorized live credential
 stage. R1 qualifies only an isolated offline lifecycle fixture.
 
 Validation: ten Linux contracts, a real subprocess SIGTERM check, full regression,
-and native systemd CI on Ubuntu/Python 3.9 and 3.12. Rocky LAB is a separate gate:
+and native systemd CI on Ubuntu/Python 3.10 and 3.12. Rocky LAB is a separate gate:
 [R1 operator guide](../docs/LAB_LINUX_SERVICE_v0.5f.2_R1.md).

@@ -93,7 +93,7 @@ class LinuxServiceContracts(unittest.TestCase):
         unit = service.unit_text(self.config)
         self.assertIn('ExecStart="' + str(Path(sys.executable).resolve()) + '"', unit)
         self.assertIn('"host" "--config" "' + str(self.config) + '"', unit)
-        for text in ("Restart=no", "ProtectSystem=strict", "ProtectHome=yes", "TimeoutStopSec=infinity", "User=canca-agent"):
+        for text in ("Restart=no", "ProtectSystem=strict", "ProtectHome=yes", "TimeoutStopSec=infinity", "KillMode=mixed", "User=canca-agent"):
             self.assertIn(text, unit)
         self.assertNotIn("WantedBy=", unit)
         self.assertNotIn("server-url", unit)

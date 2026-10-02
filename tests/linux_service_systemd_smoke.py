@@ -67,6 +67,7 @@ def main(argv=None):
     parser.add_argument("--node-id", default="P01-CI")
     args = parser.parse_args(argv)
     service.require_root()
+    service.require(sys.version_info >= (3, 10), "python_version_unsupported")
     assert Path("/proc/1/comm").read_text().strip() == "systemd", "native_systemd_required"
     assert not service.inspect_service()["installed"], "preexisting_service_preserved"
     account = ensure_account()

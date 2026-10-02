@@ -27,7 +27,7 @@ dispensar a transferência. Não usar o diretório da API como deployment do age
 ## 2. Executar no Rocky como root
 
 Usar outro terminal, mantendo a console da API aberta. O Python escolhido deve
-ser 3.9+ e estar fora de /root ou /home; não usar a venv da API. Validar as versões:
+ser 3.10+ e estar fora de /root ou /home; não usar a venv da API. Validar as versões:
 
 ```bash
 cat /etc/os-release
@@ -37,14 +37,31 @@ cat /proc/1/comm
 getenforce
 ```
 
-PID 1 deve ser systemd. Se Python <3.9, usar um interpretador 3.9+ já instalado
-fora dos diretórios protegidos. Não alterar o Python/venv da ingestão.
+PID 1 deve ser systemd. Selecionar o Python 3.10+ fora dos diretórios protegidos. Se /usr/bin/python3
+já atende, usar esse binário. Em Rocky com Python 3.9, instalar o pacote paralelo
+python3.11 dos repositórios configurados, sem mudar aliases ou a venv da ingestão:
+
+```bash
+LinuxPython=/usr/bin/python3
+if ! "$LinuxPython" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 10) else 1)'; then
+  dnf install -y python3.11
+  LinuxPython=/usr/bin/python3.11
+fi
+"$LinuxPython" --version
+"$LinuxPython" -c 'import sys; assert sys.version_info >= (3, 10), "Python 3.10+ necessario"'
+```
+
+Prosseguir somente se a checagem passar. Se o pacote não estiver disponível,
+preservar o erro e a versão do Rocky; não alterar o Python padrão. A referência
+[Red Hat — Python paralelo](https://docs.redhat.com/en/documentation/red_hat_enterprise_linux/9/html-single/installing_and_using_dynamic_programming_languages/installing_and_using_dynamic_programming_languages)
+documenta o pacote em RHEL 9.2+; a disponibilidade no Rocky depende dos repositórios
+e da versão observados no host.
 
 ```bash
 mkdir -p /root/p01/canca-agent-v0.5f.2
 tar -xf /root/p01/canca-agent-v0.5f.2.tar -C /root/p01/canca-agent-v0.5f.2
 cd /root/p01/canca-agent-v0.5f.2
-/usr/bin/python3 tests/linux_service_systemd_smoke.py \
+"$LinuxPython" tests/linux_service_systemd_smoke.py \
   --lab-root /var/lib/canca/service-lab --node-id P01-LNX-RKY01
 LabExit=$?
 printf 'Exit LAB: %s\n' "$LabExit"
@@ -96,10 +113,10 @@ interpretador e deployment/config impressos na fixture, substituindo o caminho:
 
 ```bash
 Fixture=/var/lib/canca/service-lab/P01-SYSTEMD-R1-<identificador>
-/usr/bin/python3 "$Fixture/deployment/agent/P01_Linux_Service.py" query --config "$Fixture/service.json"
-/usr/bin/python3 "$Fixture/deployment/agent/P01_Linux_Service.py" stop --config "$Fixture/service.json"
+"$LinuxPython" "$Fixture/deployment/agent/P01_Linux_Service.py" query --config "$Fixture/service.json"
+"$LinuxPython" "$Fixture/deployment/agent/P01_Linux_Service.py" stop --config "$Fixture/service.json"
 # Após query indicar inactive/failed e main_pid=0:
-/usr/bin/python3 "$Fixture/deployment/agent/P01_Linux_Service.py" remove --config "$Fixture/service.json"
+"$LinuxPython" "$Fixture/deployment/agent/P01_Linux_Service.py" remove --config "$Fixture/service.json"
 ```
 
 Stop durante invocação aguarda conclusão; não há timeout de kill automático.

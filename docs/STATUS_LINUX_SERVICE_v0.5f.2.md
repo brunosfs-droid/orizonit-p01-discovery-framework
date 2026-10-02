@@ -8,12 +8,12 @@ Manual static systemd unit, dedicated non-root account, pinned root-owned
 deployment/config, no recovery/timer. One canonical agent invocation per start,
 then idle. Cooperative SIGTERM/SIGINT stop; preserved intent prevents replay.
 No persisted transport/credentials. Exact registration/drop-in/enablement checks
-before controls; removal preserves journals/workspace/account. Python 3.9+;
+before controls; removal preserves journals/workspace/account. Python 3.10+;
 agent v0.5f.0 and runtime v0.5e.6 stay unchanged.
 
 Local validation: 187 tests (177 baseline + 10 Linux contracts), including a real
 host subprocess stopped with SIGTERM. Native systemd CI is required before merge
-on Ubuntu/Python 3.9 and 3.12; Windows SCM 3.12/3.13 remains in CI. Real native smoke
+on Ubuntu/Python 3.10 and 3.12; Windows SCM 3.12/3.13 remains in CI. Real native smoke
 uses a separate all-denied fixture and verifies 4 starts, 2 denials/2 reviews,
 idle windows, stop/restart, refusal to remove running host, pre-dispatch intent,
 idle-host SIGKILL, no automatic restart, reacquired lock, 7 journals and removal.
