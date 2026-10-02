@@ -1,4 +1,4 @@
-# PostgreSQL metadata foundation — v0.6.2
+# PostgreSQL metadata foundation — v0.6.3
 
 **CANDIDATE para LAB.** Primeiro incremento da Product Alpha (issue #63).
 O core portátil permanece v0.5e.6 e o scheduler v0.5f.3 continua independente.
@@ -32,9 +32,10 @@ Com uma **base de LAB dedicada**, primeiro com uma conta autorizada para DDL:
 python persistence/P01_PostgreSQL.py migrate
 ```
 
-Resultado: `migrated`, depois `already_migrated`, `migration: 2`. Migrações 0001 e
-0002 são transacionais e seus SHA256 ficam registrados. Uma base com 0001 válida
-recebe apenas 0002; assessments existentes começam registered/revisão 0. Versão/checksum divergentes bloqueiam a operação.
+Resultado: `migrated`, depois `already_migrated`, `migration: 3`. Migrações 0001,
+0002 e 0003 são transacionais e seus SHA256 ficam registrados. Aplica-se somente
+o sufixo ausente de uma sequência válida. 0002 inicia assessments existentes em
+registered/revisão 0; 0003 não infere associações de assets. Versão/checksum divergentes bloqueiam a operação.
 Não há downgrade ou reparo automático de schema.
 
 Com uma conta indexadora separada, configurada pelo administrador com `USAGE`
@@ -75,15 +76,21 @@ configurada; destina-se exclusivamente ao serviço efêmero de CI.
 
 A API v0.6.1 oferece integração opt-in (`--metadata-index postgres`), default off;
 ver [contrato e reconciliação](../docs/INGESTION_INDEX_v0.6.1.md). Identidade persistente de
-assets, findings, UI, backup/restore e qualificação de um
+findings, UI, backup/restore e qualificação de um
 servidor PostgreSQL no LAB pertencem às próximas etapas. PostgreSQL 18 ainda não
 está na matriz validada desta versão.
 
 A v0.6.2 adiciona [lifecycle administrativo](../docs/ASSESSMENT_LIFECYCLE_v0.6.2.md)
-por CLI separada. Indexação do código novo aceita schema 1/2 verificado; lifecycle
-exige 2. Imports não alteram o lifecycle existente. A conta indexadora continua sem
+por CLI separada. Indexação do código novo aceita schema 1/2/3 verificado; lifecycle
+exige pelo menos 2. Imports não alteram o lifecycle existente. A conta indexadora continua sem
 UPDATE/DELETE; a conta de lifecycle recebe permissões próprias. Binários antigos
-que exigem somente 0001 rejeitam schema 2; backup/restore é necessário para retornar.
+com lista menor de migrações rejeitam schema mais novo; backup/restore é necessário para retornar.
+
+A v0.6.3 adiciona [registro de assets](../docs/ASSET_REGISTRY_v0.6.3.md), com CLI
+`P01_Asset_Registry.py project-import/show-import/show-asset`. Exige schema 3 e import
+indexado. Escopo assessment, ID central próprio e proveniência; ambiguidades não
+são fundidas. API não projeta assets automaticamente. A role de assets possui
+permissões separadas de SELECT/INSERT, sem UPDATE/DELETE/CREATE.
 
 [ADR](../docs/ADR_0011_PostgreSQL_Foundation_v0.6.0.md) ·
 [Status](../docs/STATUS_PERSISTENCE_v0.6.0.md) ·
