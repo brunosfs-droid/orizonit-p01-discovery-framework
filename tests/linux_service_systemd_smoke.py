@@ -90,7 +90,7 @@ def main(argv=None):
         deployment = root / "deployment"
         # Stage only the core needed for this all-denied lifecycle fixture.
         # No profiles, keys, manifests, customer artifacts or ingestion server.
-        for relative in ("agent/P01_Agent.py", "agent/P01_Linux_Service.py",
+        for relative in ("agent/P01_Agent.py", "agent/P01_Linux_Service.py", "agent/P01_Scheduler.py",
                          "runtime/P01_Discovery_Node.py", "runtime/P01_Workspace_Lock.py"):
             target = deployment / relative
             target.parent.mkdir(parents=True, exist_ok=True)

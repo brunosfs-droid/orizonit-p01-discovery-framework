@@ -45,7 +45,7 @@ review, including a POST interrupted before its runtime checkpoint. Preserve the
 journal; verify runtime artifacts and server receipt/idempotency status, recover
 with the explicit portable workflow, then archive the reviewed intent outside
 `logs/agent`. Never simply delete intent and retry a live stage. State checkpoints
-remain the runtime's source of truth. Journal retention/rotation is pending v0.5f.3, so monitor disk usage.
+remain the runtime's source of truth. Journal rotation remains deferred; v0.5f.3 bounds session attempts but does not prune evidence. Monitor disk usage.
 
 Exit codes: 0 successful check/advance/complete, 2 invalid input/integrity/runtime
 failure or workspace busy, 3 policy stop or operator review required. A `doctor`
@@ -67,4 +67,7 @@ Linux host v0.5f.2 is LAB VALIDATED for manual lifecycle on P01-LNX-RKY01:
 [systemd guide](LINUX_SERVICE.md), native Ubuntu CI and accepted Rocky 10.2 R1.
 This is an offline service fixture, not Linux live AUTH/FULL/upload acceptance.
 
-Next: planned v0.5f.3 scheduling/restart/recovery hardening and soak.
+Service hosts v0.5f.3 now add explicit bounded scheduling as a CANDIDATE:
+[scheduler contract](SCHEDULER.md) and [R1 guide](../docs/LAB_SCHEDULER_v0.5f.3_R1.md).
+Scheduling defaults off; both previous service config schemas stay manual-only.
+Their historical LAB acceptance does not qualify scheduled execution.

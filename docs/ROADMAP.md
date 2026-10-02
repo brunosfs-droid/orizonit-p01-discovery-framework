@@ -358,3 +358,13 @@ O LAB inicial usará P01-MGMT01 como Discovery Node por possuir acesso ao segmen
 - **Status:** LAB VALIDATED no P01LAB-RUNTIME-R3. Upload mTLS HTTP 201/imported, semantic_match=true, node P01-MGMT01, receipt JSON/SHA256, state `upload: completed`, `Next action: complete`, zero-input repeat `already_complete` sem novo POST e force-resend sem transporte bloqueado.
 
 Follow-up: após fechar v0.5e, iniciar v0.5f Optional Installed Service/Agent e os gates de product alpha/persistência central.
+
+
+### v0.5f.3 — Explicit bounded service scheduling (CANDIDATE)
+- Shared scheduler around canonical run_once; default off, operator opt-in after installation.
+- Fixed delay 60..86400s after completion, bounded attempts, policy reread and native workspace lock.
+- Running/halted session journal blocks restart and manual-mode bypass until reviewed.
+- OS start remains manual with no recovery/retry/timer; stop wakes wait cooperatively.
+- Native scheduled R1 uses real 60s spacing and interrupted-wait review on SCM/systemd.
+- [Status](STATUS_SCHEDULER_v0.5f.3.md), [ADR 0010](ADR_0010_Scheduler_v0.5f.3.md), [LAB R1](LAB_SCHEDULER_v0.5f.3_R1.md).
+- Windows/Rocky LAB, multi-day soak and live service principal qualification remain separate gates.

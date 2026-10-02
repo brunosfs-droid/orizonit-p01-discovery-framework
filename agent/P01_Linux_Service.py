@@ -14,8 +14,10 @@ import threading
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import P01_Agent as agent
+import P01_Scheduler as scheduler
 
-VERSION = "0.5f.2"
+VERSION = "0.5f.3"
+LEGACY_VERSION = "0.5f.2"
 NAME = "canca-p01-agent.service"
 ACCOUNT = "canca-agent"
 UNIT_PATH = Path("/etc/systemd/system") / NAME
@@ -55,8 +57,7 @@ def load_config(path):
         raw = Path(path).read_bytes()
         require(len(raw) <= 16384, "service_config_invalid")
         doc = json.loads(raw.decode("utf-8-sig"), object_pairs_hook=unique)
-        require(isinstance(doc, dict) and set(doc) == {"schema_version", "workspace", "policy"}
-                and doc["schema_version"] == VERSION, "service_config_invalid")
+        scheduler.validate_config(doc, LEGACY_VERSION)
         workspace, policy = (local_path(doc[name]) for name in ("workspace", "policy"))
         require(workspace.is_dir() and policy.is_file() and policy.is_relative_to(workspace),
                 "service_config_invalid")
@@ -74,19 +75,28 @@ def invoke_once(config, stop_event):
         workspace, policy = load_config(config)
         if stop_event.is_set():
             return {"status": "stopped_before_invocation", "stage": None, "error_code": None}
-        result = agent.run_once(workspace, policy)
+        with agent.workspace_lock(workspace):
+            if scheduler.audit(workspace)["review_required"]:
+                return {"status": "review_required", "stage": None, "error_code": None}
+            result = agent.run_once(workspace, policy)
         require(result.get("status") in STATUSES and
                 (result.get("stage") is None or result["stage"] in agent.STAGES), "service_failed")
         return {"status": result["status"], "stage": result.get("stage"), "error_code": None}
     except Exception as exc:
         code = str(exc)
         return {"status": "failed", "stage": None,
-                "error_code": code if code in ERRORS else "service_failed"}
+                "error_code": code if code in ERRORS | scheduler.ERRORS else "service_failed"}
 
 
 def worker(config, stop_event, done_event, output):
     try:
-        output.update(invoke_once(config, stop_event))
+        load_config(config)
+        if scheduler.settings(config)["enabled"]:
+            output.update(scheduler.run(config, stop_event, load_config))
+        else:
+            output.update(invoke_once(config, stop_event))
+    except Exception as exc:
+        output.update(status="failed", stage=None, error_code=scheduler.public_error(exc))
     finally:
         if not output:
             output.update(status="failed", stage=None, error_code="service_failed")
@@ -99,14 +109,14 @@ def host(config):
     stop, done, output = threading.Event(), threading.Event(), {}
     previous = {sig: signal.signal(sig, lambda *_: stop.set()) for sig in (signal.SIGTERM, signal.SIGINT)}
     try:
-        print("Canca v0.5f.2 started; one invocation", flush=True)
+        print("Canca v0.5f.3 started; policy-gated worker", flush=True)
         thread = threading.Thread(target=worker, args=(config, stop, done, output), daemon=False)
         thread.start()
         done.wait()  # Cooperatively finish an in-flight call before exiting.
         thread.join()
         print(json.dumps(output, sort_keys=True), flush=True)
         stop.wait()  # Idle, no timer, retry or second dispatch.
-        print("Canca v0.5f.2 stopped; invocation finished", flush=True)
+        print("Canca v0.5f.3 stopped; invocation finished", flush=True)
     finally:
         for sig, handler in previous.items():
             signal.signal(sig, handler)
@@ -125,7 +135,7 @@ def unit_text(config):
     command = " ".join(quote(value) for value in (Path(sys.executable).resolve(),
                        Path(__file__).resolve(), "host", "--config", local_path(str(Path(config).absolute()))))
     return "\n".join([
-        "[Unit]", "Description=Canca P01 Optional Agent (one invocation per manual start)", "",
+        "[Unit]", "Description=Canca P01 Optional Agent (manual start, policy-gated worker)", "",
         "[Service]", "Type=simple", "User=" + ACCOUNT, "Group=" + ACCOUNT,
         "ExecStart=" + command, "Restart=no", "KillSignal=SIGTERM", "KillMode=mixed", "TimeoutStopSec=infinity",
         "UMask=0077", "NoNewPrivileges=yes", "PrivateTmp=yes", "ProtectSystem=strict",
@@ -180,10 +190,13 @@ def preflight(config):
     workspace, policy = load_config(config)
     status = agent.agent_status(workspace, policy)
     parsed, _ = agent.load_policy(policy)
+    with agent.workspace_lock(workspace):
+        schedule_check = scheduler.audit(workspace)
     return {"service_version": VERSION, "agent_version": agent.VERSION, "runtime_version": agent.runtime.VERSION,
-            "status": "ready", "next_status": status["status"], "next_stage": status["next_stage"],
+            "status": "ready", "next_status": "review_required" if schedule_check["review_required"] else status["status"],
+        "next_stage": None if schedule_check["review_required"] else status["next_stage"], "scheduler_audit": schedule_check,
             "all_grants_denied": not any(parsed.get("grants", {}).values()),
-            "one_invocation_per_start": True, "schedule_enabled": False, "upload_transport_persisted": False,
+            "one_invocation_per_start": not scheduler.settings(config)["enabled"], "schedule_enabled": scheduler.settings(config)["enabled"], "scheduler_version": scheduler.VERSION, "upload_transport_persisted": False,
             "network_activity_performed": False, "secret_resolution_performed": False,
             "service": inspect_service(config)}
 
@@ -221,11 +234,12 @@ def install(config):
     account_check()
     check = preflight(config)
     require(check["all_grants_denied"], "install_requires_denied_policy")
+    require(not check["schedule_enabled"], "install_requires_disabled_schedule")
     require(not check["service"]["installed"], "service_already_installed")
     workspace, policy = load_config(config)
     for path in (Path(config).absolute(), policy, workspace / "config", workspace,
                  Path(__file__).resolve(), Path(__file__).resolve().parent / "P01_Agent.py",
-                 Path(agent.runtime.__file__).resolve(), Path(agent.runtime.__file__).resolve().parent / "P01_Workspace_Lock.py"):
+                 Path(scheduler.__file__).resolve(), Path(agent.runtime.__file__).resolve(), Path(agent.runtime.__file__).resolve().parent / "P01_Workspace_Lock.py"):
         protected(path)
     # Exclusive creation: never overwrite a same-name unit/symlink.
     text = unit_text(config)
