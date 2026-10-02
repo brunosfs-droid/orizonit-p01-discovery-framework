@@ -423,3 +423,11 @@ Follow-up: após fechar v0.5e, iniciar v0.5f Optional Installed Service/Agent e 
 - Sem migração nova, coleta, raw source revalidation, API remota ou UI.
 - PostgreSQL 16/17: reader, paginação, escritor concorrente, lifecycle/ingestion changes e limites.
 - [ADR 0016](ADR_0016_Assessment_Report_v0.6.5.md), [guia](ASSESSMENT_REPORT_v0.6.5.md), [status](STATUS_ASSESSMENT_REPORT_v0.6.5.md).
+
+## v0.6.6 — recuperação lógica do par banco/store
+
+- Dump/restore real na matriz PostgreSQL 16/17 em fixture CI exclusiva descartável.
+- Igualdade das 14 tabelas, relatório, IDs CAS/findings e eventos históricos.
+- Hashes de arquivos, revalidação de evidências e replay sem mutação.
+- Nenhuma migração nova; roles/grants e recuperação operacional do LAB permanecem pendentes.
+- [Guia](BACKUP_RESTORE_v0.6.6.md) · [ADR 0017](ADR_0017_Backup_Restore_v0.6.6.md).
