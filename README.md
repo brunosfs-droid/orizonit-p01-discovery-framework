@@ -262,3 +262,10 @@ Qualificação CI do par banco/store com dump e restauração reais em PostgreSQ
 comparação das 14 tabelas, relatório, revalidação de evidências e replay sem mutação.
 Fixture exclusiva descartável; recuperação operacional e roles do LAB ainda pendentes.
 [Guia](docs/BACKUP_RESTORE_v0.6.6.md) · [Status](docs/STATUS_BACKUP_RESTORE_v0.6.6.md).
+
+### Verificação de recuperação LAB v0.6.7 CANDIDATE
+
+R1 básico PostgreSQL 16.15/Rocky aprovado no escopo sintético de import/assets/findings/reader.
+Helper capture/verify somente leitura compara 14 tabelas e bytes/projeções do store na fixture
+isolada antes/depois do restore. [Aceite R1](docs/validation/POSTGRESQL_P01LAB_R1_v0.6.5.md) ·
+[Roteiro de recuperação](docs/LAB_POSTGRESQL_RECOVERY_R1_v0.6.7.md) · [ADR 0018](docs/ADR_0018_LAB_Recovery_Check_v0.6.7.md).

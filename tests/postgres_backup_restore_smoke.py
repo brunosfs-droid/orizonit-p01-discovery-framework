@@ -117,6 +117,10 @@ def run(container):
                 ROOT / 'docs/validation/POSTGRESQL_LAB_FIXTURE_R1_v0.6.5.py')
             fixture = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(fixture)
+            recovery_spec = importlib.util.spec_from_file_location('lab_recovery',
+                ROOT / 'docs/validation/POSTGRESQL_LAB_RECOVERY_R1_v0.6.7.py')
+            recovery = importlib.util.module_from_spec(recovery_spec)
+            recovery_spec.loader.exec_module(recovery)
             prepared = fixture.prepare(base / 'fixture')
             store = Path(prepared['store_dir'])
             aid = prepared['assessment_id']
@@ -139,6 +143,7 @@ def run(container):
                     and len(before['assessment_events']) == 2)
             require(conn.execute('SELECT status FROM canca.findings').fetchall() == [('Open',), ('Open',)])
             inventory = store_inventory(store)
+            lab_snapshot = recovery.save_snapshot(recovery.capture(conn, store, 'canca_ci'), base / 'proof')
             archive = base / 'database.dump'
             with archive.open('xb') as target:
                 docker(container, ['pg_dump', '-U', 'canca_ci', '-d', 'canca_ci', '--format=custom'], target=target)
@@ -158,6 +163,8 @@ def run(container):
                     require(pg.migrate(restored)['status'] == 'already_migrated')
                     require(table_snapshot(restored) == before)
                     require(report_snapshot(restored, aid) == before_report)
+                    require(recovery.verify(restored, restored_store, RESTORE_DB, lab_snapshot)['status'] ==
+                            'POSTGRESQL LAB RECOVERY PASS')
                     for relative, expected in zip(directories, projections):
                         actual = prepare_projections(restored_store, restored_store / relative)
                         require(actual == expected)
@@ -193,6 +200,7 @@ def run(container):
                     'store_inventory_sha256': hashlib.sha256(pg.canonical(inventory)).hexdigest(),
                     'logical_snapshot_sha256': logical_sha, 'source_bytes_revalidated': True,
                     'receipt_corruption_rejected': True, 'replay_preserved_snapshot': True,
+                    'lab_recovery_helper_qualified': True,
                     'exclusive_synthetic_fixture': True, 'roles_and_grants_qualified': False,
                     'elapsed_seconds': round(time.monotonic() - start, 3), 'evidence_retained': False}
 

@@ -1,6 +1,6 @@
 # Cancã v0.6.3 — Identidade persistente de assets
 
-Data: 02/10/2026 (-03). **CANDIDATE para LAB**, Product Alpha, refs #63.
+Data: 02/10/2026 (-03). **LAB VALIDATED — R1 básico sintético; escopo restante CANDIDATE**, Product Alpha, refs #63.
 
 Registro central com ID `cas-`, escopo assessment, observações por bundle/ordinal,
 sinais qualificados e referências aos artefatos verificados. Projeção explícita de
@@ -28,3 +28,12 @@ automática. Sem RBAC/UI/findings ou qualificação P01LAB PostgreSQL TLS/roles/
 
 [ADR 0014](ADR_0014_Persistent_Assets_v0.6.3.md) ·
 [Guia](ASSET_REGISTRY_v0.6.3.md)
+
+## Atualização de qualificação em 02/10/2026
+
+O R1 básico em PostgreSQL 16.15 no Rocky passou: migração/replay, dois imports,
+1 CAS/2 observações, 4 avaliações/2 findings históricos Open e leitura por reader
+com UPDATE negado. [Aceite e 18 capturas](validation/POSTGRESQL_P01LAB_R1_v0.6.5.md).
+A observação nova substitui a pendência inicial de instalação e fixture. Não
+qualifica API com índice, transições lifecycle, cursor/fence completo, TLS remoto,
+roles de escrita separados ou restore operacional. Próximo gate: [recuperação R1](LAB_POSTGRESQL_RECOVERY_R1_v0.6.7.md).
