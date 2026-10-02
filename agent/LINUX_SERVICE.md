@@ -1,9 +1,10 @@
 # Linux/systemd host v0.5f.2
 
-Current host code is v0.5f.3 CANDIDATE: [explicit scheduler](SCHEDULER.md).
+Current host code is v0.5f.3, LAB VALIDATED for bounded offline scheduling R1: [explicit scheduler](SCHEDULER.md).
 The guide below describes the legacy manual configuration, still accepted by the
 new host. Scheduling remains disabled with that schema. Historical LAB acceptance
-belongs to the earlier component/commit; v0.5f.3 R1 is pending. Remove installed old
+belongs to the earlier component/commit; v0.5f.3 has a separate
+[accepted scheduled R1](../docs/validation/SCHEDULER_P01LAB_R1_v0.5f.3.md). Remove installed old
 hosts with their original deployment/config before upgrading the pinned command.
 
 Optional manual host for agent v0.5f.0 / runtime v0.5e.6. Python 3.10+ on a
