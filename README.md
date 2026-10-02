@@ -249,3 +249,9 @@ The canonical portable runtime remains v0.5e.6 and is supported independently.
 Persistência explícita de findings com catálogo/engine/hash de origem, cobertura
 WinRM de Firewall e secure channel e replay imutável. Sem fechamento automático.
 [Guia](docs/FINDINGS_v0.6.4.md) · [Status](docs/STATUS_FINDINGS_v0.6.4.md).
+
+### Relatório consolidado v0.6.5 CANDIDATE
+
+Consulta somente leitura de lifecycle, identidade, cobertura e ocorrências
+históricas por assessment, com paginação vinculada a um escopo consistente.
+[Guia](docs/ASSESSMENT_REPORT_v0.6.5.md) · [Status](docs/STATUS_ASSESSMENT_REPORT_v0.6.5.md).

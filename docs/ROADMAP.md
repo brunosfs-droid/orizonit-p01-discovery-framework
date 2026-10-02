@@ -414,3 +414,12 @@ Follow-up: após fechar v0.5e, iniciar v0.5f Optional Installed Service/Agent e 
 - CI PostgreSQL 16/17 real: fonte/drift, upgrade, rollback, concorrência, roles e paginação.
 - Próximo trabalho independente: qualificação do servidor, backup/restore e relatório com cobertura.
 - [ADR 0015](ADR_0015_Findings_v0.6.4.md), [guia](FINDINGS_v0.6.4.md), [status](STATUS_FINDINGS_v0.6.4.md).
+
+### v0.6.5 — Consolidated read-only assessment reporting (CANDIDATE)
+
+- Lifecycle, imports pendentes, identidade, cobertura explícita e ocorrências históricas.
+- Catálogos originais e referências de evidência; sem latest implícito, auto-close ou conclusão de segurança.
+- Snapshot por consulta e paginação com hash de escopo; excesso de limite rejeita o relatório inteiro.
+- Sem migração nova, coleta, raw source revalidation, API remota ou UI.
+- PostgreSQL 16/17: reader, paginação, escritor concorrente, lifecycle/ingestion changes e limites.
+- [ADR 0016](ADR_0016_Assessment_Report_v0.6.5.md), [guia](ASSESSMENT_REPORT_v0.6.5.md), [status](STATUS_ASSESSMENT_REPORT_v0.6.5.md).
