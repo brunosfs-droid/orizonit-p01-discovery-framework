@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""v0.6.0 explicit PostgreSQL index of validated imported evidence metadata."""
+"""Explicit PostgreSQL migrations and index of validated imported evidence metadata."""
 from __future__ import annotations
 import argparse
 from datetime import datetime
@@ -17,8 +17,9 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'evidence_bundle'))
 import P01_Evidence_Bundle as bundle
 
-VERSION = '0.6.0'
+VERSION = '0.6.2'
 SQL_PATH = Path(__file__).resolve().parent / 'migrations/0001_metadata.sql'
+MIGRATIONS = (SQL_PATH, SQL_PATH.with_name('0002_assessment_lifecycle.sql'))
 IDENTITY = ('assessment_id', 'run_id', 'node_id')
 ROLES = {'network_discovery', 'credentialed_evidence', 'assessment_manifest', 'asset_resolver'}
 ERRORS = {'input_invalid', 'receipt_integrity_failed', 'bundle_integrity_failed', 'identity_mismatch',
@@ -192,16 +193,22 @@ def timeout(conn):
     conn.execute("SET LOCAL statement_timeout = '30s'")
 
 
-def schema_check(conn):
+def migration_prefix(rows):
+    expected = [(i, digest(path.read_bytes())) for i, path in enumerate(MIGRATIONS, 1)]
+    require(len(rows) <= len(expected) and rows == expected[:len(rows)], 'schema_mismatch')
+    return expected
+
+
+def schema_check(conn, minimum=1):
     row = conn.execute("SELECT to_regclass('canca.schema_migrations')").fetchone()
     require(row and row[0] is not None, 'schema_required')
     rows = conn.execute('SELECT version, sha256 FROM canca.schema_migrations ORDER BY version').fetchall()
-    require(rows == [(1, digest(SQL_PATH.read_bytes()))], 'schema_mismatch')
+    migration_prefix(rows)
+    require(len(rows) >= minimum, 'schema_required')
 
 
 def migrate(conn):
     guard_connection(conn)
-    raw = SQL_PATH.read_bytes()
     with conn.transaction():
         conn.execute('SET TRANSACTION ISOLATION LEVEL READ COMMITTED')
         timeout(conn)
@@ -209,12 +216,12 @@ def migrate(conn):
         conn.execute('CREATE SCHEMA IF NOT EXISTS canca')
         conn.execute('CREATE TABLE IF NOT EXISTS canca.schema_migrations (version integer PRIMARY KEY, sha256 text NOT NULL)')
         rows = conn.execute('SELECT version, sha256 FROM canca.schema_migrations ORDER BY version').fetchall()
-        if rows:
-            require(rows == [(1, digest(raw))], 'schema_mismatch')
-            return {'status': 'already_migrated', 'schema_version': '0.6', 'migration': 1}
-        conn.execute(raw.decode())
-        conn.execute('INSERT INTO canca.schema_migrations VALUES (%s, %s)', (1, digest(raw)))
-    return {'status': 'migrated', 'schema_version': '0.6', 'migration': 1}
+        expected = migration_prefix(rows)
+        for version, sha in expected[len(rows):]:
+            conn.execute(MIGRATIONS[version - 1].read_text())
+            conn.execute('INSERT INTO canca.schema_migrations VALUES (%s, %s)', (version, sha))
+    return {'status': 'already_migrated' if len(rows) == len(expected) else 'migrated',
+            'schema_version': '0.6', 'migration': len(expected)}
 
 
 def index_import(conn, projection):
@@ -237,7 +244,7 @@ def index_import(conn, projection):
             require(existing[0] == fingerprint, 'bundle_conflict')
             return {'status': 'already_indexed', 'bundle_id': bid, 'artifact_count': len(projection['artifacts'])}
         aid, rid, nid = (projection[key] for key in IDENTITY)
-        conn.execute('INSERT INTO canca.assessments VALUES (%s) ON CONFLICT DO NOTHING', (aid,))
+        conn.execute('INSERT INTO canca.assessments (assessment_id) VALUES (%s) ON CONFLICT DO NOTHING', (aid,))
         conn.execute('INSERT INTO canca.nodes VALUES (%s) ON CONFLICT DO NOTHING', (nid,))
         conn.execute('INSERT INTO canca.runs VALUES (%s,%s,%s) ON CONFLICT DO NOTHING', (aid, rid, nid))
         conn.execute('''INSERT INTO canca.imports (bundle_id,assessment_id,run_id,node_id,bundle_sha256,

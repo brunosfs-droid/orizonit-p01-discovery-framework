@@ -1,7 +1,7 @@
 # Cancã v0.5f.3 — Agendamento explícito e revisão após interrupção
 
 Data do candidato: 01/10/2026 (-03). Aceite: 02/10/2026 (-03).
-Status: **LAB VALIDATED — R1 offline de ciclos limitados e revisão após interrupção**.
+Status: **LAB VALIDATED — R1 curto e soak estendido offline de 10 ticks**.
 Refs #83; [ADR 0010](ADR_0010_Scheduler_v0.5f.3.md).
 
 Hosts Windows/Linux e scheduler: v0.5f.3. Wrapper/policy/journal canônico permanecem
@@ -34,8 +34,17 @@ por host, auditorias PASS, fixtures retidas e serviços removidos. Journalctl e
 query independente no Rocky corroboram os resultados. [Aceite e limites](validation/SCHEDULER_P01LAB_R1_v0.5f.3.md).
 Bytes dos proof/journals não foram anexados; validade é a auditoria reportada pelo
 helper. HEAD do operador não foi capturado. CI da implementação: PR #93, Python e
-quatro jobs nativos PASS. Próximo gate: soak estendido em fixtures novas; não executado.
+quatro jobs nativos PASS.
 
-Limites: R1 curto, sem prova multi-day; grants live sempre negados; principal do serviço
+[Soak estendido](validation/SCHEDULER_P01LAB_EXTENDED_v0.5f.3.md) aprovado em
+02/10/2026: PASS/exit 0 nos dois hosts, 10 ticks a 60s, ciclos de 540,911s Windows
+e 540,310s Rocky, 11 journals/3 sessões por host e auditorias PASS. Mesmos gates de
+policy/state/orçamento, interrupção preservada e restart em revisão sem replay.
+HEAD Windows capturado: 84a791e596311a123ba179325f2af8234d2c31a1; HEAD Rocky não
+mostrado separadamente. Aceite baseado nas duas capturas desta nova rodada;
+proof/journals brutos não foram anexados. Fixtures novas retidas e serviços removidos.
+
+Limites: soak offline limitado de cerca de 9 minutos, sem prova multi-day; grants live sempre negados; principal do serviço
 não qualificado para AUTH/FULL/upload; retenção automática adiada. Recovery exige
-revisão/reconciliação manual e preservação das evidências. O aceite v0.5f.3 usa as oito capturas desta rodada, sem extrapolar os LABs anteriores. [Contrato operacional](../agent/SCHEDULER.md).
+revisão/reconciliação manual e preservação das evidências. R1 curto e rodada estendida
+mantêm registros separados, sem extrapolar seus escopos. [Contrato operacional](../agent/SCHEDULER.md).

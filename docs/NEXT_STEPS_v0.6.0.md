@@ -1,58 +1,34 @@
-# P01 — Próximos passos após scheduler R1 e fundação v0.6.0
+# P01 — Próximos passos da Product Alpha
+
+Atualizado em 02/10/2026 (-03), após v0.6.2 e resultados do soak estendido.
 
 ## Preciso testar alguma coisa agora?
 
-**Nenhum teste seu bloqueia o desenvolvimento da fundação PostgreSQL.** O R1
-curto do scheduler já foi aprovado em Windows e Rocky. Não é preciso repetir
-esse R1 nem reinstalar o serviço que o helper removeu ao terminar.
+**Nenhum teste seu bloqueia o desenvolvimento atual.** R1 curto e soak estendido
+do scheduler estão aprovados em Windows e Rocky no escopo offline demonstrado.
+Não é preciso repetir os testes ou reinstalar serviços removidos pelo helper.
 
-Existe um teste complementar pendente: **soak estendido do scheduler**. Pode ser
-executado depois, nas VMs do LAB, enquanto a Product Alpha avança com dados
-sintéticos e CI. Não é validação de coleta live nem de PostgreSQL.
+O soak estendido usou 10 ticks com intervalo real de 60s, ciclos de 540,911s e
+540,310s, auditorias PASS e exit 0 nos dois hosts. Intenções interrompidas e fixtures
+ficam preservadas; o restart em revisão com zero chamadas é esperado.
+[Aceite e limites](validation/SCHEDULER_P01LAB_EXTENDED_v0.5f.3.md).
 
-## Soak estendido, quando houver disponibilidade
+Multi-day e qualificação do principal para AUTH/FULL/POST continuam independentes;
+o soak offline de cerca de 9 minutos não os comprova. Não há execução live proposta
+como dependência deste incremento.
 
-Atualize o checkout para `main` (`git pull --ff-only`) e registre `git rev-parse
-HEAD` junto da execução. Use a mesma conta administrativa e os mesmos pré-requisitos
-que deram PASS no R1 curto. Cada execução cria fixture nova e remove apenas seu
-próprio serviço; preserve a pasta indicada no resultado. Não remova a evidência
-do R1 anterior nem intenções interrompidas sem revisão.
+## PostgreSQL e desenvolvimento
 
-Windows: PowerShell administrativo, **na raiz do checkout**, com Python/pywin32
-já usados no R1 (se usa venv, ative-a antes):
+v0.6.0 entregou a fundação do índice; v0.6.1 integrou ingestão/índice de forma opt-in
+e reconciliação explícita; v0.6.2 adiciona ciclo de vida administrativo do assessment
+com revisão, idempotência e histórico transacional. Todas as funções PostgreSQL
+permanecem **CANDIDATE para LAB**, com CI sintético em PostgreSQL 16/17 real.
 
-```powershell
-python tests/scheduled_agent_soak.py --lab-root C:\Canca\scheduled-lab --node-id P01-MGMT01 --ticks 10
-$LASTEXITCODE
-```
+Não instale PostgreSQL nem altere o store atual por causa deste guia. A qualificação
+do servidor terá um roteiro separado para base isolada, contas, TLS e backup/restore.
+Nenhuma migração é automática. O próximo desenvolvimento independente é a
+modelagem de identidade persistente de assets, antes de findings e UI.
 
-Rocky: shell administrativo, **na raiz do checkout**, usando o Python 3.12 já
-validado no R1 e mantendo SELinux Enforcing:
-
-```sh
-/usr/bin/python3 tests/scheduled_agent_soak.py --lab-root /var/lib/canca/scheduled-lab --node-id P01-LNX-RKY01 --ticks 10
-echo $?
-```
-
-O helper usa somente autorizações negadas e intervalos reais de 60s. O primeiro
-ciclo de 10 ticks leva pelo menos **9 minutos por host**; não encurte o intervalo.
-Depois verifica uma interrupção durante espera e um restart sem replay.
-
-Aceitação: `SCHEDULED AGENT SOAK PASS`, exit 0, 3 starts, 11 invocações canônicas,
-3 sessões de scheduler, recarga de policy, orçamento respeitado, intenção running
-preservada e restart em revisão com 0 novas invocações. Envie o resultado completo,
-HEAD e os arquivos indicados pelo helper para fechar esse gate. Um print de PASS
-isolado não comprova soak prolongado nem coleta live.
-
-## PostgreSQL: ainda não exige alteração sua
-
-A v0.6.0 entrega migração e indexação explícita de imports já validados, com CI
-PostgreSQL 16/17. Ainda é **CANDIDATE** para seu LAB. Não instale PostgreSQL nem
-altere o store existente por causa deste guia. A qualificação do servidor terá
-um roteiro próprio para base isolada, contas, TLS e backup/restore.
-
-O próximo desenvolvimento independente é definir a integração ingestão/índice e
-sua reconciliação após interrupção, antes de acrescentar lifecycle, assets, API e UI.
-
-[Status v0.6.0](STATUS_PERSISTENCE_v0.6.0.md) ·
-[R1 scheduler já aprovado](validation/SCHEDULER_P01LAB_R1_v0.5f.3.md)
+[Lifecycle v0.6.2](ASSESSMENT_LIFECYCLE_v0.6.2.md) ·
+[Integração v0.6.1](INGESTION_INDEX_v0.6.1.md) ·
+[R1 curto](validation/SCHEDULER_P01LAB_R1_v0.5f.3.md)
