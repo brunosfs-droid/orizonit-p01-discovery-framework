@@ -5,6 +5,12 @@ Este gate utiliza somente a base recuperada canca_p01_restore_r1; quatro mudanç
 serão gravadas explicitamente. Fonte/store original e API ativa ficam preservados. Sem AUTH/FULL/POST.
 Executar em janela sem outros escritores na fixture. Código/CI segue independente do resultado LAB.
 
+**Correção em 02/10/2026, após capturas 215506/215725/215911:** o helper foi instalado
+corretamente, mas o sufixo do diretório foi transcrito incorretamente neste roteiro.
+`test -f` não exibiu REFERENCIA OK e inspect/exercise retornaram recovery_invalid antes
+da conexão. Lifecycle/paginação ainda não estão aprovados no LAB. Começar na etapa 2
+abaixo; não reenviar helper, restaurar banco ou recriar snapshot para resolver o caminho.
+
 ## 1. Enviar somente o helper novo
 
 No PowerShell, já no clone Cancã, usar o SHA qualificado informado na entrega no lugar de SHA_V068_QUALIFICADO:
@@ -48,7 +54,11 @@ Helper de recuperação v0.6.7 já está instalado junto ao helper novo.
 
 ## 2. Restaurar variáveis e consultar sem escrever
 
-Os caminhos abaixo são os mostrados nas capturas aceitas, não placeholders:
+Localizar o snapshot original pelo SHA256 aceito, sem copiar o sufixo de uma imagem.
+O bloco abaixo valida JSON/sidecar pelo helper já instalado e exige exatamente uma
+referência correspondente e o diretório restored-store. Não acessa PostgreSQL nem grava arquivos.
+Se houver zero/múltiplas referências ou erro de integridade, ele para sem selecionar a primeira.
+Copiar o bloco inteiro no Rocky, na mesma sessão em que os próximos comandos serão executados:
 
 ```bash
 unset PGSERVICE PGHOSTADDR
@@ -56,30 +66,84 @@ export PGHOST=127.0.0.1
 export PGPORT=5432
 export PGUSER=canca_lab_admin
 export PGDATABASE=canca_p01_restore_r1
-export P01_RECOVERY_DIR='/var/lib/canca/postgres-recovery/P01-PG-RECOVERY-ZXbAp043'
-export P01_RESTORED_STORE="$P01_RECOVERY_DIR/restored-store"
-export P01_REFERENCE="$P01_RECOVERY_DIR/source-proof/P01-PG-RECOVERY-304b66d3aa73/snapshot.json"
-test -f "$P01_REFERENCE" && echo 'REFERENCIA OK'
-read -r -s -p 'Senha canca_lab_admin: ' P01_LAB_PASSWORD
-export PGPASSWORD="$P01_LAB_PASSWORD"
-unset P01_LAB_PASSWORD
-python docs/validation/POSTGRESQL_LAB_LIFECYCLE_R1_v0.6.8.py inspect \
-  --expected-database canca_p01_restore_r1 --store-dir "$P01_RESTORED_STORE" \
-  --reference "$P01_REFERENCE" --evidence-root "$P01_RECOVERY_DIR/lifecycle-proof"
+unset P01_RECOVERY_DIR P01_RESTORED_STORE P01_REFERENCE
+P01_INSPECT_OK=false
+cd /root/p01/canca-postgres-lab-v0.6.5
+source .venv/bin/activate
+if P01_REFERENCE="$(python3 - <<'PY'
+import hashlib
+import importlib.util
+from pathlib import Path
+import sys
+
+root = Path('/var/lib/canca/postgres-recovery')
+expected = '13e1473ceab9f6e636ac1709db455ac34a8377b8b63c5e889d86a534685d3fb8'
+try:
+    helper = Path('docs/validation/POSTGRESQL_LAB_RECOVERY_R1_v0.6.7.py').resolve()
+    spec = importlib.util.spec_from_file_location('locate_recovery_r1', helper)
+    recovery = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(recovery)
+    candidates = []
+    for number, path in enumerate(root.glob('P01-PG-RECOVERY-*/source-proof/P01-PG-RECOVERY-*/snapshot.json'), 1):
+        if number > 100:
+            raise ValueError('limit')
+        with path.open('rb') as source:
+            raw = source.read(1024**2 + 1)
+        if len(raw) <= 1024**2 and hashlib.sha256(raw).hexdigest() == expected:
+            recovery.load_snapshot(path)
+            store = path.parents[2] / 'restored-store'
+            if not store.is_dir() or store.absolute() != store.resolve():
+                raise ValueError('store')
+            candidates.append(path)
+    if len(candidates) != 1:
+        raise ValueError('reference_count')
+    print(candidates[0])
+except Exception:
+    print('LOCALIZACAO FALHOU: revisar referencia/store; nenhuma alteracao realizada.', file=sys.stderr)
+    raise SystemExit(2)
+PY
+)"; then
+  export P01_REFERENCE
+  P01_RECOVERY_DIR="$(dirname "$(dirname "$(dirname "$P01_REFERENCE")")")"
+  export P01_RECOVERY_DIR
+  export P01_RESTORED_STORE="$P01_RECOVERY_DIR/restored-store"
+  printf 'Referencia: %s\nStore recuperado: %s\n' "$P01_REFERENCE" "$P01_RESTORED_STORE"
+  echo 'REFERENCIA OK — JSON, sidecar e SHA original conferidos'
+  read -r -s -p 'Senha canca_lab_admin: ' P01_LAB_PASSWORD
+  export PGPASSWORD="$P01_LAB_PASSWORD"
+  unset P01_LAB_PASSWORD
+  if python docs/validation/POSTGRESQL_LAB_LIFECYCLE_R1_v0.6.8.py inspect \
+    --expected-database canca_p01_restore_r1 --store-dir "$P01_RESTORED_STORE" \
+    --reference "$P01_REFERENCE" --evidence-root "$P01_RECOVERY_DIR/lifecycle-proof"; then
+    P01_INSPECT_OK=true
+  else
+    unset PGPASSWORD
+    echo 'PARAR: inspect falhou; nao executar exercise.'
+  fi
+else
+  unset P01_REFERENCE
+  echo 'PARAR: nao executar inspect/exercise antes de localizar a referencia.'
+fi
 ```
 
 Esperado: POSTGRESQL LAB PAGES PASS, state registered/revision 0, report_pages=4,
 evaluations=4, recorded_open_findings=2, unchanged_tables_compared=12,
 source_bytes_revalidated=true, administrative_lifecycle_mutated=false, store_mutated=false.
 inspect também aceita um prefixo já confirmado do teste se houve interrupção posterior.
+**Só executar etapa 3 depois de POSTGRESQL LAB PAGES PASS/exit 0.** Se a localização
+ou inspect falhar, enviar esse resultado e não avançar para exercise.
 
 ## 3. Exercício explícito na base recuperada
 
 ```bash
-python docs/validation/POSTGRESQL_LAB_LIFECYCLE_R1_v0.6.8.py exercise \
-  --expected-database canca_p01_restore_r1 --store-dir "$P01_RESTORED_STORE" \
-  --reference "$P01_REFERENCE" --evidence-root "$P01_RECOVERY_DIR/lifecycle-proof" \
-  --ack-lifecycle-test
+if [ "${P01_INSPECT_OK:-false}" = true ]; then
+  python docs/validation/POSTGRESQL_LAB_LIFECYCLE_R1_v0.6.8.py exercise \
+    --expected-database canca_p01_restore_r1 --store-dir "$P01_RESTORED_STORE" \
+    --reference "$P01_REFERENCE" --evidence-root "$P01_RECOVERY_DIR/lifecycle-proof" \
+    --ack-lifecycle-test
+else
+  echo 'PARAR: concluir a etapa 2 com inspect PASS nesta mesma sessao.'
+fi
 ```
 
 Primeira execução inteira: POSTGRESQL LAB LIFECYCLE PASS, initial_revision=0,
