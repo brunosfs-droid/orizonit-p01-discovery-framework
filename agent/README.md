@@ -55,14 +55,16 @@ Real LAB procedure: [LAB_OPTIONAL_AGENT_v0.5f.0_R1.md](../docs/LAB_OPTIONAL_AGEN
 Architecture decision: [ADR 0007](../docs/ADR_0007_Optional_Agent_v0.5f.md).
 
 Foundation v0.5f.0: Windows P01LAB R1 LAB VALIDATED (27 screenshots); Linux CI
-passed, real Linux not claimed.
+passed; full Linux foundation pipeline remains unqualified. The separately
+validated Linux host lifecycle is described below.
 
 Windows host v0.5f.1 is LAB VALIDATED for manual lifecycle on P01-MGMT01:
 [service guide](WINDOWS_SERVICE.md). It keeps this agent version/journal contract,
 manual usage and runtime v0.5e.6 intact. Use the service CLI query for actual SCM
 installation state; this foundation doctor does not query SCM.
 
-Linux host v0.5f.2 is a separate CANDIDATE component:
-[systemd guide](LINUX_SERVICE.md), native Ubuntu CI and a separate Rocky LAB gate.
+Linux host v0.5f.2 is LAB VALIDATED for manual lifecycle on P01-LNX-RKY01:
+[systemd guide](LINUX_SERVICE.md), native Ubuntu CI and accepted Rocky 10.2 R1.
+This is an offline service fixture, not Linux live AUTH/FULL/upload acceptance.
 
-Next: Linux lifecycle LAB -> v0.5f.3 scheduling/recovery/soak.
+Next: planned v0.5f.3 scheduling/restart/recovery hardening and soak.

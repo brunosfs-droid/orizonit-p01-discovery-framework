@@ -1,6 +1,10 @@
 # Cancã — LAB Linux/systemd v0.5f.2 / P01LAB R1
 
-Data: 01/10/2026 (-03). Status: CANDIDATE; aceite Rocky Linux pendente.
+Data: 01/10/2026 (-03). Status: LAB VALIDATED para o ciclo manual do serviço e preservação de revisão.
+R1 aprovado: Rocky 10.2, Python 3.12.13, systemd 257; SELinux Enforcing
+mostrado no preflight. PASS, exit 0 e sete journals auditados.
+[Registro de aceite](validation/LINUX_SERVICE_P01LAB_R1_v0.5f.2.md).
+
 Host P01-LNX-RKY01 (192.168.100.50), separado do Windows P01-MGMT01.
 Ensaio offline de lifecycle, sem discovery/AUTH/FULL/POST. Mantém a API de ingestão
 em execução e o store já validado; nenhum comando abaixo opera esse serviço.
@@ -99,7 +103,11 @@ nenhuma unidade fica instalada ao passar. Repetição usa outra fixture.
 
 ## Falha e limpeza
 
-Preservar output/fixture. Examinar somente a unidade do ensaio:
+Após PASS, o serviço já foi removido. "Unit could not be found" é esperado,
+e não exige reinstalar nem executar stop/remove. O journal histórico permanece.
+O status=9/KILL da terceira execução é a queda intencional do teste.
+
+Em falha, preservar output/fixture. Examinar somente a unidade do ensaio:
 
 ```bash
 systemctl status canca-p01-agent.service --no-pager
@@ -108,17 +116,47 @@ journalctl -u canca-p01-agent.service -n 60 --no-pager
 
 Se houver AVC/SELinux, preservar o diagnóstico; não desativar SELinux nem ampliar
 grants/ownership da API para passar. Uma falha de ambiente não fecha o aceite.
-O helper tenta stop/remove em finally. Para concluir limpeza, usar o mesmo
-interpretador e deployment/config impressos na fixture, substituindo o caminho:
+O helper tenta stop/remove em finally. Para consultar a fixture, copiar o valor
+real de fixture_directory quando o comando abaixo pedir. Não copiar marcadores
+entre sinais de menor/maior: Bash os interpreta como redirecionamento. No R1 aceito,
+o caminho é /var/lib/canca/service-lab/P01-SYSTEMD-R1-ff8b130868c1.
+
+Usar o mesmo interpretador do ensaio (neste host, /usr/bin/python3):
 
 ```bash
-Fixture=/var/lib/canca/service-lab/P01-SYSTEMD-R1-<identificador>
-"$LinuxPython" "$Fixture/deployment/agent/P01_Linux_Service.py" query --config "$Fixture/service.json"
+LinuxPython=/usr/bin/python3
+read -r -p 'Cole o fixture_directory exibido no resumo: ' Fixture
+if [ -f "$Fixture/service.json" ]; then
+  "$LinuxPython" "$Fixture/deployment/agent/P01_Linux_Service.py" query --config "$Fixture/service.json"
+else
+  printf 'Caminho invalido: service.json nao encontrado. Confira fixture_directory.\n'
+fi
+```
+
+Após PASS, query deve mostrar installed=false; encerrar a consulta nesse ponto.
+Somente em falha, se query confirmar installed=true para a unidade do ensaio,
+pedir stop e consultar novamente:
+
+```bash
 "$LinuxPython" "$Fixture/deployment/agent/P01_Linux_Service.py" stop --config "$Fixture/service.json"
-# Após query indicar inactive/failed e main_pid=0:
+"$LinuxPython" "$Fixture/deployment/agent/P01_Linux_Service.py" query --config "$Fixture/service.json"
+```
+
+Somente quando query indicar inactive/failed e main_pid=0, remover:
+
+```bash
 "$LinuxPython" "$Fixture/deployment/agent/P01_Linux_Service.py" remove --config "$Fixture/service.json"
 ```
 
 Stop durante invocação aguarda conclusão; não há timeout de kill automático.
 Não habilitar unit/timer/recovery. Este aceite cobre lifecycle e revisão manual;
 credenciais live, cancelamento e scheduling/recovery/soak terão gates próprios.
+
+
+## Evidência R1 preservada
+
+O resumo completo mostra evidence_retained=true e a fixture ff8b130868c1.
+As capturas incluem proof JSON/sidecar e sete journals/sidecars na listagem.
+A validade dos bytes foi reportada pela auditoria nativa; não recebemos os
+arquivos brutos para uma segunda verificação independente. Preservar intent
+e fixture; não repetir o ensaio já aceito só para resolver a consulta pós-PASS.

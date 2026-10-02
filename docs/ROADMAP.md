@@ -254,11 +254,21 @@ O LAB inicial usará P01-MGMT01 como Discovery Node por possuir acesso ao segmen
   [Service evidence](validation/WINDOWS_SERVICE_P01LAB_R1_v0.5f.1.md): 4 starts,
   2 denials/2 reviews, state/intent preserved, lock reacquired, removed service,
   7/7 journal audit. No live service-account AUTH/FULL/upload or soak claim.
-- **v0.5f.2:** CANDIDATE — Linux/systemd manual lifecycle, dedicated account,
+- **v0.5f.2:** LAB VALIDATED (Rocky 10.2 P01LAB R1 manual lifecycle) — Linux/systemd manual lifecycle, dedicated account,
   exact unit checks, one invocation/start, cooperative stop, preserved review gate,
-  no automatic recovery/timer. Native Ubuntu CI is a merge gate;
-  [Rocky LAB R1](LAB_LINUX_SERVICE_v0.5f.2_R1.md) pending.
+  no automatic recovery/timer. Native Ubuntu CI passed.
+  [Rocky R1 evidence](validation/LINUX_SERVICE_P01LAB_R1_v0.5f.2.md): Python
+  3.12.13/systemd 257, SELinux Enforcing at preflight, PASS/exit 0, four starts,
+  two denials/two reviews, preserved state/intent, released lock, removed unit,
+  seven audited journals, retained fixture and corroborating systemd journal.
 - **v0.5f.3:** planned — scheduling/restart/recovery hardening and soak.
+  Gates: explicit default-off scheduling; reread identity/policy/integrity at each
+  tick; shared lock with no overlapping dispatch; halt on failure/running intent
+  until operator reconciliation; never auto-replay AUTH/FULL/POST; cooperative
+  stop and preserved evidence across host restart; bounded offline soak with
+  journal/sidecar audit, restart counts and zero unexpected live access. Native
+  Windows/Linux CI precedes separate real LAB rounds. Current hosts retain manual
+  start and no automatic recovery until that candidate is implemented/tested.
 - Issue #83; [agent guide](../agent/README.md) and
   [LAB gate](LAB_OPTIONAL_AGENT_v0.5f.0_R1.md).
 

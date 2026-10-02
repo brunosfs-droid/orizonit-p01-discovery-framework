@@ -69,5 +69,9 @@ requires explicit env provisioning for any separately authorized live credential
 stage. R1 qualifies only an isolated offline lifecycle fixture.
 
 Validation: ten Linux contracts, a real subprocess SIGTERM check, full regression,
-and native systemd CI on Ubuntu/Python 3.10 and 3.12. Rocky LAB is a separate gate:
+and native systemd CI on Ubuntu/Python 3.10 and 3.12. Rocky 10.2/Python 3.12.13/systemd 257 R1 manual lifecycle is LAB VALIDATED;
+SELinux Enforcing was shown at preflight. PASS/exit 0, 4 starts and 7 journals
+were captured, with preserved fixture and independent systemd journal.
+[Acceptance and limits](../docs/validation/LINUX_SERVICE_P01LAB_R1_v0.5f.2.md).
+Reusable operator procedure:
 [R1 operator guide](../docs/LAB_LINUX_SERVICE_v0.5f.2_R1.md).

@@ -1,7 +1,6 @@
 # ADR 0009 — Linux/systemd host
 
-Date: 2026-10-01 (-03). Status: Accepted for v0.5f.2 CANDIDATE implementation;
-Rocky Linux P01LAB pending. Refs Issue #83; follows ADR 0007/0008.
+Date: 2026-10-01 (-03). Status: Accepted; v0.5f.2 Rocky Linux P01LAB R1 manual lifecycle LAB VALIDATED. Refs Issue #83; follows ADR 0007/0008.
 
 Use a fixed root-installed systemd unit with a dedicated non-login, non-root
 `canca-agent` user/group. Pin interpreter/script/config; require root-owned code
@@ -28,10 +27,13 @@ all evidence and account/deployment on removal; reset failed state only for this
 removed unit. No manipulation of ingestion/API service or its data.
 
 Validate contracts locally and real native systemd on Ubuntu CI (Python 3.10/3.12).
-R1 then tests P01-LNX-RKY01 separately: 4 starts, 2 denials, 2 reviews, idle windows,
+R1 on P01-LNX-RKY01 separately passed: 4 starts, 2 denials, 2 reviews, idle windows,
 refused running removal, stop/restart, independent pre-dispatch intent, idle-host
 SIGKILL, no automatic restart, lock reacquisition, 7-journal audit and removal.
-CI is a merge gate, not Rocky/SELinux acceptance. No live credentialed stages,
+CI and Rocky R1 are separate evidence sets. R1 reported Rocky 10.2/Python
+3.12.13/systemd 257 and SELinux Enforcing at preflight. Native PASS/exit 0,
+retained fixture, systemd journal and seven-file-pair listing were captured; raw
+journals were not uploaded. [R1 evidence](validation/LINUX_SERVICE_P01LAB_R1_v0.5f.2.md). No live credentialed stages,
 mid-stage cancellation/POST reconciliation or long-duration soak are qualified.
 
 Primary references consulted (systemd source documentation, v252):
