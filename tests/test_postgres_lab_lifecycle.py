@@ -11,13 +11,19 @@ helper = recovery_fixture.module('lab_lifecycle_test', 'docs/validation/POSTGRES
 
 class LifecycleLabBoundaryTests(unittest.TestCase):
     def test_source_database_missing_ack_and_reference_fail_before_connection(self):
-        base = ['exercise', '--store-dir', '/not-used', '--reference', '/not-used', '--evidence-root', '/not-used']
+        base = ['exercise', '--store-dir', '/not-used', '--reference', '/not-used', '--evidence-root', '/not-used-evidence']
         with patch.dict(os.environ, {'PGDATABASE': helper.DATABASE}), patch.object(helper.pg, 'open_connection') as connect:
             for database, extra in [('canca_p01_lab_r1', ['--ack-lifecycle-test']), (helper.DATABASE, []),
                                     (helper.DATABASE, ['--ack-lifecycle-test'])]:
                 with redirect_stdout(io.StringIO()):
                     self.assertEqual(helper.cli(base + ['--expected-database', database] + extra), 2)
             connect.assert_not_called()
+            with patch.object(helper.recovery, 'load_snapshot'):
+                for output in ('/not-used', '/not-used/nested'):
+                    with redirect_stdout(io.StringIO()):
+                        self.assertEqual(helper.cli(base + ['--expected-database', helper.DATABASE,
+                                             '--ack-lifecycle-test', '--evidence-root', output]), 2)
+                connect.assert_not_called()
 
     def test_driver_exception_is_redacted(self):
         with patch.dict(os.environ, {'PGDATABASE': helper.DATABASE}), patch.object(helper.recovery, 'load_snapshot'), \
@@ -25,7 +31,7 @@ class LifecycleLabBoundaryTests(unittest.TestCase):
             out = io.StringIO()
             with redirect_stdout(out):
                 self.assertEqual(helper.cli(['inspect', '--expected-database', helper.DATABASE, '--store-dir', '/unused',
-                                             '--reference', '/unused', '--evidence-root', '/unused']), 2)
+                                             '--reference', '/unused', '--evidence-root', '/unused-evidence']), 2)
             self.assertNotIn('NEVER-LOG', out.getvalue())
 
 

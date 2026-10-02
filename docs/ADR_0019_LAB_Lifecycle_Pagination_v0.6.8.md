@@ -16,7 +16,7 @@ o prefixo e continua, usando os mesmos request IDs, sem repetir eventos. Um erro
 Paginação do relatório em quatro páginas de uma avaliação com scope SHA obrigatório; comparar com consulta
 completa, ordenar/deduplicar e exigir fim vazio. Cada transição deve invalidar o cursor anterior.
 Depois: replay das quatro requests, três negações esperadas e quatro páginas do histórico; findings continuam
-Open. Captura final comprova store/projeções/12 tabelas sem mudança; proof e sidecar privados novos.
+Open. Captura final comprova store/projeções/12 tabelas sem mudança; proof e sidecar privados novos. A CLI recusa saída dentro do store antes da conexão.
 
 Retomada de completed não reaplica decisões e não afirma novo teste de invalidar cursor (contador zero).
 Evidência da primeira execução ou da execução interrompida é necessária para esse gate. Estado completed

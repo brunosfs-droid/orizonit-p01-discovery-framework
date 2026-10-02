@@ -143,6 +143,9 @@ def cli(argv=None):
         # CLI never permits the source database or a caller-selected assessment.
         require(args.expected_database == DATABASE and os.environ.get('PGDATABASE') == DATABASE)
         require(args.command != 'exercise' or args.ack_lifecycle_test)
+        # Proof output must never add files to the store whose integrity we report.
+        require(not Path(args.evidence_root).expanduser().resolve().is_relative_to(
+            Path(args.store_dir).expanduser().resolve()))
         recovery.load_snapshot(args.reference)
         with pg.open_connection() as conn:
             doc = run(conn, args.store_dir, DATABASE, args.reference, args.command == 'exercise')
