@@ -1,6 +1,6 @@
 # P01 — Status técnico v0.6.0
 
-Data: 02/10/2026. Estado: **CANDIDATE para LAB**.
+Data: 02/10/2026. Estado: **LAB VALIDATED — R1 básico sintético; escopo restante CANDIDATE**.
 
 A Product Alpha começou pela fundação PostgreSQL do índice central de imports,
 conforme issue #63 e ADR 0011. Não representa conclusão da fase v0.6.x inteira.
@@ -36,3 +36,12 @@ o R1 curto do scheduler Windows/Rocky também passou. Soak estendido continua pe
 4. Qualificação PostgreSQL no LAB: contas separadas, TLS, backup/restore e rollback.
 
 [Guia do componente](../persistence/README.md) · [Próximos passos](NEXT_STEPS_v0.6.0.md)
+
+## Atualização de qualificação em 02/10/2026
+
+O R1 básico em PostgreSQL 16.15 no Rocky passou: migração/replay, dois imports,
+1 CAS/2 observações, 4 avaliações/2 findings históricos Open e leitura por reader
+com UPDATE negado. [Aceite e 18 capturas](validation/POSTGRESQL_P01LAB_R1_v0.6.5.md).
+A observação nova substitui a pendência inicial de instalação e fixture. Não
+qualifica API com índice, transições lifecycle, cursor/fence completo, TLS remoto,
+roles de escrita separados ou restore operacional. Próximo gate: [recuperação R1](LAB_POSTGRESQL_RECOVERY_R1_v0.6.7.md).

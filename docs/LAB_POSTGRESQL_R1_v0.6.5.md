@@ -1,6 +1,9 @@
 # Cancã — LAB PostgreSQL R1 no Rocky
 
-Status: **roteiro preparado, execução LAB pendente**. O diagnóstico recebido em
+Status: **LAB VALIDATED — R1 básico sintético em 02/10/2026**.
+[Aceite](validation/POSTGRESQL_P01LAB_R1_v0.6.5.md). Etapas 1–6 já demonstradas;
+não repetir instalação, fixture ou reader. O roteiro abaixo fica como histórico
+e referência para instalação nova. Próximo gate: [recuperação R1 v0.6.7](LAB_POSTGRESQL_RECOVERY_R1_v0.6.7.md). O diagnóstico recebido em
 02/10/2026 mostra P01-LNX-RKY01, Rocky 10.2, Python 3.12.13, RAM 1 GiB/648 MiB
 available e 26 GiB livres. Ferramentas PostgreSQL ausentes no PATH e zero units
 listadas. API ativa usa /root/p01/store-v05e-r1 e porta 8443.
@@ -11,7 +14,7 @@ aos ativos. Configuração inicial pequena; não é sizing de produção ou benc
 Store/API atuais não são inputs deste teste. Serviço PostgreSQL será iniciado
 manualmente, sem enable automático ou mudança na API.
 
-**Primeiro execute somente as etapas 1–3 e envie as versões, status e memória.**
+**Para instalação nova, o checkpoint inicial é nas etapas 1–3. No P01-LNX-RKY01 já foi aprovado; não repetir.**
 As etapas 4–6 já estão preparadas para depois desse checkpoint. Se uma etapa
 falhar, preserve a saída e os arquivos; não reinicialize cluster nem apague dados.
 

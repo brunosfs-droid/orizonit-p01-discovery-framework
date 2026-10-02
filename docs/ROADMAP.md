@@ -431,3 +431,11 @@ Follow-up: após fechar v0.5e, iniciar v0.5f Optional Installed Service/Agent e 
 - Hashes de arquivos, revalidação de evidências e replay sem mutação.
 - Nenhuma migração nova; roles/grants e recuperação operacional do LAB permanecem pendentes.
 - [Guia](BACKUP_RESTORE_v0.6.6.md) · [ADR 0017](ADR_0017_Backup_Restore_v0.6.6.md).
+
+## v0.6.7 — comparação de recuperação no LAB
+
+- R1 básico PostgreSQL/Rocky LAB VALIDATED no escopo sintético; [aceite](validation/POSTGRESQL_P01LAB_R1_v0.6.5.md).
+- Helper read-only com hashes de 14 tabelas/arquivos, revalidação de projeções e comparação exata.
+- CI integra o helper ao dump/restore real 16/17; roteiro operacional utiliza destino novo.
+- Recuperação LAB, TLS/roles completos, lifecycle e paginação fenced permanecem gates próprios.
+- [Roteiro](LAB_POSTGRESQL_RECOVERY_R1_v0.6.7.md) · [ADR](ADR_0018_LAB_Recovery_Check_v0.6.7.md).
