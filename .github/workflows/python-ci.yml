@@ -33,7 +33,7 @@ jobs:
           python -m py_compile asset_resolver/P01_Asset_Resolver.py
           python -m py_compile evidence_bundle/P01_Evidence_Bundle.py
 
-          python -m py_compile persistence/P01_PostgreSQL.py persistence/P01_Ingestion_Index.py ingestion/P01_Ingestion_API.py
+          python -m py_compile persistence/P01_PostgreSQL.py persistence/P01_Ingestion_Index.py persistence/P01_Assessment_Lifecycle.py ingestion/P01_Ingestion_API.py
 
       - name: Validate JSON artifacts
         run: |
@@ -54,4 +54,3 @@ jobs:
 
       - name: Unit tests
         run: python -m unittest discover -s tests -p "test_*.py" -v
-

@@ -360,7 +360,7 @@ O LAB inicial usará P01-MGMT01 como Discovery Node por possuir acesso ao segmen
 Follow-up: após fechar v0.5e, iniciar v0.5f Optional Installed Service/Agent e os gates de product alpha/persistência central.
 
 
-### v0.5f.3 — Explicit bounded service scheduling (LAB VALIDATED for offline R1)
+### v0.5f.3 — Explicit bounded service scheduling (LAB VALIDATED for bounded offline soak)
 - Shared scheduler around canonical run_once; default off, operator opt-in after installation.
 - Fixed delay 60..86400s after completion, bounded attempts, policy reread and native workspace lock.
 - Running/halted session journal blocks restart and manual-mode bypass until reviewed.
@@ -368,7 +368,8 @@ Follow-up: após fechar v0.5e, iniciar v0.5f Optional Installed Service/Agent e 
 - Native scheduled R1 uses real 60s spacing and interrupted-wait review on SCM/systemd.
 - [Status](STATUS_SCHEDULER_v0.5f.3.md), [ADR 0010](ADR_0010_Scheduler_v0.5f.3.md), [LAB R1](LAB_SCHEDULER_v0.5f.3_R1.md).
 - Windows/Rocky short offline R1 passed on 02/10/2026 (-03): PASS/exit 0, real 60s interval, retained interrupted intent and zero replay. [Acceptance](validation/SCHEDULER_P01LAB_R1_v0.5f.3.md).
-- Extended/multi-day soak and live service principal qualification remain separate unqualified gates.
+- Extended offline soak passed on 02/10/2026: 10 real ticks, ~9 minutes per first cycle, 11 journals/3 sessions per host, restart review with zero replay. [Acceptance](validation/SCHEDULER_P01LAB_EXTENDED_v0.5f.3.md).
+- Multi-day soak and live service principal qualification remain separate unqualified gates.
 
 ### v0.6.0 — PostgreSQL metadata foundation (CANDIDATE)
 
@@ -385,3 +386,12 @@ Follow-up: após fechar v0.5e, iniciar v0.5f Optional Installed Service/Agent e 
 - Reconciliação explícita de um import com `index-import`; sem migração automática, sweep ou retries.
 - Testes reais de interrupção após publicação dos arquivos e após commit PostgreSQL, preservando replay idempotente.
 - [ADR 0012](ADR_0012_Ingestion_Index_v0.6.1.md), [guia](INGESTION_INDEX_v0.6.1.md), [status](STATUS_INGESTION_INDEX_v0.6.1.md).
+
+### v0.6.2 — Administrative assessment lifecycle (CANDIDATE)
+
+- Estados explícitos e transições administrativas; revisão esperada, request ID idempotente e eventos atômicos.
+- Migração 0002 explícita, backfill registered/revisão 0, preservando imports e migração 0001.
+- Ingestão não infere conclusão nem reabre estados terminais; nenhuma mudança no runtime/scheduler.
+- CI PostgreSQL 16/17 real: upgrade, concorrência, replay, rollback, estados terminais e permissões.
+- LAB PostgreSQL de roles/TLS/backup/restore permanece pendente; próxima modelagem independente: identidade persistente de assets.
+- [ADR 0013](ADR_0013_Assessment_Lifecycle_v0.6.2.md), [guia](ASSESSMENT_LIFECYCLE_v0.6.2.md), [status](STATUS_ASSESSMENT_LIFECYCLE_v0.6.2.md).

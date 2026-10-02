@@ -35,8 +35,8 @@
 - **Central Ingestion API:** 0.5c.1 — LAB VALIDATED; localhost ingestion, idempotência, status lookup, semantic equivalence, negative gates e connection hygiene.
 - **Connected Discovery Node Upload:** 0.5d.0 — LAB VALIDATED; HTTPS/mTLS, identidade do node ligada ao certificado e ao bundle, upload outbound, idempotência e transporte cross-host Windows→Linux validados.
 - **Portable Discovery Node Runtime:** 0.5e.6 — LAB VALIDATED; fluxo end-to-end completo no P01LAB, incluindo Evidence Bundle workspace-driven, Connected Upload mTLS e zero-input resume sem segunda conexão.
-- **Central Persistence:** 0.6.1 — CANDIDATE para LAB; índice PostgreSQL com integração opt-in à API e reconciliação explícita. [Guia](docs/INGESTION_INDEX_v0.6.1.md) e [próximos passos](docs/NEXT_STEPS_v0.6.0.md).
-- **Optional Service Scheduler:** 0.5f.3 — LAB VALIDATED para R1 offline de ciclos limitados em Windows/Rocky; default off, revisão após interrupção e zero replay. Soak estendido e etapas live pendentes. [Status](docs/STATUS_SCHEDULER_v0.5f.3.md).
+- **Central Persistence / Assessment Lifecycle:** 0.6.2 — CANDIDATE para LAB; índice PostgreSQL, API opt-in v0.6.1 e estados administrativos com revisão, idempotência e histórico atômico. [Lifecycle](docs/ASSESSMENT_LIFECYCLE_v0.6.2.md), [integração](docs/INGESTION_INDEX_v0.6.1.md) e [próximos passos](docs/NEXT_STEPS_v0.6.0.md).
+- **Optional Service Scheduler:** 0.5f.3 — LAB VALIDATED para R1 curto e soak estendido offline de 10 ticks em Windows/Rocky; default off, revisão após interrupção e zero replay. Multi-day e etapas live pendentes. [Status](docs/STATUS_SCHEDULER_v0.5f.3.md).
 - **Reporting Engine:** planejado após Network Discovery + Asset Resolver.
 
 > Saídas reais de discovery devem ser tratadas como **CONFIDENCIAL — DADOS DO CLIENTE**.
