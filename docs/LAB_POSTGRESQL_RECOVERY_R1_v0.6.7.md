@@ -145,3 +145,12 @@ Enviar os resumos de capture, verify no destino antes/depois do replay, relatór
 Helper exclusivo da fixture R1 (2 imports completos/1 assessment), limites de linhas/arquivos e código de projeção original. Não é validador de bancos gerais. Um mismatch é recusa de aceite, não comando de reparo. Os tempos/hash de CI não estabelecem RTO/RPO para o Rocky; TLS remoto, HA/PITR/retention, agendamento, roles/grants e snapshots com concorrência não são qualificados.
 
 Referências: [pg_dump 16](https://www.postgresql.org/docs/16/app-pgdump.html), [pg_restore 16](https://www.postgresql.org/docs/16/app-pgrestore.html), [ADR 0018](ADR_0018_LAB_Recovery_Check_v0.6.7.md).
+
+## Atualização após recuperação R1
+
+Recuperação sintética no Rocky/PostgreSQL 16.15 **LAB VALIDATED** por sete capturas: restore
+em canca_p01_restore_r1, comparação de 14 tabelas/20 arquivos, revalidação de fontes
+e replay preservado. Esta observação substitui a pendência anterior de restore operacional
+R1; não qualifica produção, roles/TLS ou toda a Product Alpha.
+[Aceite e limites](validation/POSTGRESQL_P01LAB_RECOVERY_R1_v0.6.7.md) ·
+[Próximo gate lifecycle/paginação](LAB_POSTGRESQL_LIFECYCLE_R1_v0.6.8.md).
