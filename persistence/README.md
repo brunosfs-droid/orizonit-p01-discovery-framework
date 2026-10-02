@@ -101,3 +101,8 @@ permissões separadas de SELECT/INSERT, sem UPDATE/DELETE/CREATE.
 Análise explícita de evidência WinRM, cobertura e ocorrências imutáveis.
 [Guia](../docs/FINDINGS_v0.6.4.md) e [ADR](../docs/ADR_0015_Findings_v0.6.4.md).
 Migration 0004 não reescreve 0001–0003 nem faz backfill.
+
+## Relatório v0.6.5
+
+[CLI somente leitura](../docs/ASSESSMENT_REPORT_v0.6.5.md) consolida assessments
+com cobertura e ocorrências históricas. Sem migração nova; schema mínimo 4.
