@@ -1,6 +1,8 @@
 # Cancã — LAB agendador v0.5f.3 / R1 Windows e Rocky
 
-Data: 01/10/2026 (-03). Status: CANDIDATE; executar após integração e CI do commit.
+Guia criado: 01/10/2026 (-03). R1 aceito: 02/10/2026 (-03).
+Status: LAB VALIDATED para o ensaio offline abaixo em Windows e Rocky.
+[Registro e limites do aceite](validation/SCHEDULER_P01LAB_R1_v0.5f.3.md).
 Ensaio offline em fixture nova, com todos os grants negados. Sem discovery, AUTH,
 FULL ou POST. Não opera a API de ingestão nem o store. Tempo padrão: pouco mais
 que 60 segundos por host; o terminal fica ocupado aguardando o intervalo real.
@@ -8,7 +10,8 @@ que 60 segundos por host; o terminal fica ocupado aguardando o intervalo real.
 O helper recusa um serviço preexistente antes de criar/instalar. Não remover um
 serviço alheio para passar. Se uma instalação antiga estiver presente, usar o código
 e a config originais para stop/query/remove antes de atualizar o deployment.
-Após PASS dos R1 anteriores, os serviços já estavam removidos.
+Após PASS, os serviços já foram removidos. Preservar as fixtures aprovadas;
+repetições criam outra fixture, sem apagar intent de revisão.
 
 ## Windows — P01-MGMT01
 
@@ -124,3 +127,12 @@ Se query mostra installed=false, encerrar a limpeza. Em falha com serviço insta
 usando essa config validada, stop e confirmar inactive/failed sem PID antes de remove.
 Preservar fixture e conta. Mensagens 9/KILL no segundo start são a interrupção
 intencional; uma falha anterior não constitui PASS.
+
+
+## Fixtures do R1 aprovado
+
+Windows: C:\Canca\scheduled-lab\P01-SCHEDULED-R1-74eab0f492e9.
+Rocky: /var/lib/canca/scheduled-lab/P01-SCHEDULED-R1-69e3e937d4c7.
+PASS/exit 0 em ambos, 3 journals e 3 sessões por host; ciclos de 60,525s/60,174s.
+A query final no Rocky mostrou installed=false e main_pid=0: encerrar a limpeza.
+Soak estendido com --ticks 10 permanece pendente e deve usar uma nova fixture.

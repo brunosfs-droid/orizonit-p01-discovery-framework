@@ -1,9 +1,12 @@
 # Explicit bounded scheduler v0.5f.3
 
-CANDIDATE. Both service hosts now use v0.5f.3; agent/runtime remain v0.5f.0/v0.5e.6.
+LAB VALIDATED for bounded offline R1 on Windows and Rocky. Both service hosts use v0.5f.3; agent/runtime remain v0.5f.0/v0.5e.6.
 Manual start and empty OS recovery remain mandatory. No timer, autostart or transport
 provisioning is installed. Historical Windows v0.5f.1 and Linux v0.5f.2 LAB acceptances
-cover their manual lifecycle, not this new scheduler.
+cover their manual lifecycle. The scheduler has its own
+[accepted R1](../docs/validation/SCHEDULER_P01LAB_R1_v0.5f.3.md): eight captures,
+PASS/exit 0, retained fixtures and zero-invocation review after interruption.
+Extended/multi-day soak and live service-principal stages remain unqualified.
 
 Install with all grants denied and scheduling disabled. After installation and OS
 permissions, an operator can enable the following config while the service is stopped:

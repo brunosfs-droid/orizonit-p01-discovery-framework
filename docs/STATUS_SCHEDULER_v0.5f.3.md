@@ -1,6 +1,7 @@
 # Cancã v0.5f.3 — Agendamento explícito e revisão após interrupção
 
-Data: 01/10/2026 (-03). Status: **CANDIDATE — LAB R1 pendente**.
+Data do candidato: 01/10/2026 (-03). Aceite: 02/10/2026 (-03).
+Status: **LAB VALIDATED — R1 offline de ciclos limitados e revisão após interrupção**.
 Refs #83; [ADR 0010](ADR_0010_Scheduler_v0.5f.3.md).
 
 Hosts Windows/Linux e scheduler: v0.5f.3. Wrapper/policy/journal canônico permanecem
@@ -24,12 +25,17 @@ systemd real (Ubuntu Python 3.10/3.12), smoke manual e novo helper scheduled_age
 Consultar o PR de integração para resultados nativos do commit; não confundir testes
 unitários acelerados com duração real nem CI com aceite P01LAB.
 
-Próximo gate: [R1 Windows + Rocky](LAB_SCHEDULER_v0.5f.3_R1.md), duas tentativas com
-60s reais, mudança de policy entre elas, fim de orçamento ocioso, kill durante espera
-de uma segunda sessão, terceiro start exige revisão com zero invocações canônicas.
-A fixture retém provas/journals/sidecars, e o helper remove somente seu serviço.
+[R1 Windows + Rocky](LAB_SCHEDULER_v0.5f.3_R1.md) aprovado: PASS/exit 0 em
+P01-MGMT01 (Python 3.13.15/pywin32 312) e P01-LNX-RKY01 (Rocky 10.2/Python
+3.12.13/systemd 257). Dois ticks a 60s reais, ciclos de 60,525s e 60,174s,
+policy reread, state intacto, fim do orçamento ocioso, interrupção de uma segunda
+sessão e terceiro start bloqueado com zero invocações. Três journals e três sessões
+por host, auditorias PASS, fixtures retidas e serviços removidos. Journalctl e
+query independente no Rocky corroboram os resultados. [Aceite e limites](validation/SCHEDULER_P01LAB_R1_v0.5f.3.md).
+Bytes dos proof/journals não foram anexados; validade é a auditoria reportada pelo
+helper. HEAD do operador não foi capturado. CI da implementação: PR #93, Python e
+quatro jobs nativos PASS. Próximo gate: soak estendido em fixtures novas; não executado.
 
 Limites: R1 curto, sem prova multi-day; grants live sempre negados; principal do serviço
 não qualificado para AUTH/FULL/upload; retenção automática adiada. Recovery exige
-revisão/reconciliação manual e preservação das evidências. Nenhum aceite v0.5f.3 é
-inferido dos LABs anteriores. [Contrato operacional](../agent/SCHEDULER.md).
+revisão/reconciliação manual e preservação das evidências. O aceite v0.5f.3 usa as oito capturas desta rodada, sem extrapolar os LABs anteriores. [Contrato operacional](../agent/SCHEDULER.md).

@@ -360,11 +360,12 @@ O LAB inicial usará P01-MGMT01 como Discovery Node por possuir acesso ao segmen
 Follow-up: após fechar v0.5e, iniciar v0.5f Optional Installed Service/Agent e os gates de product alpha/persistência central.
 
 
-### v0.5f.3 — Explicit bounded service scheduling (CANDIDATE)
+### v0.5f.3 — Explicit bounded service scheduling (LAB VALIDATED for offline R1)
 - Shared scheduler around canonical run_once; default off, operator opt-in after installation.
 - Fixed delay 60..86400s after completion, bounded attempts, policy reread and native workspace lock.
 - Running/halted session journal blocks restart and manual-mode bypass until reviewed.
 - OS start remains manual with no recovery/retry/timer; stop wakes wait cooperatively.
 - Native scheduled R1 uses real 60s spacing and interrupted-wait review on SCM/systemd.
 - [Status](STATUS_SCHEDULER_v0.5f.3.md), [ADR 0010](ADR_0010_Scheduler_v0.5f.3.md), [LAB R1](LAB_SCHEDULER_v0.5f.3_R1.md).
-- Windows/Rocky LAB, multi-day soak and live service principal qualification remain separate gates.
+- Windows/Rocky short offline R1 passed on 02/10/2026 (-03): PASS/exit 0, real 60s interval, retained interrupted intent and zero replay. [Acceptance](validation/SCHEDULER_P01LAB_R1_v0.5f.3.md).
+- Extended/multi-day soak and live service principal qualification remain separate unqualified gates.

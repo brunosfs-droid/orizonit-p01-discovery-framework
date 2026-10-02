@@ -67,7 +67,9 @@ Linux host v0.5f.2 is LAB VALIDATED for manual lifecycle on P01-LNX-RKY01:
 [systemd guide](LINUX_SERVICE.md), native Ubuntu CI and accepted Rocky 10.2 R1.
 This is an offline service fixture, not Linux live AUTH/FULL/upload acceptance.
 
-Service hosts v0.5f.3 now add explicit bounded scheduling as a CANDIDATE:
+Service hosts v0.5f.3 add explicit bounded scheduling, LAB VALIDATED for the short offline R1:
 [scheduler contract](SCHEDULER.md) and [R1 guide](../docs/LAB_SCHEDULER_v0.5f.3_R1.md).
 Scheduling defaults off; both previous service config schemas stay manual-only.
-Their historical LAB acceptance does not qualify scheduled execution.
+Their historical LAB acceptance is separate from the new
+[Windows/Rocky scheduled R1 acceptance](../docs/validation/SCHEDULER_P01LAB_R1_v0.5f.3.md).
+Extended soak and live service principal qualification remain pending.
