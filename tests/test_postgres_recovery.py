@@ -139,3 +139,22 @@ class PostgreSQLRecoveryTests(unittest.TestCase):
                 self.conn.execute("UPDATE canca.findings SET status='Open'")
         finally:
             self.conn.execute('RESET ROLE')
+
+    def test_original_crlf_engine_required_without_rewriting_persisted_analysis(self):
+        engine = Path(recovery.findings.__file__)
+        deployment = self.base / 'original-crlf'; deployment.mkdir()
+        preserved = deployment / engine.name
+        preserved.write_bytes(engine.read_bytes().replace(b'\r\n', b'\n').replace(b'\n', b'\r\n'))
+        shutil.copy2(engine.with_name('P01_Finding_Rules.json'), deployment / 'P01_Finding_Rules.json')
+        self.conn.execute('DROP SCHEMA canca CASCADE'); pg.migrate(self.conn)
+        with patch.object(recovery.findings, '__file__', str(preserved)):
+            for item in self.prepared['imports']:
+                directory = Path(item['import_dir'])
+                pg.index_import(self.conn, pg.prepare_import(self.store, directory))
+                recovery.assets.project_import(self.conn, recovery.assets.prepare_assets(self.store, directory))
+                recovery.findings.project_import(self.conn, recovery.findings.prepare_findings(self.store, directory))
+            expected = self.capture()
+        with self.assertRaisesRegex(recovery.RecoveryError, 'recovery_mismatch'):
+            self.capture()
+        with patch.object(recovery.findings, '__file__', str(preserved)):
+            self.assertEqual(self.capture(), expected)
