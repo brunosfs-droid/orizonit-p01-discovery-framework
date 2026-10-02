@@ -33,10 +33,11 @@ jobs:
           python -m py_compile asset_resolver/P01_Asset_Resolver.py
           python -m py_compile evidence_bundle/P01_Evidence_Bundle.py
 
-          python -m py_compile persistence/P01_PostgreSQL.py persistence/P01_Ingestion_Index.py persistence/P01_Assessment_Lifecycle.py persistence/P01_Asset_Registry.py ingestion/P01_Ingestion_API.py
+          python -m py_compile persistence/P01_PostgreSQL.py persistence/P01_Ingestion_Index.py persistence/P01_Assessment_Lifecycle.py persistence/P01_Asset_Registry.py persistence/P01_Findings.py ingestion/P01_Ingestion_API.py
 
       - name: Validate JSON artifacts
         run: |
+          python -m json.tool persistence/P01_Finding_Rules.json > /dev/null
           python -m json.tool analyzer/P01_Rules.json > /dev/null
           python -m json.tool schemas/p01-discovery-schema-v0.2.json > /dev/null
           python -m json.tool schemas/p01-discovery-schema-v0.3.json > /dev/null

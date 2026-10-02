@@ -32,10 +32,10 @@ Com uma **base de LAB dedicada**, primeiro com uma conta autorizada para DDL:
 python persistence/P01_PostgreSQL.py migrate
 ```
 
-Resultado: `migrated`, depois `already_migrated`, `migration: 3`. Migrações 0001,
-0002 e 0003 são transacionais e seus SHA256 ficam registrados. Aplica-se somente
+Resultado: `migrated`, depois `already_migrated`, `migration: 4`. Migrações 0001,
+0002, 0003 e 0004 são transacionais e seus SHA256 ficam registrados. Aplica-se somente
 o sufixo ausente de uma sequência válida. 0002 inicia assessments existentes em
-registered/revisão 0; 0003 não infere associações de assets. Versão/checksum divergentes bloqueiam a operação.
+registered/revisão 0; 0003 não infere associações de assets e 0004 não cria análises por inferência. Versão/checksum divergentes bloqueiam a operação.
 Não há downgrade ou reparo automático de schema.
 
 Com uma conta indexadora separada, configurada pelo administrador com `USAGE`
@@ -95,3 +95,9 @@ permissões separadas de SELECT/INSERT, sem UPDATE/DELETE/CREATE.
 [ADR](../docs/ADR_0011_PostgreSQL_Foundation_v0.6.0.md) ·
 [Status](../docs/STATUS_PERSISTENCE_v0.6.0.md) ·
 [Orientação de próximos passos](../docs/NEXT_STEPS_v0.6.0.md)
+
+## Findings v0.6.4
+
+Análise explícita de evidência WinRM, cobertura e ocorrências imutáveis.
+[Guia](../docs/FINDINGS_v0.6.4.md) e [ADR](../docs/ADR_0015_Findings_v0.6.4.md).
+Migration 0004 não reescreve 0001–0003 nem faz backfill.

@@ -243,3 +243,9 @@ Agent foundation and manual Windows/Linux services passed LAB. Scheduler v0.5f.3
 passed the short offline R1 on both hosts; extended soak remains pending. See the
 [agent guide](agent/README.md) and [next steps](docs/NEXT_STEPS_v0.6.0.md).
 The canonical portable runtime remains v0.5e.6 and is supported independently.
+
+### Findings v0.6.4 CANDIDATE
+
+Persistência explícita de findings com catálogo/engine/hash de origem, cobertura
+WinRM de Firewall e secure channel e replay imutável. Sem fechamento automático.
+[Guia](docs/FINDINGS_v0.6.4.md) · [Status](docs/STATUS_FINDINGS_v0.6.4.md).

@@ -112,7 +112,7 @@ class PostgreSQLLifecycleTests(unittest.TestCase):
     def test_unknown_versions_gaps_and_checksum_drift_fail_closed(self):
         for mutate in ("UPDATE canca.schema_migrations SET sha256='bad' WHERE version=2",
                        "DELETE FROM canca.schema_migrations WHERE version=1",
-                       "INSERT INTO canca.schema_migrations VALUES (4,'unknown')"):
+                       "INSERT INTO canca.schema_migrations VALUES (5,'unknown')"):
             with self.subTest(mutate=mutate):
                 self.conn.execute(mutate)
                 with self.assertRaisesRegex(pg.PersistenceError, 'schema_mismatch'):
