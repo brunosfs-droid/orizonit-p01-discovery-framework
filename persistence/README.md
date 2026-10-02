@@ -72,7 +72,8 @@ consulta e falha sem schema. Os testes de source rodam sem driver/banco.
 `CANCA_TEST_POSTGRES=1` habilita testes que **apagam o schema canca** da base
 configurada; destina-se exclusivamente ao serviço efêmero de CI.
 
-Não está integrado automaticamente à API de ingestão. Identidade persistente de
+A API v0.6.1 oferece integração opt-in (`--metadata-index postgres`), default off;
+ver [contrato e reconciliação](../docs/INGESTION_INDEX_v0.6.1.md). Identidade persistente de
 assets, lifecycle completo, findings, UI, backup/restore e qualificação de um
 servidor PostgreSQL no LAB pertencem às próximas etapas. PostgreSQL 18 ainda não
 está na matriz validada desta versão.

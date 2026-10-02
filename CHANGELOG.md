@@ -1,3 +1,13 @@
+## v0.6.1 — Opt-in API metadata indexing (CANDIDATE)
+
+- Add --metadata-index postgres (default off); index only after canonical filesystem import publication.
+- Keep HTTP import acknowledgment independent; expose indexed/already_indexed/pending/review_required separately.
+- Revalidate source/identity before DB access and preserve existing mTLS ownership gates.
+- Reconcile one reviewed import with the existing explicit index-import command; no migration, sweep or retry on startup.
+- Clean canonical staging under the bundle lock to protect concurrent duplicate requests.
+- Add real PostgreSQL CI for unavailable DB, transaction rollback, concurrent duplicates and process exit before/after DB commit.
+- Update corporate artifact policy to OneDrive/SharePoint; Google Drive remains legacy during independent migration.
+
 ## v0.6.0 — PostgreSQL metadata foundation (CANDIDATE)
 
 - Add explicit migrate/index-import/show-import CLI for existing validated filesystem imports.

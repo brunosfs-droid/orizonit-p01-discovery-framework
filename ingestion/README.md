@@ -49,3 +49,10 @@ It requires equivalent logical asset semantics:
 ## Security
 
 The importer treats every bundle as untrusted until bundle validation succeeds. Payload files are data only and are never executed.
+
+
+## API metadata index v0.6.1 (CANDIDATE)
+
+A API oferece `--metadata-index postgres` (default `off`) após o mesmo import
+canônico. HTTP 201/200 confirma o filesystem; `metadata_index` informa separadamente
+indexação, pendência ou revisão. [Contrato e reconciliação](../docs/INGESTION_INDEX_v0.6.1.md).

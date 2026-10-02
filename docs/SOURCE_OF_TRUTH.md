@@ -1,6 +1,6 @@
-# Cancã (P01) — Política de Source of Truth: GitHub x Google Drive
+# Cancã (P01) — Política de Source of Truth: GitHub x OneDrive/SharePoint
 
-Versão: 1.0
+Versão: 1.1 — 02/10/2026
 
 ## Princípio
 
@@ -23,7 +23,7 @@ Deve conter:
 
 As versões de código são preservadas por commits, tags e releases. Não é necessário manter cópias `v0.1`, `v0.2`, `v0.3` do mesmo fonte dentro da árvore principal, exceto quando o formato/versionamento do artefato exigir coexistência (por exemplo schemas compatíveis).
 
-### Google Drive — fonte de verdade de produto, governança e evidência
+### OneDrive/SharePoint — fonte de verdade de produto, governança e evidência
 
 Deve conter:
 
@@ -47,13 +47,13 @@ Deve conter:
 - documentos comerciais/contratuais que não sejam necessários à engenharia;
 - backups do Drive.
 
-## Nunca no Drive como fonte editável principal
+## Nunca no OneDrive/SharePoint como fonte editável principal
 
 - cópia paralela do código em desenvolvimento;
 - rulesets editados manualmente fora do GitHub;
 - documentação técnica que precise acompanhar exatamente cada commit.
 
-Pacotes de release no Drive são snapshots imutáveis, não fonte de desenvolvimento.
+Pacotes de release no OneDrive/SharePoint são snapshots imutáveis, não fonte de desenvolvimento.
 
 ## Fluxo de mudança
 
@@ -64,10 +64,18 @@ Pacotes de release no Drive são snapshots imutáveis, não fonte de desenvolvim
 5. CI/revisão.
 6. Merge em `main`.
 7. Tag/release quando houver baseline relevante.
-8. Evidência de LAB/aceite e artefatos formais são arquivados no Drive.
-9. Documentos de governança/status no Drive apontam para a release/tag correspondente.
+8. Evidência de LAB/aceite e artefatos formais são arquivados no OneDrive/SharePoint.
+9. Documentos de governança/status no OneDrive/SharePoint apontam para a release/tag correspondente.
 
 ## Regra para o Cancã
 
 - GitHub: software vivo.
-- Drive: empresa, produto, evidência e entrega.
+- OneDrive/SharePoint: empresa, produto, evidência e entrega.
+
+
+## Transição do arquivo corporativo
+
+A partir de 02/10/2026, novos artefatos corporativos usam Microsoft 365. Google
+Drive pessoal permanece legado até a migração geral autorizada ser concluída.
+Links históricos de evidências são mantidos; não indicam novos uploads ao legado.
+Esta política não declara que a migração geral já foi concluída.
