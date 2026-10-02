@@ -35,6 +35,7 @@
 - **Central Ingestion API:** 0.5c.1 — LAB VALIDATED; localhost ingestion, idempotência, status lookup, semantic equivalence, negative gates e connection hygiene.
 - **Connected Discovery Node Upload:** 0.5d.0 — LAB VALIDATED; HTTPS/mTLS, identidade do node ligada ao certificado e ao bundle, upload outbound, idempotência e transporte cross-host Windows→Linux validados.
 - **Portable Discovery Node Runtime:** 0.5e.6 — LAB VALIDATED; fluxo end-to-end completo no P01LAB, incluindo Evidence Bundle workspace-driven, Connected Upload mTLS e zero-input resume sem segunda conexão.
+- **Central Persistence:** 0.6.0 — CANDIDATE para LAB; índice PostgreSQL opcional e transacional de imports verificados. [Guia](persistence/README.md) e [próximos passos](docs/NEXT_STEPS_v0.6.0.md).
 - **Optional Service Scheduler:** 0.5f.3 — LAB VALIDATED para R1 offline de ciclos limitados em Windows/Rocky; default off, revisão após interrupção e zero replay. Soak estendido e etapas live pendentes. [Status](docs/STATUS_SCHEDULER_v0.5f.3.md).
 - **Reporting Engine:** planejado após Network Discovery + Asset Resolver.
 
@@ -222,14 +223,11 @@ O repositório preserva histórico por **commits, branches, tags e releases**. O
 
 ## Próximas fases
 
-1. fechar validação AD stale v0.3;
-2. validar Network Discovery v0.4a em rede doméstica/autorizada;
-3. v0.5e — Portable Discovery Node Runtime & Unified Operator Workflow;
-4. v0.5f — Optional Installed Service/Agent reutilizando o mesmo runtime core;
-5. v0.4c — evoluir identidade persistente, conflito e adapters adicionais;
-5. depois: SNMPv3/SNMPv2c, VMware/network adapters e Dynamic Scope Expansion;
-6. Reporting Engine v0.1;
-7. depois: CVE correlation, Patch Compliance, File Server Assessment e topologia.
+1. v0.6.x — Product Alpha: PostgreSQL, lifecycle, identidade persistente, API/UI mínima e reporting. Fundação v0.6.0 CANDIDATE.
+2. Em paralelo: soak estendido do scheduler v0.5f.3; R1 curto Windows/Rocky já aprovado.
+3. v0.7.x — Design Partner Alpha em ambientes externos controlados.
+4. v0.8.x — Community Beta; v0.9.x — Release Candidate; v1.0 — GA.
+5. Adapters adicionais, CVE correlation, Patch Compliance e topologia conforme classificação MVP/post-MVP.
 
 Mais detalhes: [docs/ROADMAP.md](docs/ROADMAP.md).
 
@@ -241,6 +239,7 @@ Mais detalhes: [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Optional agent track
 
-v0.5f.0 is CANDIDATE for LAB: [agent guide](agent/README.md). The canonical
-portable runtime remains v0.5e.6 and is supported independently. Windows Service
-and Linux/systemd installation will follow after the agent foundation gate.
+Agent foundation and manual Windows/Linux services passed LAB. Scheduler v0.5f.3
+passed the short offline R1 on both hosts; extended soak remains pending. See the
+[agent guide](agent/README.md) and [next steps](docs/NEXT_STEPS_v0.6.0.md).
+The canonical portable runtime remains v0.5e.6 and is supported independently.
