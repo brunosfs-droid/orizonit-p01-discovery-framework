@@ -106,3 +106,9 @@ Migration 0004 não reescreve 0001–0003 nem faz backfill.
 
 [CLI somente leitura](../docs/ASSESSMENT_REPORT_v0.6.5.md) consolida assessments
 com cobertura e ocorrências históricas. Sem migração nova; schema mínimo 4.
+
+## Exportação v0.6.9
+
+[Exportação consolidada somente leitura](../docs/REPORT_EXPORT_v0.6.9.md) reutiliza
+a consulta v0.6.5: JSON completo, Markdown e hashes em diretório privado novo.
+Sem migração, escrita SQL ou leitura do store; mesmas permissões SELECT do relatório.
