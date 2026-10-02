@@ -1,6 +1,6 @@
 # Cancã — LAB Windows Service v0.5f.1 / P01LAB R1
 
-Date: 01/10/2026. Status: CANDIDATE. Foundation v0.5f.0 validated on Windows R1.
+Date: 01/10/2026. Status: LAB VALIDATED for the manual lifecycle described below. Foundation v0.5f.0 validated on Windows R1.
 Host v0.5f.1 / agent wrapper v0.5f.0 / runtime v0.5e.6.
 
 First gate: real Windows Server 2022 SCM lifecycle, isolated all-denied workspace,
@@ -74,3 +74,12 @@ state while installed if available, and fixed failure output if not passing.
 Do not share environment values, credential profiles or PKI. Acceptance is for
 service lifecycle and review gating only; service-principal live access and
 scheduling/soak require later gates.
+
+## R1 acceptance
+
+P01-MGMT01 capture `image(20261002-002654).png` confirms WINDOWS SCM SMOKE PASS,
+4 starts, 2 denials/2 reviews, unchanged state, preserved intent, released lock,
+removed service and 7/7 hash/content-valid journals.
+[Evidence and limits](validation/WINDOWS_SERVICE_P01LAB_R1_v0.5f.1.md).
+Final shell exit and fixture metadata are cropped; do not infer captured values.
+Next operator gate: [Linux/systemd R1](LAB_LINUX_SERVICE_v0.5f.2_R1.md).

@@ -1,6 +1,6 @@
 # Cancã v0.5f.1 — Windows Service host
 
-Date: 2026-10-01. Status: CANDIDATE; Windows Server 2022 P01LAB pending.
+Date: 2026-10-01. Status: LAB VALIDATED for Windows Server 2022 P01LAB R1 manual lifecycle.
 Prerequisite: v0.5f.0 Windows P01LAB R1 LAB VALIDATED, 27 captures reviewed;
 Linux covered by CI only. Refs Issue #83; [ADR 0008](ADR_0008_Windows_Service_v0.5f.1.md).
 
@@ -18,13 +18,17 @@ installs pywin32 312 and exercises real elevated SCM installation, four manual
 starts, idle exclusion, stop/remove refusal while running, controlled pre-dispatch
 intent, abrupt idle-host termination, no recovery actions, lock reacquisition,
 review_required after restart, journal audit and removal with state preserved.
-Confirm native CI success before merging; CI evidence is separate from P01LAB.
+PR #90 CI passed, including real SCM on Python 3.12 and 3.13. CI evidence is separate from P01LAB.
 
-Pending real gates: [Windows Service LAB R1](LAB_WINDOWS_SERVICE_v0.5f.1_R1.md).
+Real P01-MGMT01 capture 20261002-002654 confirms WINDOWS SCM SMOKE PASS:
+4 starts, 2 policy_denied/2 review_required, no idle repeat/recovery, state and
+intent preserved, lock reacquired, service removed and 7/7 journal hashes/content
+valid. [Acceptance record](validation/WINDOWS_SERVICE_P01LAB_R1_v0.5f.1.md).
+The capture is cropped before fixture metadata/exit; raw journals were not uploaded.
 No claim of service-principal live AUTH/FULL/upload, stop cancellation mid-stage,
 automatic scheduling/recovery or soak. Host supplies no mTLS transport; pending
 upload remains manual invocation-only. Service account does not inherit the
 interactive operator's env/wincred secrets. Use service query for actual SCM
 installation state; foundation doctor does not query SCM.
 
-Next: service lifecycle LAB -> v0.5f.2 Linux/systemd -> v0.5f.3 scheduling/recovery/soak.
+Next: v0.5f.2 Linux/systemd candidate and Rocky lifecycle LAB -> v0.5f.3 scheduling/recovery/soak.

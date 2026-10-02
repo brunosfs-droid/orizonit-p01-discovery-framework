@@ -1,6 +1,6 @@
 # ADR 0008 — Windows Service host
 
-Status: Accepted for v0.5f.1 CANDIDATE implementation; native P01LAB pending.
+Status: Accepted; v0.5f.1 Windows P01LAB R1 manual lifecycle LAB VALIDATED.
 Date: 2026-10-01. Refs Issue #83; follows ADR 0007 and Windows v0.5f.0 acceptance.
 
 Use pywin32 312's native SCM dispatcher to launch a pinned Python interpreter,
@@ -33,9 +33,11 @@ intent preservation, removes its service, and retains evidence when --lab-root i
 set. Production installer does not modify ACLs automatically.
 
 Validation: portable unit contracts on Windows/Linux plus real elevated Windows
-SCM CI using all-denied fixtures. Require real P01-MGMT01 lifecycle acceptance
-before LAB VALIDATED. CI does not qualify Windows Server 2022, service credentials
-or long-running live-stage cancellation.
+SCM CI using all-denied fixtures. P01-MGMT01 lifecycle acceptance is recorded in
+[Windows Service R1 evidence](validation/WINDOWS_SERVICE_P01LAB_R1_v0.5f.1.md):
+4 starts, 2 denials/2 reviews, preserved state/intent, no idle retry/recovery,
+lock reacquired, service removed and 7/7 audited journals. Raw journals were not
+uploaded; capture bottom is cropped. Live credentials/cancellation remain unqualified.
 
 Primary implementation references:
 
