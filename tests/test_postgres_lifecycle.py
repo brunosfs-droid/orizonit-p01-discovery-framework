@@ -88,7 +88,7 @@ class PostgreSQLLifecycleTests(unittest.TestCase):
         pg.index_import(self.conn, self.projection)
         before = pg.show_import(self.conn, self.projection['bundle_id'])
         files = {str(p): pg.digest(p.read_bytes()) for p in self.store.rglob('*') if p.is_file()}
-        self.assertEqual(pg.migrate(self.conn)['migration'], 2)
+        self.assertEqual(pg.migrate(self.conn)['migration'], len(pg.MIGRATIONS))
         self.assertEqual(pg.show_import(self.conn, self.projection['bundle_id']), before)
         self.assertEqual((self.state()['state'], self.state()['revision'], self.state()['events']), ('registered', 0, []))
         self.assertEqual(pg.index_import(self.conn, self.projection)['status'], 'already_indexed')
@@ -112,7 +112,7 @@ class PostgreSQLLifecycleTests(unittest.TestCase):
     def test_unknown_versions_gaps_and_checksum_drift_fail_closed(self):
         for mutate in ("UPDATE canca.schema_migrations SET sha256='bad' WHERE version=2",
                        "DELETE FROM canca.schema_migrations WHERE version=1",
-                       "INSERT INTO canca.schema_migrations VALUES (3,'unknown')"):
+                       "INSERT INTO canca.schema_migrations VALUES (4,'unknown')"):
             with self.subTest(mutate=mutate):
                 self.conn.execute(mutate)
                 with self.assertRaisesRegex(pg.PersistenceError, 'schema_mismatch'):

@@ -395,3 +395,13 @@ Follow-up: após fechar v0.5e, iniciar v0.5f Optional Installed Service/Agent e 
 - CI PostgreSQL 16/17 real: upgrade, concorrência, replay, rollback, estados terminais e permissões.
 - LAB PostgreSQL de roles/TLS/backup/restore permanece pendente; próxima modelagem independente: identidade persistente de assets.
 - [ADR 0013](ADR_0013_Assessment_Lifecycle_v0.6.2.md), [guia](ASSESSMENT_LIFECYCLE_v0.6.2.md), [status](STATUS_ASSESSMENT_LIFECYCLE_v0.6.2.md).
+
+### v0.6.3 — Persistent asset identity per assessment (CANDIDATE)
+
+- ID central próprio, observações por bundle/ordinal e proveniência por artefato/sinal.
+- Fonte verificada e replay offline privado do resolver; JSON embutido não decide identidade.
+- Associação conservadora: candidato único, duas categorias credentialed e sinal forte; conflitos/ambiguidades exigem revisão.
+- Escopo assessment; nenhum merge/relink, correlação entre assessments, conclusão de lifecycle ou alteração da ingestão.
+- Migração 0003 explícita; CI PostgreSQL 16/17 real, com upgrade, rollback, replay e concorrência entre bundles.
+- LAB PostgreSQL e resolução manual de identidades seguem separados; próxima modelagem independente: findings e sua origem verificável.
+- [ADR 0014](ADR_0014_Persistent_Assets_v0.6.3.md), [guia](ASSET_REGISTRY_v0.6.3.md), [status](STATUS_ASSET_REGISTRY_v0.6.3.md).

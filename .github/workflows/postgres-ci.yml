@@ -44,6 +44,6 @@ jobs:
       - name: Install optional PostgreSQL driver
         run: python -m pip install -r persistence/requirements-postgres.txt
       - name: Compile persistence
-        run: python -m py_compile persistence/P01_PostgreSQL.py persistence/P01_Ingestion_Index.py persistence/P01_Assessment_Lifecycle.py ingestion/P01_Ingestion_API.py tests/test_postgresql.py tests/test_postgres_ingestion.py tests/test_postgres_lifecycle.py
+        run: python -m py_compile persistence/P01_PostgreSQL.py persistence/P01_Ingestion_Index.py persistence/P01_Assessment_Lifecycle.py persistence/P01_Asset_Registry.py ingestion/P01_Ingestion_API.py tests/test_postgresql.py tests/test_postgres_ingestion.py tests/test_postgres_lifecycle.py tests/test_postgres_assets.py
       - name: Validate metadata transactions on real PostgreSQL
         run: python -m unittest discover -s tests -p "test_postgres*.py" -v

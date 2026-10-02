@@ -1,6 +1,6 @@
 # P01 — Próximos passos da Product Alpha
 
-Atualizado em 02/10/2026 (-03), após v0.6.2 e resultados do soak estendido.
+Atualizado em 02/10/2026 (-03), após v0.6.3 e resultados do soak estendido.
 
 ## Preciso testar alguma coisa agora?
 
@@ -21,14 +21,18 @@ como dependência deste incremento.
 
 v0.6.0 entregou a fundação do índice; v0.6.1 integrou ingestão/índice de forma opt-in
 e reconciliação explícita; v0.6.2 adiciona ciclo de vida administrativo do assessment
-com revisão, idempotência e histórico transacional. Todas as funções PostgreSQL
+com revisão, idempotência e histórico transacional. v0.6.3 entrega identidade
+persistente de assets por assessment, com origem verificável e revisão de
+ambiguidades. Todas as funções PostgreSQL
 permanecem **CANDIDATE para LAB**, com CI sintético em PostgreSQL 16/17 real.
 
 Não instale PostgreSQL nem altere o store atual por causa deste guia. A qualificação
 do servidor terá um roteiro separado para base isolada, contas, TLS e backup/restore.
 Nenhuma migração é automática. O próximo desenvolvimento independente é a
-modelagem de identidade persistente de assets, antes de findings e UI.
+modelagem de findings e sua origem verificável, antes da UI. Resolução manual e
+continuidade de IDs entre assessments terão decisões próprias.
 
+[Assets v0.6.3](ASSET_REGISTRY_v0.6.3.md) ·
 [Lifecycle v0.6.2](ASSESSMENT_LIFECYCLE_v0.6.2.md) ·
 [Integração v0.6.1](INGESTION_INDEX_v0.6.1.md) ·
 [R1 curto](validation/SCHEDULER_P01LAB_R1_v0.5f.3.md)
