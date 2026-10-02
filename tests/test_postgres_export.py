@@ -135,6 +135,8 @@ class ExportBoundaryTests(unittest.TestCase):
         rendered = export.markdown(doc).decode('utf-8')
         self.assertNotIn('<img', rendered)
         self.assertNotIn('![click]', rendered)
+        self.assertNotIn('https://evil', rendered)
+        self.assertIn('https&#58;&#47;&#47;evil', rendered)
         self.assertNotIn('\n# injected', rendered)
         self.assertIn('&lt;img', rendered)
         self.assertIn('&#124;', rendered)

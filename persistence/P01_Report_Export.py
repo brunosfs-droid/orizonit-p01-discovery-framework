@@ -119,7 +119,7 @@ def collect(conn, assessment_id, page_size=100):
 def cell(value):
     """Keep persisted text inert in Markdown tables: no HTML/links/images."""
     text = html.escape(str(value), quote=True)
-    return ''.join('&#' + str(ord(c)) + ';' if c in '\\`*_{}[]()#+.!|-' else c
+    return ''.join('&#' + str(ord(c)) + ';' if c in '\\`*_{}[]()#+.!|-:/@~=' else c
                    for c in text).replace('\r', ' ').replace('\n', ' ').replace('\t', ' ')
 
 
