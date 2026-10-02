@@ -29,11 +29,13 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - name: Compile agent and canonical runtime
-        run: python -m py_compile agent/P01_Agent.py agent/P01_Linux_Service.py agent/P01_Windows_Service.py runtime/P01_Discovery_Node.py runtime/P01_Workspace_Lock.py
+        run: python -m py_compile agent/P01_Agent.py agent/P01_Scheduler.py agent/P01_Linux_Service.py agent/P01_Windows_Service.py runtime/P01_Discovery_Node.py runtime/P01_Workspace_Lock.py
       - name: Validate default policy
         run: python agent/P01_Agent.py validate-policy --policy agent/agent-policy.example.json
       - name: Agent policy, journal and OS lock contracts
         run: python -m unittest discover -s tests -p "test_optional_agent.py" -v
+      - name: Bounded scheduler and review recovery contracts
+        run: python -m unittest discover -s tests -p "test_scheduler.py" -v
       - name: Windows service worker and configuration contracts
         run: python -m unittest discover -s tests -p "test_windows_service.py" -v
       - name: Linux service worker and unit ownership contracts
@@ -72,3 +74,9 @@ jobs:
       - name: Real Windows SCM lifecycle and crash review
         if: runner.os == 'Windows'
         run: python tests/windows_service_scm_smoke.py
+      - name: Real Linux scheduled interval and interrupted wait
+        if: runner.os == 'Linux'
+        run: sudo "$(which python)" tests/scheduled_agent_soak.py
+      - name: Real Windows scheduled interval and interrupted wait
+        if: runner.os == 'Windows'
+        run: python tests/scheduled_agent_soak.py

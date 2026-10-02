@@ -12,8 +12,10 @@ import threading
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import P01_Agent as agent
+import P01_Scheduler as scheduler
 
-VERSION = "0.5f.1"
+VERSION = "0.5f.3"
+LEGACY_VERSION = "0.5f.1"
 NAME = "CancaP01Agent"
 ACCOUNT = r"NT AUTHORITY\LocalService"
 DISPLAY_NAME = "Cancã P01 Optional Agent"
@@ -48,8 +50,7 @@ def load_config(path):
         raw = Path(path).read_bytes()
         require(len(raw) <= 16384, "service_config_invalid")
         doc = json.loads(raw.decode("utf-8-sig"), object_pairs_hook=unique)
-        require(isinstance(doc, dict) and set(doc) == {"schema_version", "workspace", "policy"}
-                and doc["schema_version"] == VERSION, "service_config_invalid")
+        scheduler.validate_config(doc, LEGACY_VERSION)
         for name in ("workspace", "policy"):
             value = doc[name]
             require(isinstance(value, str) and "\x00" not in value and Path(value).is_absolute()
@@ -66,7 +67,7 @@ def load_config(path):
 
 def public_error(exc):
     code = str(exc)
-    return code if code in ERRORS else "service_failed"
+    return code if code in ERRORS | scheduler.ERRORS else "service_failed"
 
 
 def invoke_once(config_path, stop_event):
@@ -77,7 +78,10 @@ def invoke_once(config_path, stop_event):
         workspace, policy = load_config(config_path)
         if stop_event.is_set():
             return {"status": "stopped_before_invocation", "stage": None, "error_code": None}
-        result = agent.run_once(workspace, policy)
+        with agent.workspace_lock(workspace):
+            if scheduler.audit(workspace)["review_required"]:
+                return {"status": "review_required", "stage": None, "error_code": None}
+            result = agent.run_once(workspace, policy)
         status = result.get("status")
         require(status in STATUSES - {"failed", "stopped_before_invocation"}, "service_failed")
         stage = result.get("stage")
@@ -89,7 +93,13 @@ def invoke_once(config_path, stop_event):
 
 def worker(config_path, stop_event, done_event, output):
     try:
-        output.update(invoke_once(config_path, stop_event))
+        load_config(config_path)
+        if scheduler.settings(config_path)["enabled"]:
+            output.update(scheduler.run(config_path, stop_event, load_config))
+        else:
+            output.update(invoke_once(config_path, stop_event))
+    except Exception as exc:
+        output.update(status="failed", stage=None, error_code=scheduler.public_error(exc))
     finally:
         if not output:
             output.update(status="failed", stage=None, error_code="service_failed")
@@ -149,11 +159,14 @@ def preflight(config_path):
     workspace, policy = load_config(config_path)
     status = agent.agent_status(workspace, policy)
     parsed, _ = agent.load_policy(policy)
+    with agent.workspace_lock(workspace):
+        schedule_check = scheduler.audit(workspace)
     return {"service_version": VERSION, "agent_version": agent.VERSION,
         "runtime_version": agent.runtime.VERSION, "service_name": NAME,
-        "status": "ready", "next_status": status["status"], "next_stage": status["next_stage"],
+        "status": "ready", "next_status": "review_required" if schedule_check["review_required"] else status["status"],
+        "next_stage": None if schedule_check["review_required"] else status["next_stage"], "scheduler_audit": schedule_check,
         "all_grants_denied": not any(parsed.get("grants", {}).values()),
-        "one_invocation_per_start": True, "schedule_enabled": False,
+        "one_invocation_per_start": not scheduler.settings(config_path)["enabled"], "schedule_enabled": scheduler.settings(config_path)["enabled"], "scheduler_version": scheduler.VERSION,
         "upload_transport_persisted": False, "network_activity_performed": False,
         "secret_resolution_performed": False, "service": inspect_service(config_path)}
 
@@ -161,6 +174,7 @@ def preflight(config_path):
 def install(config_path):
     check = preflight(config_path)
     require(check["all_grants_denied"], "install_requires_denied_policy")
+    require(not check["schedule_enabled"], "install_requires_disabled_schedule")
     require(not check["service"]["installed"], "service_already_installed")
     ws, _, _ = windows_modules()
     with handle(ws.OpenSCManager(None, None, ws.SC_MANAGER_CREATE_SERVICE)) as scm:
@@ -170,7 +184,7 @@ def install(config_path):
         with handle(service):
             try:
                 ws.ChangeServiceConfig2(service, ws.SERVICE_CONFIG_DESCRIPTION,
-                    "One policy-gated Cancã invocation per manual start; no scheduler or automatic retry.")
+                    "Policy-gated Cancã worker; manual start, explicit bounded scheduling, no automatic recovery.")
                 ws.ChangeServiceConfig2(service, ws.SERVICE_CONFIG_SERVICE_SID_INFO,
                     ws.SERVICE_SID_TYPE_UNRESTRICTED)
                 ws.ChangeServiceConfig2(service, ws.SERVICE_CONFIG_FAILURE_ACTIONS,
@@ -229,7 +243,7 @@ def host(config_path):
                                      else ws.SERVICE_RUNNING, waitHint=30000)
 
         def SvcDoRun(self):
-            manager.LogInfoMsg("Canca v0.5f.1 started; one invocation")
+            manager.LogInfoMsg("Canca v0.5f.3 started; policy-gated worker")
             done, result = threading.Event(), {}
             thread = threading.Thread(target=worker, args=(config_path, self.stop_event, done, result),
                                       name="canca-agent-invocation", daemon=False)
@@ -239,11 +253,11 @@ def host(config_path):
                     self.ReportServiceStatus(ws.SERVICE_STOP_PENDING, waitHint=30000)
             thread.join()
             # Result contains only whitelisted codes, never raw errors or paths.
-            message = "Canca v0.5f.1 invocation: " + json.dumps(result, sort_keys=True)
+            message = "Canca v0.5f.3 worker: " + json.dumps(result, sort_keys=True)
             (manager.LogErrorMsg if result.get("status") == "failed" else manager.LogInfoMsg)(message)
-            # Stay idle: no timers, repeat, retry or automatic dispatch.
+            # Worker finished: remain idle until stop; no new session or automatic retry.
             self.stop_event.wait()
-            manager.LogInfoMsg("Canca v0.5f.1 stopped; invocation finished")
+            manager.LogInfoMsg("Canca v0.5f.3 stopped; invocation finished")
 
     manager.Initialize()
     manager.PrepareToHostSingle(CancaService)
