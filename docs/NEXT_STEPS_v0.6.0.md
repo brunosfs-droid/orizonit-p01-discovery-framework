@@ -59,6 +59,9 @@ revalidação de fontes e replay sem mudança do snapshot. [Aceite e limites](va
 Não repetir instalação, dump ou restore.
 
 Próximo teste do operador: [lifecycle/paginação R1 v0.6.8](LAB_POSTGRESQL_LIFECYCLE_R1_v0.6.8.md).
+Retomar na etapa 2 corrigida: helper já instalado; as três capturas seguintes mostram caminho
+de referência não encontrado, sem conexão ou transição. Localização por SHA/sidecar substitui
+o sufixo transcrito da imagem. Só avançar a exercise depois de inspect PASS; não repetir restore.
 inspect somente lê; exercise muda quatro estados administrativos explicitamente na base recuperada,
 com retomada/replay sem duplicar eventos e comparação das outras 12 tabelas/store.
 Esse resultado LAB não bloqueia desenvolvimento de código/CI. Próximo incremento independente:

@@ -4,7 +4,9 @@
 
 Origem: `canca_p01_lab_r1` e `/var/lib/canca/postgres-lab/P01-PG-R1-06230404e329/server-store`.
 Destino: `canca_p01_restore_r1`, criado de template0 com owner canca_lab_admin, e
-`/var/lib/canca/postgres-recovery/P01-PG-RECOVERY-ZXbAp043/restored-store`.
+`restored-store` no diretório privado emitido pelo mktemp em `/var/lib/canca/postgres-recovery`.
+O sufixo desse diretório foi transcrito incorretamente no roteiro posterior; localizar o caminho
+pela referência e SHA aceitos, conforme etapa 2 do roteiro corrigido, sem inferir O/0 da captura.
 
 Captura original: `source-proof/P01-PG-RECOVERY-304b66d3aa73/snapshot.json` dentro do diretório de recuperação.
 SHA256 lógico: `13e1473ceab9f6e636ac1709db455ac34a8377b8b63c5e889d86a534685d3fb8`.
