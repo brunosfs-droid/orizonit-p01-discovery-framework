@@ -31,3 +31,12 @@ com UPDATE negado. [Aceite e 18 capturas](validation/POSTGRESQL_P01LAB_R1_v0.6.5
 A observação nova substitui a pendência inicial de instalação e fixture. Não
 qualifica API com índice, transições lifecycle, cursor/fence completo, TLS remoto,
 roles de escrita separados ou restore operacional. Próximo gate: [recuperação R1](LAB_POSTGRESQL_RECOVERY_R1_v0.6.7.md).
+
+## Atualização após recuperação R1
+
+Recuperação sintética no Rocky/PostgreSQL 16.15 **LAB VALIDATED** por sete capturas: restore
+em canca_p01_restore_r1, comparação de 14 tabelas/20 arquivos, revalidação de fontes
+e replay preservado. Esta observação substitui a pendência anterior de restore operacional
+R1; não qualifica produção, roles/TLS ou toda a Product Alpha.
+[Aceite e limites](validation/POSTGRESQL_P01LAB_RECOVERY_R1_v0.6.7.md) ·
+[Próximo gate lifecycle/paginação](LAB_POSTGRESQL_LIFECYCLE_R1_v0.6.8.md).

@@ -437,5 +437,14 @@ Follow-up: após fechar v0.5e, iniciar v0.5f Optional Installed Service/Agent e 
 - R1 básico PostgreSQL/Rocky LAB VALIDATED no escopo sintético; [aceite](validation/POSTGRESQL_P01LAB_R1_v0.6.5.md).
 - Helper read-only com hashes de 14 tabelas/arquivos, revalidação de projeções e comparação exata.
 - CI integra o helper ao dump/restore real 16/17; roteiro operacional utiliza destino novo.
-- Recuperação LAB, TLS/roles completos, lifecycle e paginação fenced permanecem gates próprios.
+- Recuperação LAB sintética aprovada por sete capturas em PostgreSQL 16.15; TLS/roles completos, lifecycle e paginação fenced permanecem gates próprios.
 - [Roteiro](LAB_POSTGRESQL_RECOVERY_R1_v0.6.7.md) · [ADR](ADR_0018_LAB_Recovery_Check_v0.6.7.md).
+
+## v0.6.8 — lifecycle e paginação na base recuperada
+
+- Aceite limitado da recuperação R1 v0.6.7 no Rocky: 14 tabelas/20 arquivos e replay preservado.
+- Helper com inspect somente leitura e exercício explícito de quatro transições, prefixo retomável e requests idempotentes.
+- Quatro páginas de avaliações/histórico, rejeição de cursores antigos, conflitos e findings Open preservados.
+- Somente canca_p01_restore_r1; fontes/12 tabelas comparadas contra snapshot original, sem migração nova.
+- Qualificação CI PostgreSQL 16/17 e LAB são gates distintos; próximo produto: exportação consolidada somente leitura.
+- [Roteiro](LAB_POSTGRESQL_LIFECYCLE_R1_v0.6.8.md) · [ADR 0019](ADR_0019_LAB_Lifecycle_Pagination_v0.6.8.md).

@@ -260,12 +260,20 @@ históricas por assessment, com paginação vinculada a um escopo consistente.
 
 Qualificação CI do par banco/store com dump e restauração reais em PostgreSQL 16/17,
 comparação das 14 tabelas, relatório, revalidação de evidências e replay sem mutação.
-Fixture exclusiva descartável; recuperação operacional e roles do LAB ainda pendentes.
+Fixture CI descartável; recuperação sintética R1 do LAB aceita em v0.6.7, roles completos pendentes.
 [Guia](docs/BACKUP_RESTORE_v0.6.6.md) · [Status](docs/STATUS_BACKUP_RESTORE_v0.6.6.md).
 
-### Verificação de recuperação LAB v0.6.7 CANDIDATE
+### Verificação de recuperação LAB v0.6.7 LAB VALIDATED (R1 sintético)
 
 R1 básico PostgreSQL 16.15/Rocky aprovado no escopo sintético de import/assets/findings/reader.
 Helper capture/verify somente leitura compara 14 tabelas e bytes/projeções do store na fixture
 isolada antes/depois do restore. [Aceite R1](docs/validation/POSTGRESQL_P01LAB_R1_v0.6.5.md) ·
 [Roteiro de recuperação](docs/LAB_POSTGRESQL_RECOVERY_R1_v0.6.7.md) · [ADR 0018](docs/ADR_0018_LAB_Recovery_Check_v0.6.7.md).
+
+### Lifecycle/paginação LAB v0.6.8 CANDIDATE
+
+Recuperação sintética R1 v0.6.7 aprovada no Rocky/PostgreSQL 16.15: 14 tabelas/20 arquivos,
+fontes revalidadas e replay sem mudança. Helper v0.6.8 prepara quatro transições e paginação
+com retomada, replay e conflitos na base recuperada.
+[Aceite recuperação](docs/validation/POSTGRESQL_P01LAB_RECOVERY_R1_v0.6.7.md) ·
+[Roteiro v0.6.8](docs/LAB_POSTGRESQL_LIFECYCLE_R1_v0.6.8.md) · [Status](docs/STATUS_LAB_LIFECYCLE_v0.6.8.md).
