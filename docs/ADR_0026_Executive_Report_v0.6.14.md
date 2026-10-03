@@ -1,7 +1,8 @@
 # ADR 0026 — Historical executive report
 
-03/10/2026 (-03). Scope A — MVP. Implementation and CI qualification in progress;
-manual LAB qualification deferred at the maintainer's request.
+03/10/2026 (-03). Scope A — MVP. Code CI qualified in eight runs / sixteen jobs;
+manual LAB qualification deferred at the maintainer's request. CANDIDATE.
+[Qualification and limits](validation/EXECUTIVE_REPORT_CI_v0.6.14.md).
 
 ## Decision
 

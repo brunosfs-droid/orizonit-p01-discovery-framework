@@ -2,6 +2,7 @@
 
 **CANDIDATE para LAB.** Desenvolvimento independente do download Web v0.6.13,
 cuja validação manual foi adiada pelo mantenedor em 03/10/2026 (-03).
+Código qualificado em oito runs/16 jobs de CI; [resultados](validation/EXECUTIVE_REPORT_CI_v0.6.14.md).
 Os onze arquivos do pacote Web fixado em `9cb8442e4a9ff84384b6b4f42bf5c8db0a65d871`
 permanecem intactos. Não repetir os R1 já aprovados.
 
