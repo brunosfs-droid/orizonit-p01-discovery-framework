@@ -85,8 +85,8 @@ See [status](STATUS_PERSISTENCE_v0.6.0.md) and [next steps](NEXT_STEPS_v0.6.0.md
 
 Before Community Beta the project must have:
 
-- AGPLv3;
-- operational CLA process;
+- Apache License 2.0 (Apache-2.0), LICENSE/NOTICE and release-specific dependency obligations;
+- finalized Orizon IT CLA and operational contribution/provenance process;
 - CONTRIBUTING;
 - SECURITY;
 - Code of Conduct;
@@ -100,3 +100,15 @@ Before Community Beta the project must have:
 - documented known limitations;
 - basic backup/restore procedure.
 
+
+## Release edition
+
+The first stable launch is **Cancã Community**, under Apache-2.0. A paid edition
+follows qualification of specific modules; paid licensing/billing infrastructure
+is not a prerequisite for Community 1.0. Official Community feature/item limits
+must be specified and disclosed before release; no values or runtime quotas are
+introduced here. Stable means the same release-quality and security gates above.
+
+Server inventory/manual mapping and later network/VMware/service dependency work
+are approved post-1.0 increments. Their Community/commercial allocation is open.
+See [licensing and editions](LICENSING_AND_EDITIONS.md).

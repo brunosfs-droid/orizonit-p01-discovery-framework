@@ -8,9 +8,9 @@
 2. **Distributed Technical Alpha — R2 LAB VALIDATED:** Discovery Node and Cancã Server on separate hosts with outbound-only mTLS.
 3. **Product Alpha — v0.6.x, started:** PostgreSQL persistence, assessment lifecycle, minimal Web/API surface and end-to-end reporting.
 4. **Design Partner Alpha:** controlled external environments and support-matrix expansion.
-5. **Community Beta:** public open-source readiness, installation, CLA process, SECURITY/CONTRIBUTING, SBOM and third-party license inventory.
+5. **Community Beta:** Apache-2.0 open-source readiness, installation, finalized CLA process, SECURITY/CONTRIBUTING, SBOM, third-party license inventory and disclosed official edition limits.
 6. **Release Candidate:** feature freeze, hardening, upgrade/rollback, backup/restore and blocker closure.
-7. **1.0 GA:** supportable end-to-end Assessment & Intelligence product.
+7. **1.0 GA — Community first:** supportable end-to-end Assessment & Intelligence product under Apache-2.0.
 
 See [MVP.md](MVP.md) and [PROJECT_GOVERNANCE.md](PROJECT_GOVERNANCE.md).
 
@@ -448,3 +448,21 @@ Follow-up: após fechar v0.5e, iniciar v0.5f Optional Installed Service/Agent e 
 - Somente canca_p01_restore_r1; fontes/12 tabelas comparadas contra snapshot original, sem migração nova.
 - Qualificação CI PostgreSQL 16/17 e LAB são gates distintos; próximo produto: exportação consolidada somente leitura.
 - [Roteiro](LAB_POSTGRESQL_LIFECYCLE_R1_v0.6.8.md) · [ADR 0019](ADR_0019_LAB_Lifecycle_Pagination_v0.6.8.md).
+
+## Approved product evolution — 02/10/2026 (-03)
+
+- First publish a stable Community; develop and qualify commercial modules later.
+- Official Community feature/item quotas: policy to define, not implemented.
+- Commercial edition: specific modules and no commercial item quota; technical
+  capacity and safety budgets remain. Pricing and module allocation are open.
+- Post-1.0 server sequence: inventory/import wizard -> manual mapper ->
+  network interfaces/neighbors -> aggregates/redundancy -> VMware correlation ->
+  service dependencies and potential impact. Dates and version numbers are open.
+- Preserve manual declarations, observations, provenance and unknown/conflicting
+  states; password availability alone is not a topology guarantee.
+- Community/commercial boundaries require an ADR before entitlement code. Open
+  Apache-2.0 source may be used, modified and redistributed commercially.
+- Core assessment/security/reporting work remains the Community 1.0 priority.
+  Continuous NMS monitoring and packet simulation are separate scope decisions.
+
+See [edition policy](LICENSING_AND_EDITIONS.md) and [ADR 0021](ADR_0021_Apache_2_0_and_Editions.md).

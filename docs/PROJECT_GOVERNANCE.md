@@ -4,9 +4,9 @@ Cancã is the open-source product identity of Orizon IT Product 01 (P01).
 
 ## Project model
 
-- **Software license:** GNU AGPLv3.
+- **Software license:** Apache License 2.0 (Apache-2.0).
 - **Maintainer:** Orizon IT.
-- **Contribution model:** external contributions will require the Orizon IT Contributor License Agreement (CLA) when public contribution is opened.
+- **Contribution model:** Apache-2.0 contributions with rights/provenance review; the planned Orizon IT CLA and acceptance flow must be finalized before public contributions open.
 - **Trademark:** the software license does not grant unrestricted use of the Cancã or Orizon IT brands, logos, or visual identity.
 - **Engineering source of truth:** GitHub.
 - **Product governance and validation evidence:** Orizon IT controlled repositories and OneDrive/SharePoint (Google Drive is legacy).
@@ -66,7 +66,27 @@ The open-source project is intended to support a commercial ecosystem around:
 - training and future certification;
 - hosted/SaaS operation.
 
-The Community project must remain genuinely useful and not be intentionally crippled to force a paid edition.
+The approved distribution strategy is Community first, with its first stable
+release preceding a commercial edition with specific modules and no commercial
+item quota. The official Community distribution may have documented feature and
+item limits. Exact values, counting semantics, prices and module allocation
+remain undecided; no runtime quota is introduced by this decision.
+
+Apache-2.0 rights apply to the open core, including commercial use and modified
+redistributions. Official distribution limits are not additional Apache license
+restrictions and may be changed in forks. Future proprietary modules must retain
+separate code and licensing boundaries. Safety budgets, permissions and technical
+capacity limits apply to every edition.
+
+Community must provide a useful assessment workflow, security controls and
+evidence integrity. Paid modules must not remove access to already-open code,
+rewrite immutable evidence or weaken core security. See
+[licensing and editions](LICENSING_AND_EDITIONS.md) and
+[ADR 0021](ADR_0021_Apache_2_0_and_Editions.md).
+
+The server-side inventory, manual mapper, subsequent network/VMware enrichment
+and service dependency sequence was approved on 02/10/2026 (-03). It remains
+post-1.0 work, with technical details and edition allocation to be specified.
 
 ## Architecture governance
 

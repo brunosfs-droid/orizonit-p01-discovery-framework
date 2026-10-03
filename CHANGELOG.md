@@ -1,3 +1,13 @@
+## Unreleased — Apache 2.0 and edition strategy
+
+- Replace the current source license with Apache-2.0, preserve attribution in
+  NOTICE and align contribution/governance/MVP/roadmap documentation.
+- Record Community-first stable launch, future separately licensed commercial
+  modules and official edition limits still to be specified.
+- Approve staged server inventory/mapper/dependency work after 1.0.
+- Preserve historical commits/releases and dependency license obligations.
+- No executable, schema, database, quota, entitlement or billing change.
+
 ## v0.6.1 — Opt-in API metadata indexing (CANDIDATE)
 
 - Add --metadata-index postgres (default off); index only after canonical filesystem import publication.
