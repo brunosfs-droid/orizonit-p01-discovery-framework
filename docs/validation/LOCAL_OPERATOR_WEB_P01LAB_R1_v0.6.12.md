@@ -1,8 +1,9 @@
-# Cancã — validação parcial das telas Web R1 v0.6.12
+# Cancã — aceite das telas Web R1 v0.6.12
 
-03/10/2026 (-03), capturas recebidas até 06:53. **R1 EM VALIDAÇÃO**.
-Instalação, login e relatório desktop demonstrados; aceite completo depende das
-etapas finais abaixo. Não reinstalar nem repetir os gates já aprovados.
+03/10/2026 (-03), capturas finais recebidas às 07:20. **LAB VALIDATED**,
+limitado ao R1 sintético Windows–Rocky via túnel SSH/loopback. As nove capturas
+iniciais e seis finais demonstram instalação, consulta, negação, logout e
+encerramento com invariantes. Não reinstalar nem repetir este gate aprovado.
 
 ## Evidência observada
 
@@ -42,36 +43,52 @@ na captura. Para esta conta sintética temporária, escolher “Not now”/“Ag
 | Login local / relatório desktop | Demonstrados |
 | Resumo histórico / cobertura / proveniência / evidência | Demonstrados |
 | Paginação | Páginas 1, 2 e 4 visíveis; Próxima desabilitada na 4 |
-| Assessment OTHER negado / dados anteriores removidos | Captura pendente |
-| Sair / recarregar sem conta ou relatório | Captura pendente |
-| Janela estreita / rolagem própria da tabela no LAB | Pendente; Chromium CI já cobre cenário sintético separado |
-| Encerramento / 14 tabelas invariantes / contas removidas | STOP PASS pendente |
+| Assessment OTHER negado / dados anteriores removidos | Demonstrados nas capturas finais |
+| Sair / retorno ao login vazio | Demonstrados; sem relatório ou conta visível |
+| Janela reduzida no LAB | Relatório legível em janela de aproximadamente 1048 px; mobile permanece qualificação CI separada |
+| Encerramento / 14 tabelas invariantes / contas removidas | Dois STOP PASS, sem mutação, servidor parado e contas removidas |
 
-## Retomar somente o que falta
+## Fechamento pelas seis capturas finais
 
-Com o launcher e o túnel ainda abertos, usar a sessão existente. Se ela expirou,
-entrar novamente com `reader-web` e a senha sintética da execução atual.
+`image(20261003-100234).png` e a captura 070732 mostram `OTHER`, a mensagem
+“Sua conta não possui acesso a este assessment” e ausência do relatório anterior.
+A captura 070417 apresenta login vazio; a 070752 mostra “Sessão encerrada neste
+navegador”, campos limpos e ausência do operador/relatório após Sair. O aceite
+visual usa essas telas; não é captura independente de tokens ou requests HTTP.
 
-1. Consultar `OTHER`; capturar acesso negado e ausência do relatório anterior.
-2. Consultar novamente `P01-PG-LAB-R1`, reduzir a largura da janela e conferir
-   os formulários e a rolagem horizontal dentro da tabela. Depois clicar Sair
-   e recarregar; capturar o login sem conta/relatório visível.
-3. Ctrl+C na janela Rocky. Capturar `OPERATOR WEB LAB STOP PASS`, 14 tabelas,
-   `database_mutated=false`, `store_accessed=false`, servidor parado e contas
-   removidas, seguido de `INVARIANTES WEB VALIDADAS NESTA SESSAO: true`.
-   Executar `unset PGPASSWORD` no Rocky se ainda não foi executado.
-4. Ctrl+C na janela PowerShell do túnel.
+A captura 070839 mostra o relatório na janela reduzida, página 1 com quatro
+avaliações, linhas legíveis e proveniência/recomendações. Essa largura ainda é
+desktop; não alegamos um dispositivo mobile nem teste manual de todos os breakpoints.
+As páginas anteriores continuam válidas e não precisam ser recapturadas.
 
-Se o launcher já foi encerrado, enviar primeiro a saída final existente. Não
-reiniciar, reinstalar ou alterar banco/grants para substituir uma evidência ausente.
+A captura 070908 mostra dois ciclos READY→Ctrl+C→`OPERATOR WEB LAB STOP PASS`,
+cada um seguido de `INVARIANTES WEB VALIDADAS NESTA SESSAO: true`. O primeiro JSON
+é legível com `tables_compared=14`, `database_mutated=false`, `store_accessed=false`,
+`temporary_server_stopped=true` e `temporary_credentials_removed=true`.
+O segundo repete PASS e o marcador; parte da linha fica coberta pela janela
+PowerShell. A afirmação dos checks cobertos usa as asserções do launcher que
+precedem a emissão de PASS, sem alegar leitura independente desses bytes.
 
 ## Limites
 
-O resumo do relatório e READY não comprovam a comparação final de 14 tabelas,
-remoção de contas ou parada do servidor. Sem STOP PASS o R1 completo continua
-pendente. Os testes anteriores de API, restore, lifecycle e exportação continuam
-aprovados e não precisam ser repetidos. CI de Chromium e PostgreSQL 16/17 permanece
-uma qualificação independente, sem substituir esses passos do host.
+Os prompts finais do Rocky e PowerShell estão visíveis; o listener e o túnel
+foram encerrados. Não há `unset PGPASSWORD` visível na captura final: executar
+somente essa limpeza de ambiente caso ainda não tenha sido feita, sem repetir R1.
+
+## Limites e continuidade
+
+As 14 tabelas foram comparadas pelo launcher qualificado antes/depois de cada
+ciclo. Recebemos capturas, sem acesso direto ao banco, policy temporária ou TAR;
+não alegamos um snapshot independente. As duas execuções não mostram mutação
+do banco nem acesso ao store. A primeira falha de startup permanece histórica,
+superada pelos READY e dois encerramentos aprovados.
+
+Os testes anteriores de API, restore, lifecycle e exportação continuam aprovados.
+CI de Chromium e PostgreSQL 16/17 é uma qualificação independente já realizada
+para o pacote. O PR #112 registra o aceite, porém a nova documentação aguarda CI:
+os jobs de 06:58 falharam antes de qualquer etapa, sem logs recuperáveis.
+O diagnóstico depende da mensagem de Annotations do GitHub Actions; nenhuma
+causa financeira ou falha de código é presumida. Não repetir LAB para resolver CI.
 
 Não qualifica HTTPS remoto do produto, AD/SSO, MFA, HA, roles de produção ou
 produção. O collector portable permanece sem login Cancã; credenciais de alvos
@@ -90,6 +107,12 @@ e mTLS do Discovery Node seguem nas suas fronteiras próprias.
 | image(20261003-094939).png | 47604faad8bef5396ff12e1798def9d3bbfc9316ddaa8397221c3ba6eda7b188 |
 | image(20261003-095049).png | cf24fad8d1f53ff1202bb6dcfb513d1cc54a2c53e8d766eadcb1c5be95112297 |
 | image(20261003-095126).png | 3eeff5bb463a2dd6232998fa452d02243ee5f98849c1e8978c4b30ce919a5de5 |
+| image(20261003-100234).png | 32f42ec254457ec6205b1f385f82d25d6454b116ddc3c14d21ee01e327866214 |
+| Captura de tela 2026-10-03 070417.png | ff8db176a0ee705a296caee10c9f9cc5c5e5c3377781134a264549dd825ffcfc |
+| Captura de tela 2026-10-03 070732.png | 46fa67eca5c3581193457789699368ec7b69715ae91fd11e659f5b66f828afa1 |
+| Captura de tela 2026-10-03 070752.png | 6da6a6a4c0db5f94c9432ee61fd449f3294d46e4755ca3d49611496d849af38c |
+| Captura de tela 2026-10-03 070839.png | b0cc0474bc2119d6d53dba0596f3ccaf93d2163cdefa106b1fc39a62fb0ccbfa |
+| Captura de tela 2026-10-03 070908.png | 9df6ae8727b385103750cfcc70ceebb5ed8efdc0a35f979e104367f5d13a39db |
 
 [Roteiro](../LAB_LOCAL_OPERATOR_WEB_R1_v0.6.12.md) ·
 [ADR 0024](../ADR_0024_Local_Operator_Web_v0.6.12.md).

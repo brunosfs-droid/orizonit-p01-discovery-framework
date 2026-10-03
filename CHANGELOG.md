@@ -1,12 +1,12 @@
-## v0.6.12 — Local operator Web screens (CANDIDATE)
+## v0.6.12 — Local operator Web screens (short R1 LAB VALIDATED)
 
-- Record partial Windows/Rocky Web R1 from nine captures: isolated installation, tunnel, login/report/coverage/provenance and pages 1/2/4 demonstrated; denied scope, logout/reload, narrow window and 14-table STOP PASS remain pending. No executable or qualified package change.
+- Accept Windows/Rocky Web R1 from fifteen captures: installation/tunnel/login/report, historical summary/coverage/provenance, pages 1/2/4, denied OTHER scope, logout/empty login, reduced desktop window and two 14-table STOP PASS results with server/account cleanup. Wider production/mobile coverage remains separate; no executable or qualified package change.
 - Accept v0.6.11 same-host synthetic Rocky operator API R1 from two captures: isolated installation and helper PASS; broader/remote/browser qualification remains separate.
 - Add a separate Web entry point with Portuguese login/logout and scoped canonical report pages; preserve the qualified v0.6.11 backend bytes.
 - Show historical findings, coverage, source provenance and fenced pagination; no database writes or collection action.
 - Keep browser tokens in memory, render untrusted values as text, clear data on expiry/logout and ignore late responses.
 - Serve a fixed asset inventory with CSP and Host/Origin checks; no persistent browser session or external frontend dependency.
-- Add HTTP/client behavior and real PostgreSQL invariant checks, plus a temporary SSH-tunnel browser LAB procedure; browser acceptance pending.
+- Add HTTP/client behavior and real PostgreSQL invariant checks, plus a temporary SSH-tunnel browser LAB procedure; short synthetic R1 accepted on 03/10/2026.
 
 ## v0.6.11 — Local operator report API (same-host R1 LAB VALIDATED)
 

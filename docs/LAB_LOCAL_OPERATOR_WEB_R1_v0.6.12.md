@@ -1,9 +1,9 @@
 # Cancã — primeiras telas Web, R1 v0.6.12
 
-**CANDIDATE; R1 em validação.** As nove capturas de 03/10 demonstram instalação,
-login, relatório desktop e páginas 1/2/4. [Registro e etapas restantes](validation/LOCAL_OPERATOR_WEB_P01LAB_R1_v0.6.12.md).
-Retomar somente negação OTHER, janela estreita, logout/recarregamento e STOP PASS;
-não repetir a instalação abaixo nem reiniciar um launcher ainda ativo.
+**R1 LAB VALIDATED em 03/10/2026 (-03).** Nove capturas iniciais e seis finais
+demonstram instalação, relatório desktop, negação OTHER, logout e dois STOP PASS
+com 14 tabelas preservadas. [Aceite e limites](validation/LOCAL_OPERATOR_WEB_P01LAB_R1_v0.6.12.md).
+Roteiro histórico; não repetir instalação, launcher ou este gate aprovado.
 API v0.6.11 já aprovada; não repetir seu helper, restore, lifecycle ou exportação.
 Collector portable continua sem login Cancã. AD permanece opcional/futuro.
 
