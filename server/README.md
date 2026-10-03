@@ -1,6 +1,10 @@
-# Cancã — local operator Web v0.6.16 / report API v0.6.11
+# Cancã — local operator Web v0.6.17 / report API v0.6.11
 
-**Web v0.6.16 permitted-assessment selection CANDIDATE; Web v0.6.12 R1 LAB VALIDATED.**
+**Web v0.6.17 executive preview CANDIDATE; Web v0.6.12 R1 LAB VALIDATED.**
+[Executive preview and limits](../docs/OPERATOR_WEB_PREVIEW_v0.6.17.md).
+An explicit action shows complete historical coverage, recorded severities and
+ten recommendation groups per page using the displayed report's scope. Preview
+and both ZIP downloads share one collection slot; their previous formats stay pinned.
 [Own-grant selector and limits](../docs/OPERATOR_ASSESSMENT_SELECTION_v0.6.16.md).
 The Web directory reads the current session's startup-policy IDs without opening
 PostgreSQL; choose an ID then explicitly query. It does not establish existence.
@@ -67,8 +71,9 @@ python server/P01_Operator_Web.py --accounts /etc/canca/operator-accounts.json -
 ```
 
 Open `http://127.0.0.1:8878/` on the same host, or via an SSH tunnel on the same
-local/remote port. Enter a local operator account and the exact assessment ID;
-there is no assessment enumeration. Reports show historical results, coverage
+local/remote port. Enter a local operator account, choose an ID from its own grants
+or type an exact ID, then explicitly query. The grant list does not check report
+existence. Reports show historical results, coverage
 and source provenance. Completed lifecycle does not mean findings remediated.
 Changing scope clears the page; query the first page again. Browser tokens are
 kept only in memory; reload requires login. Sair clears data immediately and
@@ -93,6 +98,7 @@ Startup/health do not connect to PostgreSQL or attest database readiness.
 | POST `/api/v1/operator/session` | Strict `application/json` object with `username`/`password`; 201 returns an opaque bearer token |
 | GET `/api/v1/operator/assessments` | Web v0.6.16 only; own sorted policy grant IDs, no query/body/SQL/existence check |
 | GET `/api/v1/assessments/{id}/report` | Requires `Authorization: Bearer <token>` and exact read grant; canonical report page |
+| GET `/api/v1/assessments/{id}/report/executive` | Web only; mandatory displayed scope fence; bounded preview with ten recommendation groups per page |
 | GET `/api/v1/assessments/{id}/report/export` | Web only; exact read grant and mandatory scope fence; complete ZIP |
 | GET `/api/v1/assessments/{id}/report/executive/export` | Web only; same authorization/fence and shared export slot; executive ZIP |
 | DELETE `/api/v1/operator/session` | Revokes that bearer token immediately |
@@ -132,7 +138,7 @@ No signup, password recovery, account mutation endpoint, MFA, persistent audit,
 HA sessions, tenancy or SSO yet. Breached-password screening/public login
 hardening remain release gates. No PostgreSQL assessment inventory, import,
 lifecycle update, server-side scan or commercial entitlement. The standalone API
-does not offer the Web policy directory or report-download routes.
+does not offer the Web policy directory, executive preview or report-download routes.
 
 Do not deploy automatically to the approved Rocky service or expose a LAB HTTP
 listener remotely. The [short R1](../docs/LAB_LOCAL_OPERATOR_R1_v0.6.11.md) starts

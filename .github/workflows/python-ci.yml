@@ -43,6 +43,8 @@ jobs:
         run: python -m py_compile server/P01_Operator_Export.py server/P01_Operator_Web.py docs/validation/VERIFY_OPERATOR_WEB_EXECUTIVE_v0.6.15.py tests/test_operator_web_executive.py tests/test_postgres_operator_executive.py
       - name: Compile operator assessment directory
         run: python -m py_compile server/P01_Operator_Auth.py server/P01_Operator_Web.py tests/test_operator_assessments.py tests/test_postgres_operator_assessments.py
+      - name: Compile operator executive preview
+        run: python -m py_compile server/P01_Operator_Preview.py tests/test_operator_web_preview.py tests/test_postgres_operator_preview.py tests/operator_web_browser_fixture.py
 
       - name: Validate JSON artifacts
         run: |

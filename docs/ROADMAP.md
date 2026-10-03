@@ -551,3 +551,14 @@ See [edition policy](LICENSING_AND_EDITIONS.md) and [ADR 0021](ADR_0021_Apache_2
 - API standalone e formatos de download preservados; pacotes históricos ficam nos pins.
 - [Contrato](OPERATOR_ASSESSMENT_SELECTION_v0.6.16.md) · [ADR 0028](ADR_0028_Operator_Assessment_Selection_v0.6.16.md) ·
   [Registro CI](validation/OPERATOR_ASSESSMENT_SELECTION_CI_v0.6.16.md).
+
+## v0.6.17 — resumo executivo na Web (CANDIDATE)
+
+- A — MVP: consulta explícita de cobertura completa, severidades registradas e recomendações na interface.
+- Síntese executiva v0.6.14 preservada; dez grupos por página, regra/catalog/engine históricos e nenhuma referência de ocorrência/evidência no painel.
+- Scope fence obrigatório em todas as páginas canônicas, incluindo terminal vazia; um slot compartilhado com ambos os ZIP, deadline cooperativo e JSON limitado a 1 MiB.
+- Renderização somente texto, paginação independente da técnica e limpeza/aborto em logout/expiração; sem persistência de token.
+- HTTP/eventos, reader PostgreSQL 16/17 e Chromium desktop/mobile; gates manuais adiados, sem ação no LAB hoje.
+- Sem migração, SQL de escrita, store, AD/SSO, collector login, inventário ou mapper. Diretório e formatos ZIP anteriores preservados.
+- [Contrato](OPERATOR_WEB_PREVIEW_v0.6.17.md) · [ADR 0029](ADR_0029_Operator_Executive_Preview_v0.6.17.md) ·
+  [Registro CI](validation/OPERATOR_WEB_PREVIEW_CI_v0.6.17.md).

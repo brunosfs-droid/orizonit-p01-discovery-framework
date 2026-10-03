@@ -24,20 +24,25 @@ ENGINE_SHA = 'e' * 64
 
 def read_report(self, token, assessment, *, after_analysis_id='', after_ordinal=-1, limit=100, expected_scope_sha256=None):
     self.auth.require(token, assessment)
-    if assessment != 'LAB-001':
+    if assessment not in ('LAB-001', 'LAB-MANY', 'LAB-EMPTY'):
         return dict(status='not_found')
     return canonical_page(None, assessment, after_analysis_id, after_ordinal, limit, expected_scope_sha256)
 
 
 def canonical_page(conn, assessment, after_analysis_id='', after_ordinal=-1, limit=100, expected_scope_sha256=None):
     web.api.report.validate_query(assessment, after_analysis_id, after_ordinal, limit, expected_scope_sha256)
-    if expected_scope_sha256 is not None and expected_scope_sha256 != SCOPE:
+    many = assessment == 'LAB-MANY'; empty = assessment == 'LAB-EMPTY'
+    count = 0 if empty else 6 if many else 2
+    analyses = tuple('ana-' + str(n + 1) * 32 for n in range(count))
+    scope = 'f' * 64 if many else '0' * 64 if empty else SCOPE
+    engines = [str(n + 1) * 64 if many else ENGINE_SHA for n in range(count)]
+    if expected_scope_sha256 is not None and expected_scope_sha256 != scope:
         raise web.api.report.pg.PersistenceError('report_scope_conflict')
     rows = []
-    for ordinal in range(4):
-        finding = ordinal < 2
+    for ordinal in range(count * 2):
+        finding = many or ordinal < 2
         index = ordinal // 2; local_ordinal = ordinal % 2
-        rows.append(dict(analysis_id=ANALYSES[index], ordinal=local_ordinal, rule_id=CATALOG['rules'][local_ordinal]['id'],
+        rows.append(dict(analysis_id=analyses[index], ordinal=local_ordinal, rule_id=CATALOG['rules'][local_ordinal]['id'],
             result='finding' if finding else 'no_finding', asset_id='asset-synthetic', source_path=ATTACK,
             source_sha256='b'*64, bundle_id='bnd-synthetic-'+str(index+1), link_state='linked',
             asset_decision='new_asset' if index == 0 else 'linked',
@@ -48,20 +53,25 @@ def canonical_page(conn, assessment, after_analysis_id='', after_ordinal=-1, lim
     page = selected[:limit]; last = page[-1] if page else dict(analysis_id=after_analysis_id, ordinal=after_ordinal)
     return deepcopy(dict(status='found', report_version=web.api.report.VERSION, assessment_id=assessment, source_bytes_revalidated=False,
         scope_mode='all_persisted_imports', lifecycle=dict(state='completed', revision=4),
-        identity=dict(central_asset_count=1, observation_count=2, decisions=dict(new_asset=1, linked=1, review_required=0),
-                      reasons=dict(synthetic_new=1, synthetic_match=1)),
-        recorded_finding_occurrences=2, snapshot_at_utc='2026-10-03T03:00:00Z', report_scope_sha256=SCOPE,
-        coverage=dict(evaluation_count=4, import_count=2, asset_projected_import_count=2, analyzed_import_count=2, credentialed_sources_evaluated=2,
-            credentialed_sources_indexed=2, projection_status='all_imports_analyzed',
-            outcomes=dict(finding=2, no_finding=2, insufficient_evidence=0, not_applicable=0, not_supported=0),
+        identity=dict(central_asset_count=int(bool(count)), observation_count=count,
+                      decisions=dict(new_asset=int(bool(count)), linked=max(0, count - 1), review_required=0),
+                      reasons=dict(synthetic_new=1, synthetic_match=count - 1) if count else {}),
+        recorded_finding_occurrences=sum(r['result'] == 'finding' for r in rows),
+        snapshot_at_utc='2026-10-03T03:00:00Z', report_scope_sha256=scope,
+        coverage=dict(evaluation_count=len(rows), import_count=count, asset_projected_import_count=count,
+            analyzed_import_count=count, credentialed_sources_evaluated=count, credentialed_sources_indexed=count,
+            projection_status='no_imports' if empty else 'all_imports_analyzed',
+            outcomes=dict(finding=sum(r['result'] == 'finding' for r in rows), no_finding=sum(r['result'] == 'no_finding' for r in rows),
+                          insufficient_evidence=0, not_applicable=0, not_supported=0),
             by_rule={rule:{result:sum(r['rule_id']==rule and r['result']==result for r in rows)
                            for result in web.api.report.RESULTS} for rule in web.api.report.RULES},
             imports_without_assets=[], imports_without_analysis=[]),
-        imports=[dict(bundle_id='bnd-synthetic-'+str(n+1)) for n in range(2)],
+        imports=[dict(bundle_id='bnd-synthetic-'+str(n+1)) for n in range(count)],
         analyses=[dict(analysis_id=aid, bundle_id='bnd-synthetic-'+str(n+1), policy_version='0.6.4',
-                       catalog_sha256=CATALOG_SHA, engine_sha256=ENGINE_SHA, evaluation_count=2, finding_count=2 if n==0 else 0)
-                  for n, aid in enumerate(ANALYSES)],
-        catalogs=[dict(policy_version='0.6.4', catalog_sha256=CATALOG_SHA, engine_sha256=ENGINE_SHA, catalog=CATALOG)],
+                       catalog_sha256=CATALOG_SHA, engine_sha256=engines[n], evaluation_count=2, finding_count=2 if many or n==0 else 0)
+                  for n, aid in enumerate(analyses)],
+        catalogs=[dict(policy_version='0.6.4', catalog_sha256=CATALOG_SHA, engine_sha256=engine, catalog=CATALOG)
+                  for engine in sorted(set(engines))],
         evaluations=page, has_more=len(selected)>limit,
         next_cursor=dict(after_analysis_id=last['analysis_id'], after_ordinal=last['ordinal'])))
 
@@ -70,7 +80,7 @@ def main():
     # Account/server are temporary. CI child is stopped with SIGINT by the harness.
     with tempfile.TemporaryDirectory(prefix='canca-web-browser-ci-') as temporary:
         policy = Path(temporary) / 'accounts.json'
-        auth.create_policy(policy, 'OP-BROWSER-CI', 'browser-reader', ['LAB-001', 'LAB-MISSING'], PASSWORD)
+        auth.create_policy(policy, 'OP-BROWSER-CI', 'browser-reader', ['LAB-001', 'LAB-EMPTY', 'LAB-MANY', 'LAB-MISSING'], PASSWORD)
         doc = json.loads(policy.read_bytes())
         for operator, username, ids in [('OP-OTHER', 'other-reader', ['PRIVATE-OTHER']), ('OP-EMPTY', 'empty-reader', [])]:
             row = deepcopy(doc['accounts'][0])
