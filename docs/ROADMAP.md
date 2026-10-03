@@ -454,7 +454,9 @@ Follow-up: após fechar v0.5e, iniciar v0.5f Optional Installed Service/Agent e 
 - JSON/Markdown completos com hashes, diretório privado e paginação fenced.
 - Código integrado; PR #106 mantém URLs persistidas inertes no Markdown.
 - PR #107 corrige inventário de instalação para aceitar a pasta criada pelo Git.
-- Aceite Rocky permanece CANDIDATE; capturas 003724/003738/003753 repetiram o bloco antigo.
+- Exportação funcional LAB VALIDATED no R1 Rocky: instalação corrigida, duas saídas, hashes/permissões/contagens PASS nas capturas 014007/014025/014138/014149/014247.
+- Apresentação do Markdown permanece pendente; tentativas bloqueadas anteriores são históricas.
+- [Aceite e limites](validation/POSTGRESQL_P01LAB_EXPORT_R1_v0.6.9.md).
 - [Guia](REPORT_EXPORT_v0.6.9.md) · [LAB](LAB_POSTGRESQL_EXPORT_R1_v0.6.9.md).
 
 ## v0.6.10 — autorização de node por assessment (CANDIDATE)

@@ -1,6 +1,8 @@
 # P01 — tentativa de exportação R1 v0.6.9
 
-02/10/2026 (-03). **Gate do exportador no Rocky: CANDIDATE.** Quatro capturas
+02/10/2026 (-03). **Registro histórico de tentativas bloqueadas.** O ensaio
+funcional posterior foi aprovado; [aceite atual](POSTGRESQL_P01LAB_EXPORT_R1_v0.6.9.md).
+Na tentativa descrita abaixo o gate estava CANDIDATE. Quatro capturas
 recebidas foram inspecionadas, sem acesso ao host ou recebimento do TAR real.
 
 | Captura | Evidência visível | Conclusão |

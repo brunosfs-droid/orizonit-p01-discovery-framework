@@ -6,6 +6,7 @@
 - Validate bounded policy files and duplicate/unknown fields before startup; immutable snapshot requires controlled restart for revocation.
 - Preserve certificate/header/manifest binding, bundle ownership, canonical import/replay and legacy mode with explicit health status.
 - Add synthetic mTLS/HTTP and real bundle boundary tests; no migration or operator/Web authentication.
+- Accept functional v0.6.9 exporter R1 on Rocky from five operator captures: corrected installation, two exports, hash/permission/count verification PASS; Markdown presentation review remains pending.
 
 ## v0.6.1 — Opt-in API metadata indexing (CANDIDATE)
 
