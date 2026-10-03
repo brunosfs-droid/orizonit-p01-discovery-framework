@@ -1,3 +1,12 @@
+## v0.6.13 — Complete operator Web report download (CANDIDATE)
+
+- Export all evaluations as an authenticated in-memory ZIP with JSON, Markdown and hash manifest; reuse the v0.6.9 renderer/collector and canonical SELECT-only report.
+- Require the displayed scope on the first page, all continuations and empty terminal check; retain exact grants/session checks and no automatic retry.
+- Bound concurrent delivery, deadline and archive bytes; no filesystem export, store access, new migration or dependency.
+- Verify binary response length/scope/SHA256 in the client, revoke Blob URLs and suppress late downloads on logout/expiry.
+- Add actual HTTP, reader-role PostgreSQL 16/17, browser-download and local verifier cases. Historical package tests now use their qualified Git pins.
+- Resolve Actions startup blocker: all sixteen jobs passed on the eight reruns; integrate Web R1 acceptance in PR #112. Previous LAB gates remain approved.
+
 ## v0.6.12 — Local operator Web screens (short R1 LAB VALIDATED)
 
 - Accept Windows/Rocky Web R1 from fifteen captures: installation/tunnel/login/report, historical summary/coverage/provenance, pages 1/2/4, denied OTHER scope, logout/empty login, reduced desktop window and two 14-table STOP PASS results with server/account cleanup. Wider production/mobile coverage remains separate; no executable or qualified package change.

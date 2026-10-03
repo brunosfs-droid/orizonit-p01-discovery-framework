@@ -1,6 +1,6 @@
-# Cancã — local operator Web v0.6.12 / report API v0.6.11
+# Cancã — local operator Web v0.6.13 / report API v0.6.11
 
-**Web R1 LAB VALIDATED; wider release CANDIDATE.** Fifteen Windows/Rocky captures
+**Web v0.6.13 download CANDIDATE; Web v0.6.12 R1 LAB VALIDATED.** Fifteen Windows/Rocky captures
 demonstrate local login/report pages, denied scope, logout/empty login, reduced
 desktop window and two launcher STOP PASS results with 14-table invariance/cleanup.
 [Acceptance and limits](../docs/validation/LOCAL_OPERATOR_WEB_P01LAB_R1_v0.6.12.md).
@@ -83,6 +83,7 @@ Startup/health do not connect to PostgreSQL or attest database readiness.
 | GET `/`, `/assets/operator.css`, `/assets/operator.js` | Web entry point only; fixed public login shell/assets, no report data |
 | POST `/api/v1/operator/session` | Strict `application/json` object with `username`/`password`; 201 returns an opaque bearer token |
 | GET `/api/v1/assessments/{id}/report` | Requires `Authorization: Bearer <token>` and exact read grant; canonical report page |
+| GET `/api/v1/assessments/{id}/report/export` | Web only; exact read grant and mandatory scope fence; complete ZIP |
 | DELETE `/api/v1/operator/session` | Revokes that bearer token immediately |
 
 Keep tokens in client process memory; do not put them in URLs, command arguments,
@@ -97,6 +98,14 @@ grant returns 403 before DB connection; malformed queries return 400; scope
 change returns 409; authorized missing assessment returns 404. Backend failures
 return fixed codes, never DSNs, paths or raw exceptions. Historical findings and
 lifecycle semantics match the canonical report; no store reads/reanalysis.
+
+Web v0.6.13 adds **Baixar relatório completo (ZIP)** to a loaded report. It includes
+all evaluations in JSON/Markdown and a hash manifest, regardless of the displayed
+page size. Nothing is written on the server. One export at a time, 32 MiB archive
+limit and cooperative 60-second deadline bound this operation. A saved download
+remains on the operator's computer after logout. The browser verifies archive
+SHA256/scope/length and suppresses late downloads after logout/expiry.
+[Download contract and limits](../docs/OPERATOR_WEB_EXPORT_v0.6.13.md).
 
 Sessions expire absolutely after 15 minutes; at most 128 active sessions.
 Five failed logins per account/anonymous bucket impose a five-minute window;

@@ -13,6 +13,7 @@ import sys
 import tarfile
 import tempfile
 import unittest
+from qualified_git_source import guide_revision, source_bytes
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -36,7 +37,8 @@ class ExportLabGuideTests(unittest.TestCase):
         self.engine_bytes = (ROOT / 'persistence/P01_Findings.py').read_bytes().replace(b'\r\n', b'\n').replace(b'\n', b'\r\n')
         self.assertEqual(hashlib.sha256(self.engine_bytes).hexdigest(), ENGINE_SHA)
         self.engine.write_bytes(self.engine_bytes)
-        self.source = (ROOT / EXPORT_PATH).read_bytes().replace(b'\r\n', b'\n')
+        self.source = source_bytes(guide_revision('docs/LAB_POSTGRESQL_EXPORT_R1_v0.6.9.md'),
+                                   EXPORT_PATH).replace(b'\r\n', b'\n')
         self.package = self.base / 'export.tar'
         self.target = self.root / EXPORT_PATH
         text = GUIDE.read_text(encoding='utf-8')

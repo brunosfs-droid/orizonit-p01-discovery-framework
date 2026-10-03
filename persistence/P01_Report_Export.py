@@ -43,11 +43,11 @@ def bounded_json(value):
     return raw
 
 
-def collect(conn, assessment_id, page_size=100):
+def collect(conn, assessment_id, page_size=100, *, expected_scope_sha256=None, checkpoint=None):
     """Each query is read-only. Fence every continuation and an empty end query."""
-    report.validate_query(assessment_id, limit=page_size)
+    report.validate_query(assessment_id, limit=page_size, expected_scope_sha256=expected_scope_sha256)
     header = None
-    scope = None
+    scope = expected_scope_sha256
     cursor = dict(after_analysis_id='', after_ordinal=-1)
     records = []
     previous = ('', -1)
@@ -57,8 +57,12 @@ def collect(conn, assessment_id, page_size=100):
     last_snapshot = None
     # At least one record per nonempty page; one final empty query is mandatory.
     for _ in range(report.MAX_EVALUATIONS + 2):
+        if checkpoint is not None:
+            checkpoint()
         page = report.show_assessment(conn, assessment_id, **cursor, limit=page_size,
                                       expected_scope_sha256=scope)
+        if checkpoint is not None:
+            checkpoint()
         pg.require(page.get('status') != 'not_found', 'assessment_not_found')
         pg.require(page.get('status') == 'found' and page.get('report_version') == report.VERSION
                    and page.get('assessment_id') == assessment_id
@@ -66,7 +70,9 @@ def collect(conn, assessment_id, page_size=100):
         current = {k: v for k, v in page.items() if k not in PAGE_FIELDS}
         if header is None:
             header = current
-            scope = page['report_scope_sha256']
+            actual_scope = page['report_scope_sha256']
+            pg.require(scope is None or actual_scope == scope, 'report_scope_conflict')
+            scope = actual_scope
             pg.require(isinstance(scope, str) and re.fullmatch(r'[0-9a-f]{64}', scope), 'export_data_conflict')
             first_snapshot = page['snapshot_at_utc']
         pg.require(current == header, 'export_data_conflict')

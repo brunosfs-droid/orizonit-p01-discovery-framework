@@ -16,7 +16,7 @@ class PostgreSQLOperatorWebTests(unittest.TestCase):
         boundary = SimpleNamespace(report=web.api.report, VERSION=web.VERSION, create_server=web.create_server)
         with patch.object(fixture.lab, 'api', boundary):
             result = fixture.lab.exercise('canca_ci')
-        self.assertEqual(result['operator_version'], '0.6.12')
+        self.assertEqual(result['operator_version'], web.VERSION)
         self.assertTrue(result['canonical_report_match'])
         self.assertTrue(result['fenced_pages_match'])
         self.assertEqual(result['tables_compared'], 14)
