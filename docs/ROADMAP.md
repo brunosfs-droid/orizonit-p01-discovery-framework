@@ -496,11 +496,13 @@ See [edition policy](LICENSING_AND_EDITIONS.md) and [ADR 0021](ADR_0021_Apache_2
 - [Guia](../server/README.md) · [ADR 0023](ADR_0023_Local_Operator_API_v0.6.11.md) · [R1 curto](LAB_LOCAL_OPERATOR_R1_v0.6.11.md).
 - R1 aprovado nas duas capturas de 03/10: pacote isolado e helper PASS; loopback/base sintética, sem qualificar UI/HTTPS remoto/produção. [Aceite](validation/LOCAL_OPERATOR_P01LAB_R1_v0.6.11.md).
 
-## v0.6.12 — primeiras telas Web de operadores (CANDIDATE)
+## v0.6.12 — primeiras telas Web de operadores (R1 LAB VALIDATED)
 
 - Login local, logout e relatório por ID de assessment sobre o backend v0.6.11 preservado.
 - Resumo histórico, cobertura e proveniência; páginas mantêm o mesmo escopo/cursor.
 - Sessão somente em memória, texto seguro no DOM, CSP e proteção de origem/Host.
 - Sem alteração no banco, collector, credenciais de alvos ou mTLS de upload.
-- Próximo gate: navegador Windows via túnel SSH para listener temporário Rocky; não repetir R1 de backend/restore/lifecycle/exportação.
+- R1 Windows/Rocky via túnel SSH aprovado; não repetir instalação, Web, backend, restore, lifecycle ou exportação. Qualificação ampliada/produção continua separada.
 - [ADR 0024](ADR_0024_Local_Operator_Web_v0.6.12.md) · [R1 Web](LAB_LOCAL_OPERATOR_WEB_R1_v0.6.12.md).
+- Quinze capturas de 03/10 demonstram instalação/login/relatório, negação OTHER, logout/login vazio, janela reduzida e dois STOP PASS com 14 tabelas preservadas e contas removidas. [Aceite](validation/LOCAL_OPERATOR_WEB_P01LAB_R1_v0.6.12.md).
+- Pendência de engenharia: CI da nova documentação falhou antes de iniciar etapas; inspecionar Annotations antes de integrar o PR #112. Sem alteração no pacote aprovado.

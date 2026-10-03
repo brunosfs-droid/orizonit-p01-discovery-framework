@@ -1,6 +1,8 @@
 # ADR 0024 — First local operator Web screens
 
-03/10/2026 (-03). **CANDIDATE**, browser LAB pending. The v0.6.11 API same-host
+03/10/2026 (-03). Short synthetic browser R1 **LAB VALIDATED** from fifteen captures;
+wider release remains CANDIDATE. [Acceptance and limits](validation/LOCAL_OPERATOR_WEB_P01LAB_R1_v0.6.12.md).
+The v0.6.11 API same-host
 R1 was accepted from Bruno's two captures; its code remains byte-for-byte intact.
 
 ## Decision
@@ -49,8 +51,9 @@ PostgreSQL 16/17 CI exercises canonical equality and all 14 table invariants via
 the Web listener. A temporary manual LAB launcher checks DB invariance on exit,
 removes synthetic account files and labels browser acceptance as a separate gate.
 
-UI rendering/accessibility and the Windows-to-Rocky tunnel need Bruno's browser
-validation. AD/SSO, account management, assessment listing, imports/scan actions,
+Desktop rendering, reduced window and the Windows-to-Rocky tunnel were demonstrated
+in Bruno's R1; mobile/browser/accessibility coverage beyond that scope is a separate
+gate. AD/SSO, account management, assessment listing, imports/scan actions,
 file download, MFA, public hardening and production remain later gates.
 
 [API decision](ADR_0023_Local_Operator_API_v0.6.11.md) ·

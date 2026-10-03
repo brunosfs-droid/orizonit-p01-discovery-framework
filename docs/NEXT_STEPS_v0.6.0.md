@@ -104,12 +104,23 @@ não repetir restore/lifecycle/exportação nem instalar serviço ou liberar fir
 As duas capturas de 03/10 mostram instalação isolada e `LOCAL OPERATOR LAB PASS`.
 [Aceite e limites](validation/LOCAL_OPERATOR_P01LAB_R1_v0.6.11.md). Não repetir este R1.
 
-## Próximo gate: primeiras telas Web v0.6.12
+## Primeiras telas Web v0.6.12 — R1 aprovado
 
 Login local, relatório histórico por assessment e logout usam o backend aprovado,
 sem alterar a persistência. Sessão somente em memória; consultas paginadas com cerca.
 [ADR 0024](ADR_0024_Local_Operator_Web_v0.6.12.md) ·
 [Roteiro de navegador](LAB_LOCAL_OPERATOR_WEB_R1_v0.6.12.md).
-Validar no Windows via túnel SSH ao Rocky: telas, quatro avaliações, dois findings
-históricos, cobertura, paginação, negação fora do assessment e logout/recarregamento.
-O launcher compara as 14 tabelas ao encerrar, sem migração ou acesso ao store.
+Quinze capturas de 03/10 demonstram instalação, túnel, login, resumo/cobertura,
+proveniência/evidência, páginas 1/2/4, negação OTHER, logout/login vazio e janela
+reduzida. Dois STOP PASS comprovam as asserções do launcher: 14 tabelas preservadas,
+sem mutação no banco/acesso ao store e com servidor/contas temporários removidos.
+[Aceite e limites](validation/LOCAL_OPERATOR_WEB_P01LAB_R1_v0.6.12.md).
+Não repetir instalação nem Web, backend, restore, lifecycle ou exportação.
+
+## Pendência para continuar a integração
+
+O registro está no PR #112, com pacote/executáveis preservados. GitHub Actions
+falhou antes de qualquer etapa na revisão anterior, sem logs recuperáveis.
+Inspecionar Annotations para determinar a causa e restabelecer CI antes de integrar
+essa documentação e novos incrementos. Essa pendência é independente do LAB;
+o pacote aprovado está preservado e o R1 não deve ser repetido.

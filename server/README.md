@@ -1,6 +1,10 @@
 # Cancã — local operator Web v0.6.12 / report API v0.6.11
 
-**Web CANDIDATE; browser LAB pending.** API v0.6.11 same-host synthetic R1 is
+**Web R1 LAB VALIDATED; wider release CANDIDATE.** Fifteen Windows/Rocky captures
+demonstrate local login/report pages, denied scope, logout/empty login, reduced
+desktop window and two launcher STOP PASS results with 14-table invariance/cleanup.
+[Acceptance and limits](../docs/validation/LOCAL_OPERATOR_WEB_P01LAB_R1_v0.6.12.md).
+API v0.6.11 same-host synthetic R1 is
 [LAB VALIDATED](../docs/validation/LOCAL_OPERATOR_P01LAB_R1_v0.6.11.md).
 Separate server boundary for Web/API operator access.
 Local login first, as selected by Bruno; optional AD/SSO integration follows.
@@ -113,9 +117,11 @@ Do not deploy automatically to the approved Rocky service or expose a LAB HTTP
 listener remotely. The [short R1](../docs/LAB_LOCAL_OPERATOR_R1_v0.6.11.md) starts
 a temporary loopback server, reuses the approved persistence modules, performs
 only SELECTs and removes synthetic credentials after the check.
-That API gate is already approved. The next [browser R1](../docs/LAB_LOCAL_OPERATOR_WEB_R1_v0.6.12.md)
+That API gate and the short [browser R1](../docs/LAB_LOCAL_OPERATOR_WEB_R1_v0.6.12.md)
+are approved. The historical browser procedure
 uses a separate temporary Web listener, private synthetic account and 14-table
 comparison on exit. It does not repeat restore/lifecycle/export qualification.
+Do not repeat either accepted R1; see the evidence record for the remaining wider gates.
 
 [ADR 0023](../docs/ADR_0023_Local_Operator_API_v0.6.11.md) ·
 [ADR 0024](../docs/ADR_0024_Local_Operator_Web_v0.6.12.md).
