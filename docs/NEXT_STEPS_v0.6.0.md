@@ -4,6 +4,13 @@ Atualizado em 02/10/2026 (-03), após aceite de lifecycle/paginação v0.6.8 e e
 
 ## Preciso testar alguma coisa agora?
 
+O teste do exportador ainda depende de uma instalação corrigida. As capturas
+235251/235559/235634/235648 mostram rejeição do inventário do TAR e bloqueio
+antes da exportação; não houve aceite do exportador. O roteiro anterior não
+considerava a entrada de pasta gerada pelo Git. [Roteiro corrigido](LAB_POSTGRESQL_EXPORT_R1_v0.6.9.md):
+refazer apenas envio/instalação do exportador e duas exportações na mesma sessão.
+Não repetir restore, lifecycle ou serviços. [Diagnóstico](validation/POSTGRESQL_P01LAB_EXPORT_ATTEMPT_R1_v0.6.9.md).
+
 **O desenvolvimento de código/CI segue independentemente do LAB PostgreSQL.** R1 curto e soak estendido
 do scheduler estão aprovados em Windows e Rocky no escopo offline demonstrado.
 Não é preciso repetir os testes ou reinstalar serviços removidos pelo helper.
@@ -71,6 +78,9 @@ privado novo. Só SELECT via relatório canônico, todas as páginas e verifica�
 terminal sob a mesma cerca; mudança de escopo interrompe antes de gerar arquivos.
 [Guia e limites](REPORT_EXPORT_v0.6.9.md). Qualificação CI é independente do host LAB;
 aceite de exportação no Rocky ainda depende do teste somente leitura dessa entrega.
+PR #106 integrado (d1b32cf6d6185e87fc4a08abb57654c29d8e8c4b): texto persistido
+inclui escape de URLs simples para evitar autolinks no Markdown. Não há mudança
+no banco, nas regras ou no formato JSON. O roteiro novo usa essa revisão qualificada.
 Próxima frente: definir autenticação/autorização para a superfície API/Web; ainda
 não há principal de produto, tenancy ou RBAC implementados. Roles/TLS continuam gates próprios.
 

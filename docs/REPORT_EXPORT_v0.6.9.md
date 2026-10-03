@@ -76,3 +76,14 @@ dos arquivos, não autenticam autoria nem substituem controle de acesso/backup.
 
 [ADR 0020](ADR_0020_Report_Export_v0.6.9.md) ·
 [Aceite lifecycle](validation/POSTGRESQL_P01LAB_LIFECYCLE_R1_v0.6.8.md).
+
+## Instalação e teste R1
+
+[Roteiro do exportador](LAB_POSTGRESQL_EXPORT_R1_v0.6.9.md): instala somente o módulo
+novo, preserva o engine original e qualifica duas saídas privadas. PR #106 integrado
+(d1b32cf6d6185e87fc4a08abb57654c29d8e8c4b) escapa também a pontuação de URLs simples
+no Markdown. JSON e semântica do relatório preservados.
+
+As capturas 235251/235559/235634/235648 mostram bloqueio de instalação no roteiro
+anterior, antes da consulta ao banco. [Diagnóstico e limites](validation/POSTGRESQL_P01LAB_EXPORT_ATTEMPT_R1_v0.6.9.md).
+O aceite do exportador no Rocky permanece pendente; não repetir restore/exercise.
