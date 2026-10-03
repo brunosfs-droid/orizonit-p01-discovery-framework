@@ -26,7 +26,7 @@
     <section id="workspace" hidden aria-label="Consulta de relatório">
       <div class="session"><p>Operador <strong id="operator-name"></strong></p><button id="logout-button" class="secondary" type="button">Sair</button></div>
       <form id="report-form" class="card search">
-        <div><label for="assessment">ID do assessment</label><input id="assessment" name="assessment" required maxlength="128" pattern="[A-Za-z0-9][A-Za-z0-9._-]{0,127}" placeholder="Ex.: P01-PG-LAB-R1" spellcheck="false" autocapitalize="none"></div>
+        <div><label for="assessment">ID do assessment</label><input id="assessment" name="assessment" required maxlength="128" pattern="[A-Za-z0-9][A-Za-z0-9._\-]{0,127}" placeholder="Ex.: P01-PG-LAB-R1" spellcheck="false" autocapitalize="none"></div>
         <div><label for="page-size">Avaliações por página</label><select id="page-size"><option value="25">25</option><option value="100">100</option><option value="1">1</option></select></div>
         <button id="report-button" type="submit">Consultar</button>
       </form>

@@ -96,6 +96,15 @@ class OperatorWebTests(unittest.TestCase):
             with patch.object(web.api, 'create_server') as server:
                 with self.assertRaises(ValueError): web.create_server(self.path, port=0)
             server.assert_not_called()
+        directory = self.path.parent / 'web'; directory.mkdir()
+        try:
+            (directory / 'index.html').symlink_to(self.path)
+        except (OSError, NotImplementedError):
+            return  # Windows symlink privilege is independent of route confinement.
+        with patch.object(web, '__file__', str(self.path.parent / 'P01_Operator_Web.py')), \
+                patch.object(web.api, 'create_server') as server:
+            with self.assertRaises(ValueError): web.create_server(self.path, port=0)
+        server.assert_not_called()
 
 
 if __name__ == '__main__': unittest.main()

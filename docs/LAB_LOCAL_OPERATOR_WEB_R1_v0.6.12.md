@@ -48,7 +48,7 @@ expected = {
     'server/P01_Operator_Auth.py': 'c93b7764752df82d674f9be94c76520a7b4c562891099186c547175604eb70b3',
     'server/P01_Operator_API.py': '39da6f347505cec52e00cefb003e0031a69dfc3ffe7da7fc84db655eb5661e27',
     'server/P01_Operator_Web.py': '5ee7b36c9a4986c53fafabdbd119384132bee24125890a5deaedb6d3b7c73063',
-    'server/web/index.html': 'ecc9696ae404e0d444244e881e5575e2ca8e602153a7a5f5fde2fa40dbcc4bb9',
+    'server/web/index.html': '349b019a4f2f15fc3a9234f3357b14ee199048e401e6e11c1b2b47e606f624b6',
     'server/web/operator.css': '733ce45760c92901f772dcb01f8236b968331cfe0463613d571b5751be762c17',
     'server/web/operator.js': 'ce4d67dc465b56ad29e96156ec4128435264bd13e625fc07375e0e81a7f54071',
     'docs/validation/LOCAL_OPERATOR_LAB_R1_v0.6.11.py': '9e070d0177e773a714a955acee82f512dfa67397e59393e6dac7c726c00a3223',
