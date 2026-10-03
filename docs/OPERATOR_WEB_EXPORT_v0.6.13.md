@@ -67,7 +67,10 @@ efetua downloads reais e verifica os quatro membros/hashes/contagens.
 O gate manual novo é somente baixar/verificar o ZIP através do túnel Windows–Rocky
 e encerrar o launcher temporário com invariantes preservadas. Os R1 anteriores
 de instalação, restore, lifecycle, exportador CLI, API e Web não devem ser repetidos.
-O roteiro será publicado com fontes/hashes fixados na revisão qualificada em CI.
+O [roteiro do novo gate](LAB_OPERATOR_WEB_EXPORT_R1_v0.6.13.md) fixa onze fontes
+e hashes na revisão qualificada em CI. Não repetir os R1 anteriores.
 
 [ADR 0025](ADR_0025_Operator_Web_Report_Export_v0.6.13.md) ·
 [Servidor](../server/README.md) · [Exportador CLI](REPORT_EXPORT_v0.6.9.md).
+
+[Qualificação CI e limites](validation/OPERATOR_WEB_EXPORT_CI_v0.6.13.md).

@@ -515,3 +515,6 @@ See [edition policy](LICENSING_AND_EDITIONS.md) and [ADR 0021](ADR_0021_Apache_2
 - CI HTTP/eventos/Chromium e reader PostgreSQL 16/17; gate manual novo apenas download/verificação no túnel existente.
 - Nenhuma migração, coleta, alteração do collector ou repetição dos R1 aprovados.
 - [Guia](OPERATOR_WEB_EXPORT_v0.6.13.md) · [ADR 0025](ADR_0025_Operator_Web_Report_Export_v0.6.13.md).
+- Código 9cb8442e4a9ff84384b6b4f42bf5c8db0a65d871 qualificado em oito runs/16 jobs;
+  [registro CI](validation/OPERATOR_WEB_EXPORT_CI_v0.6.13.md). Novo gate manual:
+  [download R1](LAB_OPERATOR_WEB_EXPORT_R1_v0.6.13.md), sem repetir testes antigos.

@@ -129,4 +129,8 @@ JSON/Markdown, manifesto/SHA256 e cerca ligada ao relatório exibido. Mantém
 somente SELECT e sessões/grants; não altera collector, store ou banco.
 [Guia e limites](OPERATOR_WEB_EXPORT_v0.6.13.md). O novo gate de LAB será somente
 baixar/verificar o arquivo e encerrar o servidor temporário; o roteiro ficará
-fixado na revisão qualificada em CI. Mapa/topologia permanecem após 1.0.
+fixado na revisão qualificada em CI. [Novo gate R1](LAB_OPERATOR_WEB_EXPORT_R1_v0.6.13.md):
+pacote isolado, uma consulta/download, FILE PASS e STOP PASS. Oito runs/16 jobs
+passaram no código 9cb8442e4a9ff84384b6b4f42bf5c8db0a65d871;
+[qualificação e limites](validation/OPERATOR_WEB_EXPORT_CI_v0.6.13.md).
+Mapa/topologia permanecem após 1.0.

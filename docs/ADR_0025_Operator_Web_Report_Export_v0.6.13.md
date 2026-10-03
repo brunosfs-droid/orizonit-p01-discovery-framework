@@ -1,6 +1,8 @@
 # ADR 0025 — Complete report download for local operators
 
-03/10/2026 (-03). CANDIDATE; Web R1 v0.6.12 remains LAB VALIDATED.
+03/10/2026 (-03). Code CI qualified; new download LAB gate CANDIDATE.
+Web R1 v0.6.12 remains LAB VALIDATED.
+[Qualification and limits](validation/OPERATOR_WEB_EXPORT_CI_v0.6.13.md).
 
 ## Decision
 
