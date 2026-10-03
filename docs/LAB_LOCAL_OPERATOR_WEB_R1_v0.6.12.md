@@ -18,7 +18,7 @@ PowerShell em `C:\GitHub\orizonit-p01-discovery-framework`:
 ```powershell
 git fetch origin
 if ($LASTEXITCODE -ne 0) { throw 'PARAR: git fetch falhou.' }
-$P01WebRelease = '221e84e8c6e8b17e4c974ccfb05271f80212b3c9'
+$P01WebRelease = 'baa80267f579a93864b260f87704add3087a997f'
 git archive --format=tar --output "$env:TEMP\canca-operator-web-v0.6.12.tar" $P01WebRelease server/P01_Operator_Auth.py server/P01_Operator_API.py server/P01_Operator_Web.py server/web/index.html server/web/operator.css server/web/operator.js docs/validation/LOCAL_OPERATOR_LAB_R1_v0.6.11.py docs/validation/LOCAL_OPERATOR_WEB_LAB_R1_v0.6.12.py
 if ($LASTEXITCODE -ne 0) { throw 'PARAR: git archive falhou.' }
 Get-FileHash "$env:TEMP\canca-operator-web-v0.6.12.tar" -Algorithm SHA256
