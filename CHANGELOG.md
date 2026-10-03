@@ -8,6 +8,16 @@
 - Preserve historical commits/releases and dependency license obligations.
 - No executable, schema, database, quota, entitlement or billing change.
 
+## v0.6.10 — Explicit node assessment authorization (CANDIDATE)
+
+- Add optional startup-scoped `--node-policy` to the mTLS ingestion server.
+- Grant independent ingest/read permissions for exact node/assessment pairs; missing grants deny.
+- Block unknown nodes before staging, denied scope before importer/index, and denied reads before receipt/index output.
+- Validate bounded policy files and duplicate/unknown fields before startup; immutable snapshot requires controlled restart for revocation.
+- Preserve certificate/header/manifest binding, bundle ownership, canonical import/replay and legacy mode with explicit health status.
+- Add synthetic mTLS/HTTP and real bundle boundary tests; no migration or operator/Web authentication.
+- Accept v0.6.9 exporter R1 on Rocky from five operator captures and two identical Markdown attachments: corrected installation, two exports, hash/permission/count verification PASS, technical content/GFM review complete; no graphical renderer or production qualification.
+
 ## v0.6.1 — Opt-in API metadata indexing (CANDIDATE)
 
 - Add --metadata-index postgres (default off); index only after canonical filesystem import publication.
@@ -812,4 +822,3 @@ Protocol availability does not authorize credential use. Credential selection st
 - JSON output
 - SHA-256 integrity file
 - Initial laboratory validation
-

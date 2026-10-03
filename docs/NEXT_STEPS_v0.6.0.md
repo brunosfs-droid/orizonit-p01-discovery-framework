@@ -4,12 +4,13 @@ Atualizado em 02/10/2026 (-03), após aceite de lifecycle/paginação v0.6.8 e e
 
 ## Preciso testar alguma coisa agora?
 
-O teste do exportador ainda depende de uma instalação corrigida. As capturas
-235251/235559/235634/235648 mostram rejeição do inventário do TAR e bloqueio
-antes da exportação; não houve aceite do exportador. O roteiro anterior não
-considerava a entrada de pasta gerada pelo Git. [Roteiro corrigido](LAB_POSTGRESQL_EXPORT_R1_v0.6.9.md):
-refazer apenas envio/instalação do exportador e duas exportações na mesma sessão.
-Não repetir restore, lifecycle ou serviços. [Diagnóstico](validation/POSTGRESQL_P01LAB_EXPORT_ATTEMPT_R1_v0.6.9.md).
+O exportador funcional está **LAB VALIDATED no R1 sintético Rocky**. As cinco
+capturas 014007/014025/014138/014149/014247 demonstram instalação corrigida,
+duas respostas `exported`, verificação PASS e exportação da sessão `true`.
+[Aceite e limites](validation/POSTGRESQL_P01LAB_EXPORT_R1_v0.6.9.md).
+Não repetir instalação/exportação, restore, lifecycle ou serviços. A apresentação
+técnica foi aceita por conteúdo/parsing GFM dos dois anexos idênticos. Preservar
+os dois diretórios gerados. Tentativas bloqueadas anteriores permanecem históricas.
 
 **O desenvolvimento de código/CI segue independentemente do LAB PostgreSQL.** R1 curto e soak estendido
 do scheduler estão aprovados em Windows e Rocky no escopo offline demonstrado.
@@ -77,11 +78,16 @@ Exportação v0.6.9 implementa JSON completo, Markdown e manifesto/SHA256 em dir
 privado novo. Só SELECT via relatório canônico, todas as páginas e verificação
 terminal sob a mesma cerca; mudança de escopo interrompe antes de gerar arquivos.
 [Guia e limites](REPORT_EXPORT_v0.6.9.md). Qualificação CI é independente do host LAB;
-aceite de exportação no Rocky ainda depende do teste somente leitura dessa entrega.
+exportação funcional no R1 Rocky passou nas cinco capturas posteriores; conteúdo
+e estrutura GFM de `report.md`/`report1.md` idênticos foram aceitos. Renderização
+gráfica específica e PDF/impressão não foram qualificados.
 PR #106 integrado (d1b32cf6d6185e87fc4a08abb57654c29d8e8c4b): texto persistido
 inclui escape de URLs simples para evitar autolinks no Markdown. Não há mudança
 no banco, nas regras ou no formato JSON. O roteiro novo usa essa revisão qualificada.
-Próxima frente: definir autenticação/autorização para a superfície API/Web; ainda
-não há principal de produto, tenancy ou RBAC implementados. Roles/TLS continuam gates próprios.
+v0.6.10 adiciona uma política opt-in de node/assessment ao mTLS da ingestão,
+com grants independentes para envio/consulta e negação antes do importer/index.
+O principal continua sendo o Discovery Node; autenticação de operadores na
+API/Web, tenancy e RBAC de usuários ainda não estão implementados.
+[Guia e limites](NODE_AUTHORIZATION_v0.6.10.md). Roles/TLS continuam gates próprios.
 
 [Relatório v0.6.5](ASSESSMENT_REPORT_v0.6.5.md) · [Backup/restore CI v0.6.6](BACKUP_RESTORE_v0.6.6.md).

@@ -1,5 +1,10 @@
 # P01 — teste de exportação do relatório R1 v0.6.9
 
+**Ensaio funcional R1 aprovado em 02/10/2026 (-03).** Este roteiro fica preservado
+para reprodução futura; não repetir o ensaio aprovado. Conteúdo e estrutura GFM
+da apresentação técnica foram aceitos nos dois anexos Markdown idênticos.
+[Aceite e limites](validation/POSTGRESQL_P01LAB_EXPORT_R1_v0.6.9.md).
+
 Lifecycle/paginação R1 aprovado. Exportador integrado pelo PR #105 e corrigido pelo
 PR #106, merge d1b32cf6d6185e87fc4a08abb57654c29d8e8c4b, tree idêntica ao head
 qualificado 361ff2b78e47ecc23d57d13f7b86a497ab184490. **Não repetir restore ou exercise.** Este teste

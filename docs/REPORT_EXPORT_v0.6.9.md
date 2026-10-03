@@ -1,7 +1,10 @@
 # Cancã — exportação consolidada v0.6.9
 
-**CANDIDATE para LAB de exportação.** Lifecycle/paginação R1 v0.6.8 está aprovado
-no Rocky/PostgreSQL 16.15; esse aceite é separado do novo exportador.
+**LAB VALIDATED para exportação funcional no R1 sintético Rocky.** Cinco capturas
+demonstram instalação corrigida, duas exportações e PASS do verificador de
+contagens/hashes/permissões. Conteúdo e estrutura GFM da apresentação técnica
+aceitos nos dois anexos Markdown idênticos; sem qualificação de PDF/renderizador.
+[Aceite e limites](validation/POSTGRESQL_P01LAB_EXPORT_R1_v0.6.9.md).
 
 ## Operação
 
@@ -86,4 +89,8 @@ no Markdown. JSON e semântica do relatório preservados.
 
 As capturas 235251/235559/235634/235648 mostram bloqueio de instalação no roteiro
 anterior, antes da consulta ao banco. [Diagnóstico e limites](validation/POSTGRESQL_P01LAB_EXPORT_ATTEMPT_R1_v0.6.9.md).
-O aceite do exportador no Rocky permanece pendente; não repetir restore/exercise.
+As capturas posteriores 014007/014025/014138/014149/014247 substituem a pendência
+funcional: instalação `true`, dois JSONs `exported`, verificador PASS e exportação
+da sessão `true`. [Aceite R1](validation/POSTGRESQL_P01LAB_EXPORT_R1_v0.6.9.md).
+Não repetir instalação/exportação, restore ou exercise. Os anexos `report.md` e
+`report1.md` fecharam a revisão de conteúdo/estrutura GFM desse gate de relatório.

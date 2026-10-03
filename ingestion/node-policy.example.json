@@ -1,0 +1,14 @@
+{
+  "policy_version": "1",
+  "nodes": [
+    {
+      "node_id": "NODE-01",
+      "grants": [
+        {
+          "assessment_id": "LAB-001",
+          "permissions": ["bundle:ingest", "bundle:read"]
+        }
+      ]
+    }
+  ]
+}

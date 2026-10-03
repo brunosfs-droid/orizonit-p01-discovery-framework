@@ -43,3 +43,13 @@ exportação bloqueada por readiness false. Sem resultado exported/PASS. O gate 
 exportador continua CANDIDATE, lifecycle/paginação e recuperação permanecem LAB VALIDATED.
 [Roteiro corrigido](LAB_POSTGRESQL_EXPORT_R1_v0.6.9.md) e
 [diagnóstico](validation/POSTGRESQL_P01LAB_EXPORT_ATTEMPT_R1_v0.6.9.md).
+
+## Exportador funcional R1 aprovado
+
+Cinco capturas posteriores 014007/014025/014138/014149/014247 demonstram instalação
+corrigida, duas respostas `exported`, `POSTGRESQL LAB EXPORT PASS` e exportação
+da sessão `true`. O exportador funcional v0.6.9 está LAB VALIDATED no R1 Rocky;
+isso substitui a pendência anterior. Não repetir o ensaio aprovado. Os anexos
+`report.md` e `report1.md` idênticos fecharam a revisão técnica de conteúdo e
+estrutura GFM, sem qualificar um renderizador gráfico específico.
+[Aceite e limites](validation/POSTGRESQL_P01LAB_EXPORT_R1_v0.6.9.md).

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Orizon IT P01 Central Ingestion API v0.6.1.
+"""Orizon IT P01 Central Ingestion API v0.6.10.
 
 Central ingestion API for .p01bundle.
 
@@ -28,6 +28,9 @@ No server-initiated discovery or arbitrary remote execution is introduced by con
 v0.6.1 optionally indexes committed imports in PostgreSQL. HTTP import status
 continues to acknowledge the filesystem; metadata_index separately reports the
 index outcome. Default off, no automatic migration or reconciliation loop.
+
+v0.6.10 adds optional startup-scoped node/assessment grants for mTLS ingestion.
+The common certificate/manifest ownership checks remain mandatory.
 """
 
 from __future__ import annotations
@@ -51,7 +54,7 @@ from typing import Any, Dict, Mapping, Optional, Sequence
 from urllib.parse import unquote, urlparse
 
 NAME = "P01-Central-Ingestion-API"
-VERSION = "0.6.1"
+VERSION = "0.6.10"
 API_VERSION = "v1"
 
 DEFAULT_BIND = "127.0.0.1"
@@ -71,6 +74,7 @@ for p in (INGESTION_DIR, BUNDLE_DIR):
 
 from P01_Offline_Import import import_bundle, load_json, safe_label  # noqa: E402
 from P01_Evidence_Bundle import validate_bundle  # noqa: E402
+from P01_Node_Authorization import AuthorizationError, NodePolicy, load_node_policy  # noqa: E402
 
 
 class IngestionError(ValueError):
@@ -188,6 +192,7 @@ class IngestionService:
         process_run_label: str = "P01LAB-API-SERVER-REPROCESS",
         transport_mode: str = "localhost",
         metadata_index: str = "off",
+        node_policy: Optional[NodePolicy] = None,
     ) -> None:
         if max_upload_bytes < 1:
             raise ValueError("max_upload_bytes must be positive")
@@ -198,6 +203,11 @@ class IngestionService:
         self.transport_mode = str(transport_mode).lower()
         if self.transport_mode not in TRANSPORT_MODES:
             raise ValueError("invalid transport_mode")
+        if node_policy is not None and (
+            self.transport_mode != "mtls" or not isinstance(node_policy, NodePolicy)
+        ):
+            raise ValueError("node-policy requires mtls transport and a validated policy")
+        self.node_policy = node_policy
         if metadata_index not in {"off", "postgres"}:
             raise ValueError("invalid metadata_index")
         self.metadata_index = metadata_index
@@ -210,6 +220,20 @@ class IngestionService:
         self.staging_dir.mkdir(parents=True, exist_ok=True)
         self._lock_guard = threading.Lock()
         self._bundle_locks: Dict[str, threading.Lock] = {}
+
+    def authorize_node(self, authenticated_node_id: Optional[str]) -> None:
+        if self.node_policy is not None:
+            try:
+                self.node_policy.require_node(authenticated_node_id)
+            except AuthorizationError as exc:
+                raise IngestionError(str(exc), exc.status_code) from None
+
+    def authorize_assessment(self, node_id: Optional[str], assessment_id: str, permission: str) -> None:
+        if self.node_policy is not None:
+            try:
+                self.node_policy.require(node_id, assessment_id, permission)
+            except AuthorizationError as exc:
+                raise IngestionError(str(exc), exc.status_code) from None
 
     def _bundle_lock(self, bundle_id: str) -> threading.Lock:
         with self._lock_guard:
@@ -266,6 +290,7 @@ class IngestionService:
         idempotency_key: Optional[str] = None,
         authenticated_node_id: Optional[str] = None,
     ) -> Dict[str, Any]:
+        self.authorize_node(authenticated_node_id)
         staged = self._stage_stream(stream, content_length, supplied_sha256)
         sidecar: Optional[Path] = None
         try:
@@ -285,6 +310,10 @@ class IngestionService:
                     f"authenticated node {authenticated_node_id} does not match bundle node_id {manifest_node_id}",
                     403,
                 )
+
+            self.authorize_assessment(
+                authenticated_node_id, str(manifest.get("assessment_id") or ""), "bundle:ingest"
+            )
 
             if idempotency_key:
                 key = idempotency_key.strip()
@@ -350,6 +379,7 @@ class IngestionService:
                 sidecar.unlink(missing_ok=True)
 
     def lookup(self, bundle_id: str, authenticated_node_id: Optional[str] = None) -> Dict[str, Any]:
+        self.authorize_node(authenticated_node_id)
         if not BUNDLE_ID_RE.fullmatch(bundle_id):
             raise IngestionError("invalid bundle_id", 400)
 
@@ -367,6 +397,9 @@ class IngestionService:
         receipt_node_id = str(receipt.get("node_id") or "")
         if authenticated_node_id and receipt_node_id.lower() != authenticated_node_id.lower():
             raise IngestionError("bundle is not owned by the authenticated node", 403)
+        self.authorize_assessment(
+            authenticated_node_id, str(receipt.get("assessment_id") or ""), "bundle:read"
+        )
         processing = receipt.get("processing") if isinstance(receipt.get("processing"), Mapping) else {}
         response = {
             "api_version": API_VERSION,
@@ -432,6 +465,7 @@ class P01IngestionHandler(http.server.BaseHTTPRequestHandler):
                 f"X-P01-Node-ID does not match authenticated certificate identity {cert_node}",
                 403,
             )
+        self.service.authorize_node(cert_node)
         return cert_node
 
     def _send_json(
@@ -482,6 +516,7 @@ class P01IngestionHandler(http.server.BaseHTTPRequestHandler):
                 "transport_mode": self.service.transport_mode,
                 "bind_policy": "loopback_only" if self.service.transport_mode == "localhost" else "mtls_authenticated",
                 "processing_enabled": self.service.process,
+                "authorization_mode": "node_policy" if self.service.node_policy is not None else "transport_only",
             })
             return
 
@@ -587,8 +622,12 @@ def serve(
     tls_key: Optional[Path] = None,
     client_ca: Optional[Path] = None,
     metadata_index: str = "off",
+    node_policy_path: Optional[Path] = None,
 ) -> None:
     mode = validate_transport_config(bind, transport_mode, tls_cert, tls_key, client_ca)
+    if node_policy_path is not None and mode != "mtls":
+        raise ValueError("node-policy requires mtls transport")
+    node_policy = load_node_policy(node_policy_path) if node_policy_path is not None else None
     if port < 1 or port > 65535:
         raise ValueError("port must be 1..65535")
     if max_upload_mib < 1:
@@ -601,6 +640,7 @@ def serve(
         process_run_label=process_run_label,
         transport_mode=mode,
         metadata_index=metadata_index,
+        node_policy=node_policy,
     )
     server = P01HTTPServer((bind, port), P01IngestionHandler, service)
 
@@ -651,6 +691,7 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
     srv.add_argument("--tls-key")
     srv.add_argument("--client-ca")
     srv.add_argument("--metadata-index", choices=["off", "postgres"], default="off")
+    srv.add_argument("--node-policy", help="Explicit mTLS node/assessment grants loaded at startup")
 
     args = p.parse_args(argv)
 
@@ -668,6 +709,7 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
                 tls_key=Path(args.tls_key) if args.tls_key else None,
                 client_ca=Path(args.client_ca) if args.client_ca else None,
                 metadata_index=args.metadata_index,
+                node_policy_path=Path(args.node_policy) if args.node_policy else None,
             )
         except Exception as exc:
             p.error(str(exc))
