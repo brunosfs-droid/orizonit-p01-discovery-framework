@@ -30,6 +30,7 @@
     el('next-button').disabled = busy || !page || !page.has_more;
     el('restart-button').disabled = busy || !selection;
     el('download-button').disabled = busy || !page || !selection;
+    el('executive-download-button').disabled = busy || !page || !selection;
   }
   function reset(text = '') {
     generation += 1;
@@ -63,14 +64,17 @@
       clearTimeout(timeout); pending.delete(controller);
     }
   }
-  async function download() {
+  async function download(kind = 'technical') {
     if (busy || !token || !page || !selection) return;
+    const executive = kind === 'executive';
+    const button = executive ? 'executive-download-button' : 'download-button';
+    const label = executive ? 'executivo' : 'completo';
     const selected = selection, scope = page.report_scope_sha256, stamp = generation;
-    const filename = 'canca-' + selected.assessment + '-report.zip';
-    busy = true; controls(); message('Preparando relatório completo…');
+    const filename = 'canca-' + selected.assessment + (executive ? '-executive.zip' : '-report.zip');
+    busy = true; controls(); message('Preparando relatório ' + label + '…');
     try {
       const blob = await request('/api/v1/assessments/' + encodeURIComponent(selected.assessment) +
-        '/report/export?' + new URLSearchParams({expected_scope_sha256: scope}), {}, token, async response => {
+        '/report/' + (executive ? 'executive/' : '') + 'export?' + new URLSearchParams({expected_scope_sha256: scope}), {}, token, async response => {
           const length = response.headers.get('Content-Length'), digest = response.headers.get('X-Canca-Export-SHA256');
           if (response.headers.get('Content-Type') !== 'application/zip' ||
               response.headers.get('Content-Disposition') !== 'attachment; filename="' + filename + '"' ||
@@ -97,7 +101,7 @@
       document.body.append(link);
       try { link.click(); } finally { link.remove(); }
       setTimeout(() => { URL.revokeObjectURL(url); downloads.delete(url); }, 1000);
-      message('Relatório completo preparado para download.');
+      message('Relatório ' + label + ' preparado para download.');
     } catch (error) {
       if (stamp !== generation) return;
       if (error.status === 401) reset(messages[401]);
@@ -109,7 +113,7 @@
     } finally {
       if (stamp === generation) {
         busy = false; controls();
-        if (page) el('download-button').focus();
+        if (page) el(button).focus();
         else if (token) el('assessment').focus();
       }
     }
@@ -220,7 +224,8 @@
   });
   el('report-form').addEventListener('submit', event => { event.preventDefault(); read(); });
   el('next-button').addEventListener('click', () => read(true));
-  el('download-button').addEventListener('click', download);
+  el('download-button').addEventListener('click', () => download('technical'));
+  el('executive-download-button').addEventListener('click', () => download('executive'));
   el('restart-button').addEventListener('click', () => {
     if (busy || !selection) return;
     el('assessment').value = selection.assessment; el('page-size').value = selection.limit; read();

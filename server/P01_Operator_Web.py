@@ -14,8 +14,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import P01_Operator_API as api
 import P01_Operator_Export as exports
 
-VERSION = '0.6.13'
-EXPORT_PATH = re.compile(r'/api/v1/assessments/([A-Za-z0-9][A-Za-z0-9._-]{0,127})/report/export')
+VERSION = '0.6.15'
+EXPORT_PATH = re.compile(r'/api/v1/assessments/([A-Za-z0-9][A-Za-z0-9._-]{0,127})/report/(executive/)?export')
 ASSETS = {'/': ('index.html', 'text/html; charset=utf-8'),
           '/assets/operator.css': ('operator.css', 'text/css; charset=utf-8'),
           '/assets/operator.js': ('operator.js', 'text/javascript; charset=utf-8')}
@@ -79,6 +79,7 @@ class WebHandler(api.OperatorHandler):
             if match is not None and method == 'GET':
                 self._empty_body()
                 token = self._bearer(); assessment = match[1]
+                kind = 'executive' if match[2] else 'technical'
                 self.server.service.auth.require(token, assessment)
                 try:
                     pairs = parse_qsl(path.query, keep_blank_values=True, strict_parsing=True, max_num_fields=2)
@@ -91,9 +92,10 @@ class WebHandler(api.OperatorHandler):
                     api.report.validate_query(assessment, limit=limit, expected_scope_sha256=scope)
                 except (ValueError, api.report.pg.PersistenceError):
                     raise api.AccessError('report_input_invalid', 400) from None
-                with self.server.report_exports.build(token, assessment, scope, limit) as (raw, checksum):
+                with self.server.report_exports.build(token, assessment, scope, limit, kind=kind) as (raw, checksum):
                     self.send_response(200)
-                    self.send_header('Content-Disposition', 'attachment; filename="canca-' + assessment + '-report.zip"')
+                    suffix = '-executive.zip' if kind == 'executive' else '-report.zip'
+                    self.send_header('Content-Disposition', 'attachment; filename="canca-' + assessment + suffix + '"')
                     self.send_header('X-Canca-Report-Scope-SHA256', scope)
                     self.send_header('X-Canca-Export-SHA256', checksum)
                     self._asset_headers(raw, 'application/zip')
@@ -114,9 +116,9 @@ class WebHandler(api.OperatorHandler):
             self._send(exc.status, dict(status='failed', error_code=str(exc)))
             return
         except api.report.pg.PersistenceError as exc:
-            code = str(exc) if str(exc) in exports.export.ERRORS else 'database_failed'
+            code = str(exc) if str(exc) in exports.executive.ERRORS else 'database_failed'
             status = (404 if code == 'assessment_not_found' else 409 if code == 'report_scope_conflict'
-                      else 413 if code == 'export_limit_exceeded' else 503)
+                      else 413 if code in {'export_limit_exceeded', 'executive_limit_exceeded'} else 503)
             self._send(status, dict(status='failed', error_code=code))
             return
         except (BrokenPipeError, ConnectionResetError, TimeoutError):

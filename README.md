@@ -10,6 +10,9 @@
 
 ## Product baseline
 
+Operator Web v0.6.15: [executive report download](docs/OPERATOR_WEB_EXECUTIVE_v0.6.15.md)
+(CANDIDATE). Technical download remains compatible with its v0.6.13 file format;
+manual LAB gates remain deferred and historical install guides use their Git pins.
 Executive report v0.6.14: [historical coverage and consolidated recommendations](docs/EXECUTIVE_REPORT_v0.6.14.md)
 (local read-only CLI, CANDIDATE). Development and CI qualification are independent
 of postponed manual LAB tests; the pinned v0.6.13 Web package is preserved.

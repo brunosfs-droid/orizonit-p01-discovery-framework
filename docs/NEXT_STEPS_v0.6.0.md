@@ -6,10 +6,17 @@ Atualizado em 03/10/2026 (-03), com desenvolvimento independente do LAB.
 
 **Não há validação solicitada hoje.** O mantenedor adiou os testes de LAB em
 03/10. O novo download Web v0.6.13 permanece CANDIDATE, com seu pacote qualificado
-fixado em `9cb8442e4a9ff84384b6b4f42bf5c8db0a65d871` e os onze arquivos intactos.
+fixado em `9cb8442e4a9ff84384b6b4f42bf5c8db0a65d871`, com os onze arquivos
+preservados nesse pin.
 O [relatório executivo v0.6.14](EXECUTIVE_REPORT_v0.6.14.md) avança como CLI
 somente leitura, com testes sintéticos/PostgreSQL no CI e qualificação operacional
 futura. Não depende de acesso ao LAB ou de execução pelo mantenedor para desenvolver.
+
+O [download executivo Web v0.6.15](OPERATOR_WEB_EXECUTIVE_v0.6.15.md) integra essa
+síntese ao listener novo, com um slot compartilhado entre os dois tipos de
+download. As fontes Web em desenvolvimento evoluem; os pacotes históricos
+permanecem preservados nos seus pins, sem misturar HEAD no roteiro v0.6.13.
+Testes sintéticos/PostgreSQL/Chromium seguem no CI; nenhum novo passo manual hoje.
 
 O exportador funcional está **LAB VALIDATED no R1 sintético Rocky**. As cinco
 capturas 014007/014025/014138/014149/014247 demonstram instalação corrigida,

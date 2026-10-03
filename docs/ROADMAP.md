@@ -529,3 +529,14 @@ See [edition policy](LICENSING_AND_EDITIONS.md) and [ADR 0021](ADR_0021_Apache_2
   pelo mantenedor em 03/10. Preserva os onze arquivos do pacote Web v0.6.13.
 - [Guia](EXECUTIVE_REPORT_v0.6.14.md) · [ADR 0026](ADR_0026_Executive_Report_v0.6.14.md) ·
   [Registro CI](validation/EXECUTIVE_REPORT_CI_v0.6.14.md).
+
+## v0.6.15 — download executivo na Web (CANDIDATE)
+
+- Botão próprio e endpoint autorizado pelo grant de leitura do assessment exibido.
+- Síntese v0.6.14 preservada; ZIP executivo com JSON/Markdown, manifesto e hashes.
+- Técnico e executivo compartilham um slot/deadline; formato técnico 0.6.9/0.6.13 preservado.
+- Sessões/escopo/limites verificados; sem escrita SQL, saída em disco no servidor ou acesso ao store.
+- HTTP/eventos, PostgreSQL SELECT-only e Chromium desktop/mobile verificam os dois tipos.
+- Gates operacionais adiados; os pacotes históricos continuam nos pins qualificados.
+- [Guia](OPERATOR_WEB_EXECUTIVE_v0.6.15.md) · [ADR 0027](ADR_0027_Operator_Web_Executive_Export_v0.6.15.md) ·
+  [Registro CI](validation/OPERATOR_WEB_EXECUTIVE_CI_v0.6.15.md).

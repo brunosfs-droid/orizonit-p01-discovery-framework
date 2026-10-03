@@ -1,6 +1,10 @@
-# Cancã — local operator Web v0.6.13 / report API v0.6.11
+# Cancã — local operator Web v0.6.15 / report API v0.6.11
 
-**Web v0.6.13 download CANDIDATE; Web v0.6.12 R1 LAB VALIDATED.** Fifteen Windows/Rocky captures
+**Web v0.6.15 executive download CANDIDATE; Web v0.6.12 R1 LAB VALIDATED.**
+[Executive download and shared limits](../docs/OPERATOR_WEB_EXECUTIVE_v0.6.15.md).
+Technical download retains content/delivery 0.6.9/0.6.13. Manual LAB download
+gates remain deferred; historical guides keep their qualified Git pins.
+Fifteen Windows/Rocky captures
 demonstrate local login/report pages, denied scope, logout/empty login, reduced
 desktop window and two launcher STOP PASS results with 14-table invariance/cleanup.
 [Acceptance and limits](../docs/validation/LOCAL_OPERATOR_WEB_P01LAB_R1_v0.6.12.md).

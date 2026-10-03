@@ -64,6 +64,20 @@ const {chromium} = require(process.env.CANCA_PLAYWRIGHT_MODULE || 'playwright');
         '--archive',archive,'--assessment-id','LAB-001','--evaluation-count','4','--finding-count','2'],{encoding:'utf8'});
       assert.equal(verify.status,0,verify.stdout+verify.stderr);
       assert.equal(JSON.parse(verify.stdout).files_verified,4);
+      const executiveEvent = page.waitForEvent('download');
+      await page.getByRole('button', {name:'Baixar relatório executivo (ZIP)', exact:true}).click();
+      const executive = await executiveEvent;
+      assert.equal(executive.suggestedFilename(),'canca-LAB-001-executive.zip');
+      const executiveArchive = path.join(artifacts,`executive-${width}.zip`);
+      await executive.saveAs(executiveArchive);
+      await page.getByText('Relatório executivo preparado para download.',{exact:true}).waitFor();
+      assert.equal(await page.evaluate(()=>document.activeElement.id),'executive-download-button');
+      const verifyExecutive=spawnSync(process.env.CANCA_BROWSER_PYTHON || 'python',[
+        path.join(__dirname,'../docs/validation/VERIFY_OPERATOR_WEB_EXECUTIVE_v0.6.15.py'),
+        '--archive',executiveArchive,'--assessment-id','LAB-001','--evaluation-count','4',
+        '--finding-count','2','--recommendation-group-count','2'],{encoding:'utf8'});
+      assert.equal(verifyExecutive.status,0,verifyExecutive.stdout+verifyExecutive.stderr);
+      assert.equal(JSON.parse(verifyExecutive.stdout).files_verified,4);
       await page.screenshot({path:path.join(artifacts, `report-${width}.png`), fullPage:true});
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true);
       assert.equal(await page.evaluate(() => localStorage.length + sessionStorage.length), 0);
@@ -79,7 +93,7 @@ const {chromium} = require(process.env.CANCA_PLAYWRIGHT_MODULE || 'playwright');
       assert.deepEqual(errors, []); assert.deepEqual(external, []);
       await context.close();
     }
-    console.log('OPERATOR WEB BROWSER PASS — Chromium desktop/mobile, complete ZIP/hash verification');
+    console.log('OPERATOR WEB BROWSER PASS — Chromium desktop/mobile, technical and executive ZIP/hash verification');
   } finally {
     clearTimeout(readyTimeout); if (browser) await browser.close(); lines.close();
     if (fixture.exitCode === null) { const exit = once(fixture, 'exit'); fixture.kill('SIGINT'); await exit; }

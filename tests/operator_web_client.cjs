@@ -137,17 +137,45 @@ function archive(overrides = {}) {
   }
   c.replies.push(response(409,{error_code:'report_scope_conflict'})); await c.element('download-button').fire('click');
   assert.equal(c.element('report-panel').hidden,true); assert.equal(c.element('download-button').disabled,true);
+  // Executive download keeps the displayed scope, validates its own filename and locks both buttons.
+  c=client(); assert.equal(c.element('executive-download-button').disabled,true); await login(c); await read(c);
+  c.element('assessment').value='LAB-OTHER';
+  let executiveRelease; c.replies.push(()=>new Promise(resolve=>{executiveRelease=resolve;}));
+  const executivePending=c.element('executive-download-button').fire('click'); await tick();
+  assert.equal(c.element('executive-download-button').disabled,true); assert.equal(c.element('download-button').disabled,true);
+  const executiveRequest=new URL(c.calls.at(-1).url,'http://localhost');
+  assert.equal(executiveRequest.pathname,'/api/v1/assessments/LAB-001/report/executive/export');
+  assert.equal(executiveRequest.searchParams.get('expected_scope_sha256'),'a'.repeat(64));
+  assert.equal(executiveRequest.searchParams.has('limit'),false); assert.equal(executiveRequest.searchParams.has('after_ordinal'),false);
+  const callCount=c.calls.length; await c.element('download-button').fire('click'); assert.equal(c.calls.length,callCount);
+  executiveRelease(archive({'Content-Disposition':'attachment; filename="canca-LAB-001-executive.zip"'})); await executivePending;
+  assert.equal(c.saved[0].filename,'canca-LAB-001-executive.zip'); assert.equal(c.element('executive-download-button').focused,true);
+  assert.equal(c.element('download-button').disabled,false); assert.equal(c.element('executive-download-button').disabled,false);
+  assert.match(c.element('message').textContent,/executivo preparado/);
+  // A technical attachment cannot masquerade as executive; recoverable errors preserve the page.
+  for (const reply of [archive(), response(429,{error_code:'export_busy'}),response(503,{error_code:'executive_data_conflict'})]) {
+    c=client(); await login(c); await read(c); c.replies.push(reply); await c.element('executive-download-button').fire('click');
+    assert.equal(c.saved.length,0); assert.equal(c.element('report-panel').hidden,false);
+    assert.equal(c.element('download-button').disabled,false); assert.equal(c.element('executive-download-button').disabled,false);
+  }
+  for (const code of [403,404,409]) {
+    c=client(); await login(c); await read(c); c.replies.push(response(code,{})); await c.element('executive-download-button').fire('click');
+    assert.equal(c.element('report-panel').hidden,true); assert.equal(c.element('executive-download-button').disabled,true);
+    assert.equal(c.element('download-button').disabled,true); assert.equal(c.saved.length,0);
+  }
   // Logout/expiry while the download is pending suppress all late downloads.
-  for (const expiry of [false,true]) {
+  for (const button of ['download-button','executive-download-button']) for (const expiry of [false,true]) {
     c=client(); await login(c); await read(c);
     let release; c.replies.push(()=>new Promise(resolve=>{release=resolve;}));
-    const downloading=c.element('download-button').fire('click'); await tick();
+    const downloading=c.element(button).fire('click'); await tick();
     assert.equal(c.element('download-button').disabled,true);
+    assert.equal(c.element('executive-download-button').disabled,true);
     const signal=c.calls.at(-1).options.signal;
     if (expiry) [...c.timers.values()].find(x=>x.delay===900000).handler();
     else {c.replies.push(response(200,{status:'logged_out'})); await c.element('logout-button').fire('click');}
-    assert.equal(signal.aborted,true); release(archive()); await downloading;
+    assert.equal(signal.aborted,true); release(archive(button==='executive-download-button' ?
+      {'Content-Disposition':'attachment; filename="canca-LAB-001-executive.zip"'} : {})); await downloading;
     assert.equal(c.saved.length,0); assert.equal(c.urls.size,0); assert.equal(c.element('workspace').hidden,true);
   }
-  console.log('OPERATOR WEB CLIENT PASS — 9 behavioral groups');
+  console.log('OPERATOR WEB CLIENT PASS — 11 behavioral groups');
 })().catch(error => { console.error(error); process.exitCode = 1; });

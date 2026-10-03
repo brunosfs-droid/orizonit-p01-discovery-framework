@@ -18,6 +18,7 @@ lab = importlib.util.module_from_spec(spec); spec.loader.exec_module(lab)
 class OperatorWebLabTests(unittest.TestCase):
     LAB = lab
     MANUAL_GATE = 'manual_separate_gate'
+    QUALIFIED_WEB_VERSION = '0.6.12'
 
     def test_wrong_database_host_or_ci_flag_fails_before_db_password_and_listener(self):
         lab = self.LAB
@@ -33,7 +34,9 @@ class OperatorWebLabTests(unittest.TestCase):
         lab = self.LAB
         for changed in (False, True):
             observed = []
-            with patch.dict(os.environ, {'PGDATABASE':'canca_p01_restore_r1', 'PGHOST':'127.0.0.1', 'CANCA_TEST_POSTGRES':''}), \
+            # Mocked listeners identify the historical pinned package, not future HEAD.
+            with patch.object(lab.web, 'VERSION', self.QUALIFIED_WEB_VERSION), \
+                    patch.dict(os.environ, {'PGDATABASE':'canca_p01_restore_r1', 'PGHOST':'127.0.0.1', 'CANCA_TEST_POSTGRES':''}), \
                     patch.object(lab.lab, 'snapshot', side_effect=[{'before':1}, {'before':2 if changed else 1}]), \
                     patch.object(lab.getpass, 'getpass', return_value=fixture.PASSWORD), \
                     patch.object(lab.web, 'create_server') as create, redirect_stdout(io.StringIO()) as output:
@@ -62,13 +65,15 @@ export_lab=importlib.util.module_from_spec(export_spec); export_spec.loader.exec
 class OperatorWebExportLabTests(OperatorWebLabTests):
     LAB = export_lab
     MANUAL_GATE = 'manual_download_separate_gate'
+    QUALIFIED_WEB_VERSION = '0.6.13'
 
     def test_wrong_web_revision_fails_before_snapshot_password_and_listener(self):
         lab=self.LAB
-        with patch.object(lab.web,'VERSION','0.6.12'), patch.object(lab.lab,'snapshot') as snapshot, \
-                patch.object(lab.getpass,'getpass') as prompt, redirect_stdout(io.StringIO()):
-            self.assertEqual(lab.cli(),2)
-        snapshot.assert_not_called(); prompt.assert_not_called()
+        for version in ('0.6.12', '0.6.15'):
+            with patch.object(lab.web,'VERSION',version), patch.object(lab.lab,'snapshot') as snapshot, \
+                    patch.object(lab.getpass,'getpass') as prompt, redirect_stdout(io.StringIO()):
+                self.assertEqual(lab.cli(),2)
+            snapshot.assert_not_called(); prompt.assert_not_called()
 
 
 if __name__ == '__main__': unittest.main()
