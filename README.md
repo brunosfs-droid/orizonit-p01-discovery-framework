@@ -10,6 +10,10 @@
 
 ## Product baseline
 
+Operator server v0.6.11: [local login and read-only report API](server/README.md)
+(CANDIDATE). Portable collection needs no Cancã login; target credentials and
+connected node mTLS retain their separate purposes. Optional AD integration follows.
+
 - [MVP 1.0](docs/MVP.md)
 - [Project Governance](docs/PROJECT_GOVERNANCE.md)
 - [Architecture](docs/ARCHITECTURE.md)

@@ -91,3 +91,13 @@ API/Web, tenancy e RBAC de usuários ainda não estão implementados.
 [Guia e limites](NODE_AUTHORIZATION_v0.6.10.md). Roles/TLS continuam gates próprios.
 
 [Relatório v0.6.5](ASSESSMENT_REPORT_v0.6.5.md) · [Backup/restore CI v0.6.6](BACKUP_RESTORE_v0.6.6.md).
+
+## Próximo gate: operadores do servidor v0.6.11
+
+Bruno confirmou login local no servidor inicialmente, com integração AD opcional
+futura. O collector portable executa sem login Cancã; suas credenciais de alvos
+e o mTLS de upload permanecem nas fronteiras atuais. A API de operadores é
+separada e somente leitura por assessment, sem telas Web neste incremento.
+[Guia e limites](../server/README.md) · [R1 curto](LAB_LOCAL_OPERATOR_R1_v0.6.11.md).
+O R1 usa servidor temporário em 127.0.0.1 e somente SELECT na base recuperada;
+não repetir restore/lifecycle/exportação nem instalar serviço ou liberar firewall.

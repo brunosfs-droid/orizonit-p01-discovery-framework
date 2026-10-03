@@ -485,3 +485,12 @@ Follow-up: após fechar v0.5e, iniciar v0.5f Optional Installed Service/Agent e 
   Continuous NMS monitoring and packet simulation are separate scope decisions.
 
 See [edition policy](LICENSING_AND_EDITIONS.md) and [ADR 0021](ADR_0021_Apache_2_0_and_Editions.md).
+
+## v0.6.11 — operadores locais e API de relatório (CANDIDATE)
+
+- Login humano separado do mTLS dos Discovery Nodes; collector portable continua sem login Cancã.
+- Política privada, hashes scrypt, sessões opacas limitadas, expiração/logout e throttle.
+- Grant exato de leitura antes do banco; consultas canônicas e páginas fenced somente leitura.
+- HTTP apenas em loopback; acesso remoto exige TLS. Sem migração, UI, coleta ou alteração do LAB aprovado.
+- Próximas telas Web usarão essa fronteira; integração opcional AD/SSO vem depois, com decisão própria.
+- [Guia](../server/README.md) · [ADR 0023](ADR_0023_Local_Operator_API_v0.6.11.md) · [R1 curto](LAB_LOCAL_OPERATOR_R1_v0.6.11.md).

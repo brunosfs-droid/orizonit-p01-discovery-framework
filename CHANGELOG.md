@@ -1,3 +1,12 @@
+## v0.6.11 — Local operator report API (CANDIDATE)
+
+- Add separate local human login and exact assessment read grants; portable collector execution and scoped target credentials remain unchanged.
+- Use fixed-cost salted scrypt, bounded process-local opaque sessions, expiry/logout and login throttling; no default credentials.
+- Reuse canonical read-only reports with authorization before DB connection and existing fenced pagination.
+- Restrict plaintext HTTP to 127.0.0.1; remote operator access requires TLS. No node certificate as human login.
+- Add synthetic HTTP/HTTPS and PostgreSQL 16/17 qualification cases plus a short SELECT-only existing-R1 helper.
+- Prepare optional AD/SSO integration as future server work; no Web screens, migration, LAB deployment or quota change.
+
 ## Unreleased — Apache 2.0 and edition strategy
 
 - Replace the current source license with Apache-2.0, preserve attribution in

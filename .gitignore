@@ -56,3 +56,7 @@ temp/
 
 # Local orchestrator context (may contain customer topology/realm metadata)
 orchestrator/*.local.json
+
+# Private local operator policy (password hashes and assessment grants)
+operator-accounts*.json
+server/*.local.json
