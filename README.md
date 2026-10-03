@@ -199,13 +199,26 @@ Não devem existir duas cópias editáveis concorrentes do mesmo código. Veja [
 
 ## Licenciamento e comunidade
 
-Cancã adota a **GNU Affero General Public License v3.0 (AGPLv3)** como licença do projeto open-source.
+Cancã Community adota a **Apache License 2.0**, identificador **Apache-2.0**. Consulte [LICENSE](LICENSE) e [NOTICE](NOTICE).
 
-A estratégia definida pela Orizon IT é construir o Cancã como base tecnológica de um ecossistema comercial sustentado por suporte, assessments, serviços profissionais, integrações, treinamento, serviços gerenciados e, futuramente, SaaS.
+A estratégia aprovada é lançar primeiro uma **Community estável** e, posteriormente,
+uma **edição comercial** com módulos específicos e sem cota comercial de itens.
+Os limites de funcionalidades e quantidade da distribuição oficial Community serão
+definidos antes do lançamento; nenhuma cota nova foi implementada nesta alteração.
+Limites técnicos de segurança e capacidade continuam válidos em todas as edições.
 
-Contribuições externas serão regidas por um **Contributor License Agreement (CLA) da Orizon IT**. O texto final do CLA e a política pública de contribuição serão fechados antes do Community Beta.
+Apache 2.0 permite uso comercial, modificações e redistribuição, inclusive forks
+que alterem limites presentes no código aberto, respeitando a licença e os avisos.
+Os futuros módulos comerciais terão código/licença próprios; a base aberta
+continuará sob Apache 2.0. A licença não concede uso irrestrito das marcas
+**Cancã** e **Orizon IT**.
 
-A marca **Cancã**, a identidade visual e os sinais distintivos da **Orizon IT** não são licenciados automaticamente pela AGPLv3. Uma política de uso de marca será publicada antes da abertura pública do projeto.
+Contribuições externas serão feitas sob Apache 2.0; o processo de CLA Orizon IT,
+seu texto final e sua aplicação operacional serão concluídos antes da abertura
+pública de contribuições. O CLA não é requisito para executar a Community.
+
+[Política de licença e edições](docs/LICENSING_AND_EDITIONS.md) ·
+[Decisão de migração](docs/ADR_0021_Apache_2_0_and_Editions.md).
 
 ## Segurança
 

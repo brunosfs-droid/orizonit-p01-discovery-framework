@@ -67,4 +67,4 @@ de operador/Web, RBAC de usuários, enrollment, audit persistente ou comandos
 remotos. Essas fronteiras terão decisões e testes próprios. Os gates Rocky do
 exportador, roles completos e TLS remoto PostgreSQL continuam independentes.
 
-[ADR 0021](ADR_0021_Node_Assessment_Authorization_v0.6.10.md).
+[ADR 0022](ADR_0022_Node_Assessment_Authorization_v0.6.10.md).

@@ -21,5 +21,5 @@ Apresentação técnica do Markdown aceita por conteúdo/parsing GFM dos dois an
 idênticos. A política de autorização de nodes continua CANDIDATE, com aceite
 próprio de host ainda separado.
 
-[Guia](NODE_AUTHORIZATION_v0.6.10.md) · [ADR 0021](ADR_0021_Node_Assessment_Authorization_v0.6.10.md) ·
+[Guia](NODE_AUTHORIZATION_v0.6.10.md) · [ADR 0022](ADR_0022_Node_Assessment_Authorization_v0.6.10.md) ·
 [Exportador Rocky](LAB_POSTGRESQL_EXPORT_R1_v0.6.9.md).

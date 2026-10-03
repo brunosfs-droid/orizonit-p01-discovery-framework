@@ -1,4 +1,4 @@
-# ADR 0021 — Explicit node authorization per assessment
+# ADR 0022 — Explicit node authorization per assessment
 
 Status: CANDIDATE, v0.6.10. Engineering increment; LAB acceptance is separate.
 
