@@ -86,13 +86,13 @@ inclui escape de URLs simples para evitar autolinks no Markdown. Não há mudan�
 no banco, nas regras ou no formato JSON. O roteiro novo usa essa revisão qualificada.
 v0.6.10 adiciona uma política opt-in de node/assessment ao mTLS da ingestão,
 com grants independentes para envio/consulta e negação antes do importer/index.
-O principal continua sendo o Discovery Node; autenticação de operadores na
-API/Web, tenancy e RBAC de usuários ainda não estão implementados.
+O principal continua sendo o Discovery Node; autenticação de operadores locais
+foi implementada separadamente na v0.6.11. Tenancy e RBAC ampliado seguem pendentes.
 [Guia e limites](NODE_AUTHORIZATION_v0.6.10.md). Roles/TLS continuam gates próprios.
 
 [Relatório v0.6.5](ASSESSMENT_REPORT_v0.6.5.md) · [Backup/restore CI v0.6.6](BACKUP_RESTORE_v0.6.6.md).
 
-## Próximo gate: operadores do servidor v0.6.11
+## Operadores do servidor v0.6.11 — R1 aprovado
 
 Bruno confirmou login local no servidor inicialmente, com integração AD opcional
 futura. O collector portable executa sem login Cancã; suas credenciais de alvos
@@ -101,3 +101,15 @@ separada e somente leitura por assessment, sem telas Web neste incremento.
 [Guia e limites](../server/README.md) · [R1 curto](LAB_LOCAL_OPERATOR_R1_v0.6.11.md).
 O R1 usa servidor temporário em 127.0.0.1 e somente SELECT na base recuperada;
 não repetir restore/lifecycle/exportação nem instalar serviço ou liberar firewall.
+As duas capturas de 03/10 mostram instalação isolada e `LOCAL OPERATOR LAB PASS`.
+[Aceite e limites](validation/LOCAL_OPERATOR_P01LAB_R1_v0.6.11.md). Não repetir este R1.
+
+## Próximo gate: primeiras telas Web v0.6.12
+
+Login local, relatório histórico por assessment e logout usam o backend aprovado,
+sem alterar a persistência. Sessão somente em memória; consultas paginadas com cerca.
+[ADR 0024](ADR_0024_Local_Operator_Web_v0.6.12.md) ·
+[Roteiro de navegador](LAB_LOCAL_OPERATOR_WEB_R1_v0.6.12.md).
+Validar no Windows via túnel SSH ao Rocky: telas, quatro avaliações, dois findings
+históricos, cobertura, paginação, negação fora do assessment e logout/recarregamento.
+O launcher compara as 14 tabelas ao encerrar, sem migração ou acesso ao store.

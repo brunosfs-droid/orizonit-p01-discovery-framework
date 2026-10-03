@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cancã · Relatórios</title>
+  <link rel="stylesheet" href="/assets/operator.css">
+  <script src="/assets/operator.js" defer></script>
+</head>
+<body>
+  <header class="topbar"><a class="brand" href="/" aria-label="Cancã, início">Cancã<span>Community</span></a><span class="release">Product Alpha · v0.6.12</span></header>
+  <main>
+    <div class="intro"><p class="eyebrow">Discovery &amp; Assessment</p><h1>Relatórios do ambiente</h1><p>Consulte os resultados registrados para o seu assessment.</p></div>
+    <noscript>Ative JavaScript para entrar e consultar os relatórios.</noscript>
+    <p id="message" class="message" role="status" aria-live="polite"></p>
+    <section id="login-panel" class="card login-card" aria-labelledby="login-title">
+      <p class="eyebrow">Acesso ao servidor</p><h2 id="login-title">Entrar na Cancã</h2>
+      <p>Use sua conta local de operador.</p>
+      <form id="login-form">
+        <label for="username">Usuário</label><input id="username" name="username" autocomplete="username" required maxlength="128" spellcheck="false" autocapitalize="none">
+        <label for="password">Senha</label><input id="password" name="password" type="password" autocomplete="current-password" required maxlength="256">
+        <button id="login-button" type="submit">Entrar</button>
+      </form>
+      <p class="hint">O collector portable pode ser usado sem login na Cancã.</p>
+    </section>
+    <section id="workspace" hidden aria-label="Consulta de relatório">
+      <div class="session"><p>Operador <strong id="operator-name"></strong></p><button id="logout-button" class="secondary" type="button">Sair</button></div>
+      <form id="report-form" class="card search">
+        <div><label for="assessment">ID do assessment</label><input id="assessment" name="assessment" required maxlength="128" pattern="[A-Za-z0-9][A-Za-z0-9._-]{0,127}" placeholder="Ex.: P01-PG-LAB-R1" spellcheck="false" autocapitalize="none"></div>
+        <div><label for="page-size">Avaliações por página</label><select id="page-size"><option value="25">25</option><option value="100">100</option><option value="1">1</option></select></div>
+        <button id="report-button" type="submit">Consultar</button>
+      </form>
+      <section id="report-panel" hidden aria-labelledby="report-title">
+        <div class="report-heading"><div><p class="eyebrow">Relatório consolidado</p><h2 id="report-title"></h2></div><span id="lifecycle" class="badge"></span></div>
+        <div class="metrics"><div class="card"><span>Assets registrados</span><strong id="asset-count"></strong></div><div class="card"><span>Avaliações registradas</span><strong id="evaluation-count"></strong></div><div class="card"><span>Findings históricos</span><strong id="finding-count"></strong></div></div>
+        <p class="notice">São resultados históricos. Um assessment concluído não encerra findings. Esta consulta não revalida os arquivos de evidência.</p>
+        <div class="card coverage"><h3>Cobertura registrada</h3><p id="coverage"></p><p id="outcomes"></p><details><summary>Identificação do escopo consultado</summary><p id="scope" class="mono"></p><p id="snapshot"></p></details></div>
+        <div class="card table-card"><div class="table-heading"><h3>Avaliações</h3><span id="page-label"></span></div><div class="table-scroll" tabindex="0" role="region" aria-label="Tabela de avaliações"><table><thead><tr><th>Regra / resultado</th><th>Asset / vínculo</th><th>Fonte / proveniência</th><th>Finding / evidência registrada</th></tr></thead><tbody id="evaluations"></tbody></table></div><p id="empty-page" hidden>Nenhuma avaliação nesta página.</p><div class="pagination"><button id="restart-button" class="secondary" type="button">Primeira página</button><button id="next-button" type="button">Próxima página</button></div></div>
+      </section>
+    </section>
+  </main>
+  <footer>Leitura por assessment · Conta local · Sessão de até 15 minutos</footer>
+</body>
+</html>

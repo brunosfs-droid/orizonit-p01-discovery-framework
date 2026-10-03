@@ -1,0 +1,40 @@
+name: Operator Web CI
+
+on:
+  push:
+    branches: [main, "feature/**", "fix/**", "chore/**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-flow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install isolated browser test tooling
+        run: |
+          npm install --prefix "$RUNNER_TEMP/canca-web-ci" --no-audit --no-fund --ignore-scripts playwright@1.62.1
+          node "$RUNNER_TEMP/canca-web-ci/node_modules/playwright/cli.js" install --with-deps chromium
+      - name: Exercise client events and actual Chromium screens
+        env:
+          CANCA_PLAYWRIGHT_MODULE: ${{ runner.temp }}/canca-web-ci/node_modules/playwright
+          CANCA_BROWSER_OUTPUT: ${{ runner.temp }}/canca-web-screens
+        run: |
+          node tests/operator_web_client.cjs
+          node tests/operator_web_browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: operator-web-synthetic-screens
+          path: ${{ runner.temp }}/canca-web-screens
+          if-no-files-found: ignore
+          retention-days: 7

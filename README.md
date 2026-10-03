@@ -10,8 +10,10 @@
 
 ## Product baseline
 
-Operator server v0.6.11: [local login and read-only report API](server/README.md)
-(CANDIDATE). Portable collection needs no Cancã login; target credentials and
+Operator Web v0.6.12: [local login and read-only reports](server/README.md)
+(CANDIDATE; browser LAB pending). API v0.6.11 same-host R1 is
+[LAB VALIDATED](docs/validation/LOCAL_OPERATOR_P01LAB_R1_v0.6.11.md).
+Portable collection needs no Cancã login; target credentials and
 connected node mTLS retain their separate purposes. Optional AD integration follows.
 
 - [MVP 1.0](docs/MVP.md)
