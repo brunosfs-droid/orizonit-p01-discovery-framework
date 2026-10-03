@@ -1,9 +1,11 @@
-# Cancã — local operator report API v0.6.11
+# Cancã — local operator Web v0.6.12 / report API v0.6.11
 
-**CANDIDATE.** Separate server boundary for the first Web/API operator access.
+**Web CANDIDATE; browser LAB pending.** API v0.6.11 same-host synthetic R1 is
+[LAB VALIDATED](../docs/validation/LOCAL_OPERATOR_P01LAB_R1_v0.6.11.md).
+Separate server boundary for Web/API operator access.
 Local login first, as selected by Bruno; optional AD/SSO integration follows.
-This increment provides the backend API. The Web login/report screens follow
-qualification of this boundary.
+The optional Web entry point provides the first Portuguese login/report screens
+using the qualified backend, whose files remain unchanged.
 
 ## Who authenticates where?
 
@@ -45,10 +47,28 @@ using a dedicated SELECT-only reader on the report tables. Then:
 python server/P01_Operator_API.py --accounts /etc/canca/operator-accounts.json --host 127.0.0.1 --port 8878
 ```
 
+For the Web screens, run the separate entry point with the same options:
+
+```sh
+python server/P01_Operator_Web.py --accounts /etc/canca/operator-accounts.json --host 127.0.0.1 --port 8878
+```
+
+Open `http://127.0.0.1:8878/` on the same host, or via an SSH tunnel on the same
+local/remote port. Enter a local operator account and the exact assessment ID;
+there is no assessment enumeration. Reports show historical results, coverage
+and source provenance. Completed lifecycle does not mean findings remediated.
+Changing scope clears the page; query the first page again. Browser tokens are
+kept only in memory; reload requires login. Sair clears data immediately and
+revokes the session; a failed revocation is displayed explicitly, with server TTL.
+
 HTTP is permitted only on 127.0.0.1 for same-host LAB clients. Remote IPv4 binds
 require both `--tls-cert` and `--tls-key`, a trusted hostname/certificate and
 restricted network access. TLS 1.2+; IPv6 and reverse-proxy forwarded identities
 are not supported in this increment. The node ingestion listener stays separate.
+The Web listener accepts direct numeric IPv4 URLs, plus localhost on loopback.
+Host port must match the listener port; arbitrary DNS names/proxy origins are
+not configured. Cross-origin and same-site requests from a different origin fail.
+The standalone v0.6.11 API contract remains unchanged.
 Startup/health do not connect to PostgreSQL or attest database readiness.
 
 ## HTTP contract
@@ -56,6 +76,7 @@ Startup/health do not connect to PostgreSQL or attest database readiness.
 | Method/path | Contract |
 | --- | --- |
 | GET `/healthz` | Fixed authentication/version mode; no accounts, grants or DB information |
+| GET `/`, `/assets/operator.css`, `/assets/operator.js` | Web entry point only; fixed public login shell/assets, no report data |
 | POST `/api/v1/operator/session` | Strict `application/json` object with `username`/`password`; 201 returns an opaque bearer token |
 | GET `/api/v1/assessments/{id}/report` | Requires `Authorization: Bearer <token>` and exact read grant; canonical report page |
 | DELETE `/api/v1/operator/session` | Revokes that bearer token immediately |
@@ -92,5 +113,9 @@ Do not deploy automatically to the approved Rocky service or expose a LAB HTTP
 listener remotely. The [short R1](../docs/LAB_LOCAL_OPERATOR_R1_v0.6.11.md) starts
 a temporary loopback server, reuses the approved persistence modules, performs
 only SELECTs and removes synthetic credentials after the check.
+That API gate is already approved. The next [browser R1](../docs/LAB_LOCAL_OPERATOR_WEB_R1_v0.6.12.md)
+uses a separate temporary Web listener, private synthetic account and 14-table
+comparison on exit. It does not repeat restore/lifecycle/export qualification.
 
-[ADR 0023](../docs/ADR_0023_Local_Operator_API_v0.6.11.md).
+[ADR 0023](../docs/ADR_0023_Local_Operator_API_v0.6.11.md) ·
+[ADR 0024](../docs/ADR_0024_Local_Operator_Web_v0.6.12.md).

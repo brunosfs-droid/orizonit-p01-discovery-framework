@@ -1,6 +1,8 @@
 # ADR 0023 — Local operators and read-only assessment API
 
-02/10/2026 (-03). Local-first login approved by Bruno; implementation CANDIDATE.
+02/10/2026 (-03). Local-first login approved by Bruno. Same-host synthetic API
+R1 **LAB VALIDATED** on 03/10/2026; wider release remains CANDIDATE.
+[Evidence and limits](validation/LOCAL_OPERATOR_P01LAB_R1_v0.6.11.md).
 
 ## Decision
 

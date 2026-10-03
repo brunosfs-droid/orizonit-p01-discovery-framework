@@ -1,6 +1,7 @@
 # Cancã — login local do servidor, R1 curto v0.6.11
 
-**CANDIDATE; aceite de host pendente.** Collector portable continua sem login.
+**R1 LAB VALIDATED em 03/10/2026 (-03).** [Aceite e limites](validation/LOCAL_OPERATOR_P01LAB_R1_v0.6.11.md).
+Roteiro histórico; não repetir este gate aprovado. Collector portable continua sem login.
 Este teste valida somente o backend de operadores do servidor, antes das telas
 Web. Integração AD é opcional/futura. Não instalar serviços nem abrir firewall.
 

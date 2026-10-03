@@ -59,4 +59,5 @@ orchestrator/*.local.json
 
 # Private local operator policy (password hashes and assessment grants)
 operator-accounts*.json
+.web-ci-artifacts/
 server/*.local.json
