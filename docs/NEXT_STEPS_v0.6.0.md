@@ -8,8 +8,8 @@ O exportador funcional está **LAB VALIDATED no R1 sintético Rocky**. As cinco
 capturas 014007/014025/014138/014149/014247 demonstram instalação corrigida,
 duas respostas `exported`, verificação PASS e exportação da sessão `true`.
 [Aceite e limites](validation/POSTGRESQL_P01LAB_EXPORT_R1_v0.6.9.md).
-Não repetir instalação/exportação, restore, lifecycle ou serviços. Falta revisar
-a apresentação de `report.md`; o arquivo não foi enviado nas capturas. Preservar
+Não repetir instalação/exportação, restore, lifecycle ou serviços. A apresentação
+técnica foi aceita por conteúdo/parsing GFM dos dois anexos idênticos. Preservar
 os dois diretórios gerados. Tentativas bloqueadas anteriores permanecem históricas.
 
 **O desenvolvimento de código/CI segue independentemente do LAB PostgreSQL.** R1 curto e soak estendido
@@ -78,8 +78,9 @@ Exportação v0.6.9 implementa JSON completo, Markdown e manifesto/SHA256 em dir
 privado novo. Só SELECT via relatório canônico, todas as páginas e verificação
 terminal sob a mesma cerca; mudança de escopo interrompe antes de gerar arquivos.
 [Guia e limites](REPORT_EXPORT_v0.6.9.md). Qualificação CI é independente do host LAB;
-exportação funcional no R1 Rocky passou nas cinco capturas posteriores; a leitura
-e apresentação de `report.md` ainda precisa de inspeção do arquivo.
+exportação funcional no R1 Rocky passou nas cinco capturas posteriores; conteúdo
+e estrutura GFM de `report.md`/`report1.md` idênticos foram aceitos. Renderização
+gráfica específica e PDF/impressão não foram qualificados.
 PR #106 integrado (d1b32cf6d6185e87fc4a08abb57654c29d8e8c4b): texto persistido
 inclui escape de URLs simples para evitar autolinks no Markdown. Não há mudança
 no banco, nas regras ou no formato JSON. O roteiro novo usa essa revisão qualificada.

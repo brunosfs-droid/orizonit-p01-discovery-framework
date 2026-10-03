@@ -17,8 +17,9 @@ também está LAB VALIDATED no R1 Rocky: cinco capturas posteriores demonstram
 instalação corrigida, dois JSONs `exported`, verificador PASS e exportação `true`.
 [Aceite e limites](validation/POSTGRESQL_P01LAB_EXPORT_R1_v0.6.9.md).
 Tentativas 003724/003738/003753 são históricas; não repetir o ensaio aprovado.
-Revisão de apresentação do Markdown ainda está pendente e é independente desta
-política de autorização de nodes, que continua CANDIDATE.
+Apresentação técnica do Markdown aceita por conteúdo/parsing GFM dos dois anexos
+idênticos. A política de autorização de nodes continua CANDIDATE, com aceite
+próprio de host ainda separado.
 
 [Guia](NODE_AUTHORIZATION_v0.6.10.md) · [ADR 0021](ADR_0021_Node_Assessment_Authorization_v0.6.10.md) ·
 [Exportador Rocky](LAB_POSTGRESQL_EXPORT_R1_v0.6.9.md).

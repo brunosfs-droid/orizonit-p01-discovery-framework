@@ -1,10 +1,10 @@
-# Cancã — aceite funcional do exportador PostgreSQL R1 v0.6.9
+# Cancã — aceite do exportador PostgreSQL R1 v0.6.9
 
 02/10/2026 (-03). **LAB VALIDATED no cenário sintético R1 do Rocky.**
 Cinco capturas fornecidas pelo operador foram inspecionadas. Não houve acesso
-ao host nem recebimento dos arquivos de relatório/TAR. O aceite é funcional,
-baseado na execução e nos resultados visíveis; apresentação do Markdown é
-um gate separado ainda pendente de inspeção do arquivo.
+ao host nem recebimento do TAR. O aceite funcional baseia-se na execução e nos
+resultados visíveis. Os arquivos `report.md` e `report1.md` recebidos depois
+fecham a revisão de conteúdo e estrutura GFM da apresentação técnica do R1.
 
 ## Evidências
 
@@ -38,14 +38,39 @@ TAR; estas cinco imagens não mostram um novo `sha256sum` do TAR no Rocky, porta
 não se atesta igualdade independente do TAR entre hosts. O hash do módulo
 instalado foi verificado pelo bloco que passou.
 
-## Limites e próximo gate
+## Revisão dos arquivos Markdown
+
+Os dois anexos são idênticos byte a byte: 3176 bytes cada, SHA256
+`d3b8bba49aaad8805c8760d5e276bf504d76f2425f16dfca5dfcbf0f864133f6`.
+Recebimento e revisão em 02/10/2026 (-03), após as cinco capturas acima.
+
+- Parser GFM `marked`: quatro tabelas válidas; resumo com oito campos,
+  cobertura com cinco resultados, pendências com uma linha e histórico com
+  quatro avaliações em sete colunas. Sem links ou HTML ativo na saída analisada.
+- Contagens consistentes com o ensaio: lifecycle `completed`, revisão 4,
+  2/2 imports analisados, 1 CAS/2 observações, 2 `finding`/2 `no_finding`,
+  duas ocorrências históricas `Open` e nenhuma pendência de projeção.
+- IDs, caminhos e hashes estão completos; entidades numéricas preservam o
+  texto escapado. Escopo
+  `4e0c0886ab99e420893bee2253055f6a13bdada8dfda539bc26861eb328f7169`.
+- Limites administrativos, histórico, metadados persistidos e cerca de escopo
+  estão explícitos; o relatório não afirma remediação ou segurança do ambiente.
+
+Apresentação técnica aceita por inspeção de conteúdo e parsing GFM, sem
+qualificação de um renderizador gráfico específico ou de PDF/impressão.
+A tabela histórica é larga por preservar IDs/SHA256 completos; a leitura pode
+exigir rolagem horizontal conforme o visualizador. Não há truncamento nos anexos.
+JSON e manifestos não foram anexados: identidade entre os dois Markdown foi
+verificada independentemente, mas seu vínculo com cada diretório/manifesto segue
+baseado no PASS mostrado nas capturas. Não publicar os anexos automaticamente.
+
+## Limites e continuidade
 
 Este aceite substitui a pendência funcional das tentativas bloqueadas anteriores.
 Não repetir envio/instalação, exportação, restore ou lifecycle para fechá-lo.
 Preservar os dois diretórios gerados para rastreabilidade.
 
-Falta inspecionar a leitura/apresentação de `report.md`; os bytes desse arquivo
-não foram enviados nas capturas. Não qualifica produção, exportador Windows,
+O gate de apresentação técnica do R1 está fechado. Não qualifica produção, exportador Windows,
 TLS remoto PostgreSQL, roles completos, autenticação de operadores/API Web ou
 autorização de nodes v0.6.10. Conta utilizada neste ensaio foi `canca_lab_admin`;
 o aceite não substitui a qualificação própria de uma role SELECT-only no host.

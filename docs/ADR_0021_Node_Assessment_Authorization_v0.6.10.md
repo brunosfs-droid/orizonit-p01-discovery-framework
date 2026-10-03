@@ -45,8 +45,8 @@ transport is rejected because it has no authenticated certificate principal.
 - Reader/ingester grants are independent; a node can be write-only or read-only.
 - Human authentication, OIDC/Entra integration, operator RBAC, audit persistence,
   enrollment, rate limiting and live revocation need their own increments.
-- Functional exporter acceptance passed in synthetic Rocky R1; Markdown
-  presentation review remains independent and pending.
+- Functional exporter acceptance and technical Markdown content/GFM review
+  passed in synthetic Rocky R1; neither qualifies node authorization on the host.
 
 ## Qualification
 

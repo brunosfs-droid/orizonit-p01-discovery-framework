@@ -1,7 +1,8 @@
 # ADR 0020 — exportação do relatório consolidado
 
 02/10/2026 (-03). Decisão implementada; exportador funcional **LAB VALIDATED
-no R1 sintético Rocky**. Apresentação do Markdown permanece gate separado.
+no R1 sintético Rocky**. Apresentação técnica aceita por conteúdo/parsing GFM
+dos dois anexos idênticos, sem qualificação de PDF/renderizador específico.
 [Aceite e limites](validation/POSTGRESQL_P01LAB_EXPORT_R1_v0.6.9.md).
 
 O relatório v0.6.5 já apresenta cobertura histórica/identidade/findings com páginas
