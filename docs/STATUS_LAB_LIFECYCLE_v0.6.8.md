@@ -29,3 +29,17 @@ transição. Ambos exit 0; quatro replays idempotentes e três conflitos esperad
 quatro páginas/quatro avaliações, 2 findings/1 CAS, 12 tabelas invariantes e sources/store
 preservados. [Aceite e limites](validation/POSTGRESQL_P01LAB_LIFECYCLE_R1_v0.6.8.md).
 As falhas anteriores são históricas e não bloqueiam este aceite. Não repetir R1.
+
+## Exportador: correção e tentativa R1
+
+PR #106 integrado: head 361ff2b78e47ecc23d57d13f7b86a497ab184490, merge
+d1b32cf6d6185e87fc4a08abb57654c29d8e8c4b, tree 61ffa3745c5b16acc9be52d8aa6d175f55d195ef
+igual à qualificada. Python 360 casos (263 PASS/97 skips), PostgreSQL 16/17 156 PASS
+por versão e quatro jobs nativos PASS na primeira tentativa. Corrige escape de
+URLs no Markdown, sem migração ou alteração do engine.
+
+Capturas 235251/235559/235634/235648: instalação rejeitou entrada de pasta no TAR;
+exportação bloqueada por readiness false. Sem resultado exported/PASS. O gate do
+exportador continua CANDIDATE, lifecycle/paginação e recuperação permanecem LAB VALIDATED.
+[Roteiro corrigido](LAB_POSTGRESQL_EXPORT_R1_v0.6.9.md) e
+[diagnóstico](validation/POSTGRESQL_P01LAB_EXPORT_ATTEMPT_R1_v0.6.9.md).
