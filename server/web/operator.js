@@ -104,6 +104,7 @@
     el('empty-page').hidden = rows.length !== 0;
     el('page-label').textContent = `Página ${number} · ${rows.length} avaliação(ões)`;
     el('report-panel').hidden = false;
+    el('report-title').focus();
   }
   async function read(continuation = false) {
     if (busy || !token) return;

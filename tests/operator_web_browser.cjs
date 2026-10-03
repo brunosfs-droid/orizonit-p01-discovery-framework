@@ -42,7 +42,7 @@ const {chromium} = require(process.env.CANCA_PLAYWRIGHT_MODULE || 'playwright');
       assert.equal(await page.locator('#evaluations img').count(), 0);
       assert.equal(await page.evaluate(() => window.cancaInjected), undefined);
       const firstFocus = await page.evaluate(() => document.activeElement.id);
-      assert.ok(firstFocus);
+      assert.equal(firstFocus, 'report-title');
       for (let number=2; number<=4; number++) {
         await page.getByRole('button', {name:'Próxima página', exact:true}).click();
         await page.getByText(`Página ${number} · 1 avaliação(ões)`, {exact:true}).waitFor();

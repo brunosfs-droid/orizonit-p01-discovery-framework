@@ -72,6 +72,7 @@ async function read(c, doc = report()) {
   c = client(); await login(c); await read(c);
   assert.equal(c.element('finding-count').textContent, '2'); assert.match(c.element('lifecycle').textContent, /completed/);
   assert.equal(c.element('evaluations').children.length, 1); assert.ok(c.element('evaluations').textContent.includes(malicious));
+  assert.equal(c.element('report-title').focused, true);
   assert.equal(c.calls[1].options.headers.Authorization, 'Bearer '+session.access_token);
   // Continue using the original selection, cursor and fence even if the input changed.
   c.element('assessment').value = 'LAB-OTHER'; c.element('page-size').value = '100';
