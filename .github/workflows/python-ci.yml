@@ -39,6 +39,8 @@ jobs:
 
       - name: Compile executive report
         run: python -m py_compile persistence/P01_Executive_Report.py tests/test_postgres_executive.py
+      - name: Compile operator executive download
+        run: python -m py_compile server/P01_Operator_Export.py server/P01_Operator_Web.py docs/validation/VERIFY_OPERATOR_WEB_EXECUTIVE_v0.6.15.py tests/test_operator_web_executive.py tests/test_postgres_operator_executive.py
 
       - name: Validate JSON artifacts
         run: |

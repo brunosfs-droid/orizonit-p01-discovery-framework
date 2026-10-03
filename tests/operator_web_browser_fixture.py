@@ -13,8 +13,13 @@ import P01_Operator_Web as web
 
 PASSWORD = 'Synthetic browser CI passphrase 01!'
 ATTACK = '<img src=x onerror="window.cancaInjected=true">'
-ANALYSIS = 'ana-' + '1' * 32
+ANALYSES = ('ana-' + '1' * 32, 'ana-' + '2' * 32)
 SCOPE = 'a' * 64
+CATALOG = json.loads((Path(__file__).resolve().parents[1]/'persistence/P01_Finding_Rules.json').read_bytes())
+for rule in CATALOG['rules']:
+    rule['title'] = ATTACK
+CATALOG_SHA = 'c' * 64
+ENGINE_SHA = 'e' * 64
 
 
 def read_report(self, token, assessment, *, after_analysis_id='', after_ordinal=-1, limit=100, expected_scope_sha256=None):
@@ -29,24 +34,32 @@ def canonical_page(conn, assessment, after_analysis_id='', after_ordinal=-1, lim
     rows = []
     for ordinal in range(4):
         finding = ordinal < 2
-        rows.append(dict(analysis_id=ANALYSIS, ordinal=ordinal, rule_id='WIN-AD-001' if ordinal % 2 == 0 else 'WIN-FW-001',
+        index = ordinal // 2; local_ordinal = ordinal % 2
+        rows.append(dict(analysis_id=ANALYSES[index], ordinal=local_ordinal, rule_id=CATALOG['rules'][local_ordinal]['id'],
             result='finding' if finding else 'no_finding', asset_id='asset-synthetic', source_path=ATTACK,
-            source_sha256='b'*64, bundle_id='bundle-synthetic', link_state='linked', asset_decision='linked',
-            asset_reason_code='exact', observation_ordinal=ordinal % 2, evidence_refs=[ATTACK],
+            source_sha256='b'*64, bundle_id='bnd-synthetic-'+str(index+1), link_state='linked',
+            asset_decision='new_asset' if index == 0 else 'linked',
+            asset_reason_code='exact', observation_ordinal=0, evidence_refs=[ATTACK],
             finding_id='finding-'+str(ordinal) if finding else None, finding_status='Open' if finding else None,
-            evidence={'value':ATTACK} if finding else None, rule=dict(title=ATTACK, recommendation='Validar a configuração.')))
+            evidence={'value':ATTACK} if finding else None, rule=deepcopy(CATALOG['rules'][local_ordinal])))
     selected = [r for r in rows if (r['analysis_id'], r['ordinal']) > (after_analysis_id, after_ordinal)]
     page = selected[:limit]; last = page[-1] if page else dict(analysis_id=after_analysis_id, ordinal=after_ordinal)
     return deepcopy(dict(status='found', report_version=web.api.report.VERSION, assessment_id=assessment, source_bytes_revalidated=False,
-        lifecycle=dict(state='completed', revision=4), identity=dict(central_asset_count=1, observation_count=2),
+        scope_mode='all_persisted_imports', lifecycle=dict(state='completed', revision=4),
+        identity=dict(central_asset_count=1, observation_count=2, decisions=dict(new_asset=1, linked=1, review_required=0),
+                      reasons=dict(synthetic_new=1, synthetic_match=1)),
         recorded_finding_occurrences=2, snapshot_at_utc='2026-10-03T03:00:00Z', report_scope_sha256=SCOPE,
-        coverage=dict(evaluation_count=4, import_count=2, analyzed_import_count=2, credentialed_sources_evaluated=2,
+        coverage=dict(evaluation_count=4, import_count=2, asset_projected_import_count=2, analyzed_import_count=2, credentialed_sources_evaluated=2,
             credentialed_sources_indexed=2, projection_status='all_imports_analyzed',
             outcomes=dict(finding=2, no_finding=2, insufficient_evidence=0, not_applicable=0, not_supported=0),
             by_rule={rule:{result:sum(r['rule_id']==rule and r['result']==result for r in rows)
                            for result in web.api.report.RESULTS} for rule in web.api.report.RULES},
             imports_without_assets=[], imports_without_analysis=[]),
-        analyses=[dict(analysis_id=ANALYSIS,evaluation_count=4,finding_count=2)],
+        imports=[dict(bundle_id='bnd-synthetic-'+str(n+1)) for n in range(2)],
+        analyses=[dict(analysis_id=aid, bundle_id='bnd-synthetic-'+str(n+1), policy_version='0.6.4',
+                       catalog_sha256=CATALOG_SHA, engine_sha256=ENGINE_SHA, evaluation_count=2, finding_count=2 if n==0 else 0)
+                  for n, aid in enumerate(ANALYSES)],
+        catalogs=[dict(policy_version='0.6.4', catalog_sha256=CATALOG_SHA, engine_sha256=ENGINE_SHA, catalog=CATALOG)],
         evaluations=page, has_more=len(selected)>limit,
         next_cursor=dict(after_analysis_id=last['analysis_id'], after_ordinal=last['ordinal'])))
 

@@ -71,7 +71,7 @@ backup-restore smoke completed successfully.
 - No production, public hosting, Windows filesystem ACL, PDF or graphical
   rendering qualification is claimed.
 
-The eleven v0.6.13 source files remain byte-identical to the pinned
+At the qualified executable revision above, the eleven v0.6.13 source files are byte-identical to the pinned
 `9cb8442e4a9ff84384b6b4f42bf5c8db0a65d871` package, so the postponed guide can
 continue to use that revision when the maintainer is available.
 

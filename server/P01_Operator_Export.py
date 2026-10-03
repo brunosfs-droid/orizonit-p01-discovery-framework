@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Authenticated bounded in-memory delivery of the existing complete report."""
+"""Authenticated bounded in-memory delivery of technical/executive reports."""
 from __future__ import annotations
 
 from contextlib import contextmanager
@@ -14,8 +14,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'persistence'))
 from P01_Operator_Auth import AccessError
 import P01_Report_Export as export
+import P01_Executive_Report as executive
 
-VERSION = '0.6.13'
+VERSION = '0.6.15'
+TECHNICAL_DELIVERY_VERSION = '0.6.13'
 MAX_ARCHIVE_BYTES = 32 * 1024**2
 MAX_SECONDS = 60
 
@@ -26,12 +28,12 @@ class ExportDelivery:
         self._slot = threading.BoundedSemaphore(1)
 
     @contextmanager
-    def build(self, token, assessment, expected_scope_sha256, limit=100):
+    def build(self, token, assessment, expected_scope_sha256, limit=100, *, kind='technical'):
         # Authorization and query validation precede slot acquisition and any SQL.
         self.auth.require(token, assessment)
         export.report.validate_query(assessment, limit=limit,
                                      expected_scope_sha256=expected_scope_sha256)
-        if expected_scope_sha256 is None:
+        if expected_scope_sha256 is None or not isinstance(kind, str) or kind not in {'technical', 'executive'}:
             raise AccessError('report_input_invalid', 400)
         if not self._slot.acquire(blocking=False):
             raise AccessError('export_busy', 429)
@@ -48,8 +50,16 @@ class ExportDelivery:
                 doc = export.collect(conn, assessment, limit,
                     expected_scope_sha256=expected_scope_sha256, checkpoint=checkpoint)
             checkpoint()
-            payloads = {'report.json': export.bounded_json(doc), 'report.md': export.markdown(doc)}
-            manifest = dict(export_version=export.VERSION, delivery_version=VERSION,
+            if kind == 'executive':
+                doc = executive.summarize(doc)
+                checkpoint()
+                payloads = {'executive.json': executive.bounded_json(doc), 'executive.md': executive.markdown(doc)}
+                versions = dict(executive_version=executive.VERSION, delivery_version=VERSION)
+            else:
+                payloads = {'report.json': export.bounded_json(doc), 'report.md': export.markdown(doc)}
+                versions = dict(export_version=export.VERSION, delivery_version=TECHNICAL_DELIVERY_VERSION)
+            checkpoint()
+            manifest = dict(**versions,
                 assessment_id=assessment, report_scope_sha256=expected_scope_sha256,
                 files=[dict(name=name, size_bytes=len(raw), sha256=export.pg.digest(raw))
                        for name, raw in payloads.items()])

@@ -8,7 +8,7 @@
   <script src="/assets/operator.js" defer></script>
 </head>
 <body>
-  <header class="topbar"><a class="brand" href="/" aria-label="Cancã, início">Cancã<span>Community</span></a><span class="release">Product Alpha · v0.6.13</span></header>
+  <header class="topbar"><a class="brand" href="/" aria-label="Cancã, início">Cancã<span>Community</span></a><span class="release">Product Alpha · v0.6.15</span></header>
   <main>
     <div class="intro"><p class="eyebrow">Discovery &amp; Assessment</p><h1>Relatórios do ambiente</h1><p>Consulte os resultados registrados para o seu assessment.</p></div>
     <noscript>Ative JavaScript para entrar e consultar os relatórios.</noscript>
@@ -35,6 +35,7 @@
         <div class="metrics"><div class="card"><span>Assets registrados</span><strong id="asset-count"></strong></div><div class="card"><span>Avaliações registradas</span><strong id="evaluation-count"></strong></div><div class="card"><span>Findings históricos</span><strong id="finding-count"></strong></div></div>
         <p class="notice">São resultados históricos. Um assessment concluído não encerra findings. Esta consulta não revalida os arquivos de evidência.</p>
         <div class="report-export"><p>JSON e Markdown com todas as avaliações registradas.</p><button id="download-button" class="secondary" type="button">Baixar relatório completo (ZIP)</button></div>
+        <div class="report-export"><p>Resumo de cobertura, findings históricos e recomendações.</p><button id="executive-download-button" class="secondary" type="button">Baixar relatório executivo (ZIP)</button></div>
         <div class="card coverage"><h3>Cobertura registrada</h3><p id="coverage"></p><p id="outcomes"></p><details><summary>Identificação do escopo consultado</summary><p id="scope" class="mono"></p><p id="snapshot"></p></details></div>
         <div class="card table-card"><div class="table-heading"><h3>Avaliações</h3><span id="page-label"></span></div><div class="table-scroll" tabindex="0" role="region" aria-label="Tabela de avaliações"><table><thead><tr><th>Regra / resultado</th><th>Asset / vínculo</th><th>Fonte / proveniência</th><th>Finding / evidência registrada</th></tr></thead><tbody id="evaluations"></tbody></table></div><p id="empty-page" hidden>Nenhuma avaliação nesta página.</p><div class="pagination"><button id="restart-button" class="secondary" type="button">Primeira página</button><button id="next-button" type="button">Próxima página</button></div></div>
       </section>

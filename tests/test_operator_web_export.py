@@ -48,7 +48,7 @@ class OperatorWebExportTests(unittest.TestCase):
             doc = json.loads(archive.read('report.json')); manifest = json.loads(archive.read('manifest.json'))
             self.assertEqual(len(doc['evaluations']), 1)
             self.assertTrue(doc['export_consistency']['terminal_empty_page_verified'])
-            self.assertEqual(manifest['delivery_version'], web.VERSION)
+            self.assertEqual(manifest['delivery_version'], web.exports.TECHNICAL_DELIVERY_VERSION)
             for item in manifest['files']:
                 data = archive.read(item['name'])
                 self.assertEqual(len(data), item['size_bytes']); self.assertEqual(export.pg.digest(data), item['sha256'])
