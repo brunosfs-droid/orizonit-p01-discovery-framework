@@ -10,6 +10,9 @@
 
 ## Product baseline
 
+Executive report v0.6.14: [historical coverage and consolidated recommendations](docs/EXECUTIVE_REPORT_v0.6.14.md)
+(local read-only CLI, CANDIDATE). Development and CI qualification are independent
+of postponed manual LAB tests; the pinned v0.6.13 Web package is preserved.
 Operator Web v0.6.13: [complete report download](docs/OPERATOR_WEB_EXPORT_v0.6.13.md)
 (CANDIDATE). Web v0.6.12: [local login and read-only reports](server/README.md)
 (short synthetic browser R1 [LAB VALIDATED](docs/validation/LOCAL_OPERATOR_WEB_P01LAB_R1_v0.6.12.md);
@@ -45,7 +48,7 @@ connected node mTLS retain their separate purposes. Optional AD integration foll
 - **Portable Discovery Node Runtime:** 0.5e.6 — LAB VALIDATED; fluxo end-to-end completo no P01LAB, incluindo Evidence Bundle workspace-driven, Connected Upload mTLS e zero-input resume sem segunda conexão.
 - **Central Persistence / Asset Registry:** 0.6.3 — CANDIDATE para LAB; índice PostgreSQL, API opt-in v0.6.1, lifecycle v0.6.2 e identidade persistente por assessment com proveniência e revisão de ambiguidades. [Assets](docs/ASSET_REGISTRY_v0.6.3.md), [lifecycle](docs/ASSESSMENT_LIFECYCLE_v0.6.2.md), [integração](docs/INGESTION_INDEX_v0.6.1.md) e [próximos passos](docs/NEXT_STEPS_v0.6.0.md).
 - **Optional Service Scheduler:** 0.5f.3 — LAB VALIDATED para R1 curto e soak estendido offline de 10 ticks em Windows/Rocky; default off, revisão após interrupção e zero replay. Multi-day e etapas live pendentes. [Status](docs/STATUS_SCHEDULER_v0.5f.3.md).
-- **Reporting Engine:** planejado após Network Discovery + Asset Resolver.
+- **Reporting Engine:** relatório técnico/exportação v0.6.9 LAB VALIDATED no R1 sintético; download Web v0.6.13 e resumo executivo v0.6.14 CANDIDATE, com gates operacionais independentes.
 
 > Saídas reais de discovery devem ser tratadas como **CONFIDENCIAL — DADOS DO CLIENTE**.
 

@@ -518,3 +518,14 @@ See [edition policy](LICENSING_AND_EDITIONS.md) and [ADR 0021](ADR_0021_Apache_2
 - Código 9cb8442e4a9ff84384b6b4f42bf5c8db0a65d871 qualificado em oito runs/16 jobs;
   [registro CI](validation/OPERATOR_WEB_EXPORT_CI_v0.6.13.md). Novo gate manual:
   [download R1](LAB_OPERATOR_WEB_EXPORT_R1_v0.6.13.md), sem repetir testes antigos.
+
+## v0.6.14 — relatório executivo (CANDIDATE)
+
+- CLI local somente leitura, com JSON/Markdown privados e manifesto/SHA256.
+- Cobertura, pendências, identidade e severidades das ocorrências históricas.
+- Recomendações agrupadas pela regra/catálogo/engine salvos, com referências completas.
+- Sem score de risco, fechamento implícito de findings, migração ou acesso ao store.
+- CI sintético e PostgreSQL 16/17 independentes do LAB; validações manuais adiadas
+  pelo mantenedor em 03/10. Preserva os onze arquivos do pacote Web v0.6.13.
+- [Guia](EXECUTIVE_REPORT_v0.6.14.md) · [ADR 0026](ADR_0026_Executive_Report_v0.6.14.md) ·
+  [Registro CI](validation/EXECUTIVE_REPORT_CI_v0.6.14.md).
