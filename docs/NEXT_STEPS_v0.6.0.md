@@ -18,6 +18,11 @@ download. As fontes Web em desenvolvimento evoluem; os pacotes históricos
 permanecem preservados nos seus pins, sem misturar HEAD no roteiro v0.6.13.
 Testes sintéticos/PostgreSQL/Chromium seguem no CI; nenhum novo passo manual hoje.
 
+v0.6.16 acrescenta [seleção dos assessments permitidos](OPERATOR_ASSESSMENT_SELECTION_v0.6.16.md)
+na Web. A lista lê apenas os grants da sessão e não depende de PostgreSQL;
+selecionar preenche o formulário, com consulta explícita e autorização preservada.
+Não cria assessments nem qualifica downloads no LAB. Nenhuma nova ação manual hoje.
+
 O exportador funcional está **LAB VALIDATED no R1 sintético Rocky**. As cinco
 capturas 014007/014025/014138/014149/014247 demonstram instalação corrigida,
 duas respostas `exported`, verificação PASS e exportação da sessão `true`.

@@ -60,9 +60,11 @@ function report(overrides = {}) {
     has_more:true, next_cursor:{after_analysis_id:'ana-'+'1'.repeat(32), after_ordinal:0}, ...overrides};
 }
 const tick = () => new Promise(resolve => setImmediate(resolve));
-async function login(c) {
+const directory = (overrides = {}) => ({status:'allowed', version:'0.6.16', source:'local_operator_policy',
+  assessment_existence_checked:false, assessment_ids:['LAB-001','LAB-MISSING'], ...overrides});
+async function login(c, doc = directory()) {
   c.element('username').value = 'reader'; c.element('password').value = 'Synthetic LAB passphrase 01!';
-  c.replies.push(response(201, session)); await c.element('login-form').fire('submit');
+  c.replies.push(response(201, session), response(200, doc)); await c.element('login-form').fire('submit');
   assert.equal(c.element('password').value, ''); assert.equal(c.element('username').value, '');
   assert.equal(c.element('login-panel').hidden, true);
 }
@@ -85,16 +87,75 @@ function archive(overrides = {}) {
   assert.equal(c.calls[0].options.headers.Authorization, undefined);
   assert.equal(c.calls[0].options.credentials, 'omit'); assert.equal(c.calls[0].options.cache, 'no-store');
   assert.equal(c.calls[0].options.redirect, 'error');
+  // The own-grant selector fills a draft; selecting never queries automatically.
+  c = client(); await login(c);
+  assert.equal(c.calls[1].url, '/api/v1/operator/assessments');
+  assert.equal(c.calls[1].options.headers.Authorization, 'Bearer '+session.access_token);
+  assert.equal(c.element('assessment-selector').children.length,3);
+  assert.equal(c.element('assessment-selector').disabled,false);
+  assert.equal(c.element('assessment-selector').children[1].textContent,'LAB-001');
+  let beforeSelection=c.calls.length;
+  c.element('assessment-selector').value='LAB-MISSING'; c.element('assessment-selector').fire('change');
+  assert.equal(c.element('assessment').value,'LAB-MISSING'); assert.equal(c.calls.length,beforeSelection);
+  await read(c); c.element('assessment-selector').value='LAB-MISSING'; c.element('assessment-selector').fire('change');
+  assert.equal(c.element('report-panel').hidden,true); assert.equal(c.element('download-button').disabled,true);
+  assert.equal(c.element('executive-download-button').disabled,true);
+  c.element('assessment-selector').value='PRIVATE-OTHER'; c.element('assessment-selector').fire('change');
+  assert.equal(c.element('assessment').value,'LAB-MISSING'); assert.match(c.element('message').textContent,/Confira/);
+  // Empty/invalid/oversized lists do not become DOM options; manual entry is available.
+  for (const change of [{assessment_ids:[]}, {assessment_ids:[malicious]}, {assessment_ids:['LAB-001','LAB-001']},
+      {assessment_ids:['LAB-MISSING','LAB-001']}, {assessment_ids:Array(129).fill('LAB-001')},
+      {assessment_ids:['x'.repeat(129)]}, {assessment_ids:['LAB-001',null]}, {assessment_ids:null},
+      {assessment_existence_checked:true}, {source:'database_inventory'}, {version:'future'}]) {
+    c=client(); await login(c,directory(change));
+    assert.equal(c.element('assessment-selector').children.length,1);
+    assert.equal(c.element('assessment-selector').disabled,true); assert.equal(c.element('assessment').disabled,false);
+    assert.equal(c.element('assessment-refresh-button').disabled,false);
+    assert.match(c.element('assessment-list-message').textContent,change.assessment_ids?.length===0 ? /não possui/ : /Não foi possível/);
+  }
+  c=client();
+  const maximal=Array.from({length:128},(_,index)=>String(index).padStart(3,'0')+'-'+'x'.repeat(124));
+  await login(c,directory({assessment_ids:maximal}));
+  assert.equal(c.element('assessment-selector').children.length,129);
+  assert.equal(c.element('assessment-selector').children.at(-1).textContent,maximal.at(-1));
+  // Refresh failure preserves the displayed report; refresh serializes with reads/downloads.
+  c=client(); await login(c); await read(c);
+  c.replies.push(response(503,{})); await c.element('assessment-refresh-button').fire('click');
+  assert.equal(c.element('report-panel').hidden,false); assert.equal(c.element('assessment').disabled,false);
+  assert.equal(c.element('download-button').disabled,false); assert.match(c.element('assessment-list-message').textContent,/informe um ID/);
+  let refreshRelease; c.replies.push(()=>new Promise(resolve=>{refreshRelease=resolve;}));
+  const refreshing=c.element('assessment-refresh-button').fire('click'); await tick();
+  assert.equal(c.element('assessment-selector').disabled,true); assert.equal(c.element('report-button').disabled,true);
+  assert.equal(c.element('download-button').disabled,true); assert.equal(c.element('executive-download-button').disabled,true);
+  beforeSelection=c.calls.length; await c.element('download-button').fire('click'); assert.equal(c.calls.length,beforeSelection);
+  refreshRelease(response(200,directory())); await refreshing;
+  assert.equal(c.element('assessment-selector').disabled,false); assert.equal(c.element('download-button').disabled,false);
+  // Late directory data after logout/expiry cannot leak into a subsequent session.
+  for (const expire of [false,true]) {
+    c=client(); await login(c);
+    let directoryRelease; c.replies.push(()=>new Promise(resolve=>{directoryRelease=resolve;}));
+    const loading=c.element('assessment-refresh-button').fire('click'); await tick();
+    const signal=c.calls.at(-1).options.signal;
+    if (expire) [...c.timers.values()].find(x=>x.delay===900000).handler();
+    else {c.replies.push(response(200,{status:'logged_out'})); await c.element('logout-button').fire('click');}
+    assert.equal(signal.aborted,true); assert.equal(c.element('assessment-selector').children.length,1);
+    await login(c,directory({assessment_ids:['NEW-ACCOUNT']}));
+    directoryRelease(response(200,directory())); await loading;
+    assert.equal(c.element('assessment-selector').children.length,2);
+    assert.equal(c.element('assessment-selector').children[1].textContent,'NEW-ACCOUNT');
+  }
+  c.replies.push(response(401,{})); await c.element('assessment-refresh-button').fire('click');
+  assert.equal(c.element('workspace').hidden,true); assert.equal(c.element('assessment-selector').children.length,1);
   // Untrusted report strings remain text, and historical lifecycle/counts survive.
   c = client(); await login(c); await read(c);
   assert.equal(c.element('finding-count').textContent, '2'); assert.match(c.element('lifecycle').textContent, /completed/);
   assert.equal(c.element('evaluations').children.length, 1); assert.ok(c.element('evaluations').textContent.includes(malicious));
   assert.equal(c.element('report-title').focused, true);
-  assert.equal(c.calls[1].options.headers.Authorization, 'Bearer '+session.access_token);
+  assert.equal(c.calls[2].options.headers.Authorization, 'Bearer '+session.access_token);
   // Continue using the original selection, cursor and fence even if the input changed.
   c.element('assessment').value = 'LAB-OTHER'; c.element('page-size').value = '100';
   c.replies.push(response(200, report({has_more:false}))); c.element('next-button').fire('click'); await tick();
-  const url = new URL(c.calls[2].url, 'http://localhost');
+  const url = new URL(c.calls[3].url, 'http://localhost');
   assert.equal(url.pathname, '/api/v1/assessments/LAB-001/report'); assert.equal(url.searchParams.get('limit'), '1');
   assert.equal(url.searchParams.get('expected_scope_sha256'), 'a'.repeat(64)); assert.equal(url.searchParams.get('after_ordinal'), '0');
   assert.equal(c.element('next-button').disabled, true); assert.match(c.element('page-label').textContent, /Página 2/);
@@ -177,5 +238,5 @@ function archive(overrides = {}) {
       {'Content-Disposition':'attachment; filename="canca-LAB-001-executive.zip"'} : {})); await downloading;
     assert.equal(c.saved.length,0); assert.equal(c.urls.size,0); assert.equal(c.element('workspace').hidden,true);
   }
-  console.log('OPERATOR WEB CLIENT PASS — 11 behavioral groups');
+  console.log('OPERATOR WEB CLIENT PASS — 15 behavioral groups');
 })().catch(error => { console.error(error); process.exitCode = 1; });

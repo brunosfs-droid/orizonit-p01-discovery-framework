@@ -1,6 +1,9 @@
-# Cancã — local operator Web v0.6.15 / report API v0.6.11
+# Cancã — local operator Web v0.6.16 / report API v0.6.11
 
-**Web v0.6.15 executive download CANDIDATE; Web v0.6.12 R1 LAB VALIDATED.**
+**Web v0.6.16 permitted-assessment selection CANDIDATE; Web v0.6.12 R1 LAB VALIDATED.**
+[Own-grant selector and limits](../docs/OPERATOR_ASSESSMENT_SELECTION_v0.6.16.md).
+The Web directory reads the current session's startup-policy IDs without opening
+PostgreSQL; choose an ID then explicitly query. It does not establish existence.
 [Executive download and shared limits](../docs/OPERATOR_WEB_EXECUTIVE_v0.6.15.md).
 Technical download retains content/delivery 0.6.9/0.6.13. Manual LAB download
 gates remain deferred; historical guides keep their qualified Git pins.
@@ -13,7 +16,9 @@ API v0.6.11 same-host synthetic R1 is
 Separate server boundary for Web/API operator access.
 Local login first, as selected by Bruno; optional AD/SSO integration follows.
 The optional Web entry point provides the first Portuguese login/report screens
-using the qualified backend, whose files remain unchanged.
+using the existing session/report contracts. v0.6.16 adds a session-checked grant
+accessor to LocalAuth; the standalone API routes/policy format remain unchanged.
+Earlier qualified sources are preserved at their Git pins.
 
 ## Who authenticates where?
 
@@ -86,8 +91,10 @@ Startup/health do not connect to PostgreSQL or attest database readiness.
 | GET `/healthz` | Fixed authentication/version mode; no accounts, grants or DB information |
 | GET `/`, `/assets/operator.css`, `/assets/operator.js` | Web entry point only; fixed public login shell/assets, no report data |
 | POST `/api/v1/operator/session` | Strict `application/json` object with `username`/`password`; 201 returns an opaque bearer token |
+| GET `/api/v1/operator/assessments` | Web v0.6.16 only; own sorted policy grant IDs, no query/body/SQL/existence check |
 | GET `/api/v1/assessments/{id}/report` | Requires `Authorization: Bearer <token>` and exact read grant; canonical report page |
 | GET `/api/v1/assessments/{id}/report/export` | Web only; exact read grant and mandatory scope fence; complete ZIP |
+| GET `/api/v1/assessments/{id}/report/executive/export` | Web only; same authorization/fence and shared export slot; executive ZIP |
 | DELETE `/api/v1/operator/session` | Revokes that bearer token immediately |
 
 Keep tokens in client process memory; do not put them in URLs, command arguments,
@@ -123,8 +130,9 @@ Account/grant changes require a controlled restart and invalidate all sessions.
 Stop admitting traffic and wait for active requests to finish before restart.
 No signup, password recovery, account mutation endpoint, MFA, persistent audit,
 HA sessions, tenancy or SSO yet. Breached-password screening/public login
-hardening remain release gates. No assessment listing, import, lifecycle update,
-file download, server-side scan or commercial entitlement in this API.
+hardening remain release gates. No PostgreSQL assessment inventory, import,
+lifecycle update, server-side scan or commercial entitlement. The standalone API
+does not offer the Web policy directory or report-download routes.
 
 Do not deploy automatically to the approved Rocky service or expose a LAB HTTP
 listener remotely. The [short R1](../docs/LAB_LOCAL_OPERATOR_R1_v0.6.11.md) starts

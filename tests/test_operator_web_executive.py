@@ -75,7 +75,7 @@ class OperatorWebExecutiveTests(unittest.TestCase):
             self.assertEqual(set(archive.namelist()),verify.NAMES)
             self.assertTrue(all(i.compress_type==zipfile.ZIP_STORED and i.external_attr>>16==0o100600 for i in archive.infolist()))
             doc=json.loads(archive.read('executive.json')); manifest=json.loads(archive.read('manifest.json'))
-            self.assertEqual(manifest['executive_version'],executive.VERSION); self.assertEqual(manifest['delivery_version'],web.VERSION)
+            self.assertEqual(manifest['executive_version'],executive.VERSION); self.assertEqual(manifest['delivery_version'],web.exports.VERSION)
             self.assertEqual(doc['consistency']['data_pages'],6); self.assertTrue(doc['consistency']['terminal_empty_page_verified'])
             expected=executive.summarize(history())
             expected.pop('consistency'); doc.pop('consistency'); self.assertEqual(doc,expected)

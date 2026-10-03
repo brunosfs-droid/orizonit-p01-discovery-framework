@@ -221,6 +221,12 @@ class LocalAuth:
                 raise AccessError('assessment_access_denied', 403)
             return account.operator_id
 
+    def assessment_grants(self, token):
+        """Own policy IDs only; no database inventory or mutable account record."""
+        with self._lock:
+            _, account = self._session(token)
+            return tuple(sorted(account.assessments))
+
     def logout(self, token):
         with self._lock:
             key, _ = self._session(token)

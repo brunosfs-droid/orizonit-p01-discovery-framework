@@ -14,7 +14,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import P01_Operator_API as api
 import P01_Operator_Export as exports
 
-VERSION = '0.6.15'
+VERSION = '0.6.16'
+MAX_DIRECTORY_BYTES = 32768
 EXPORT_PATH = re.compile(r'/api/v1/assessments/([A-Za-z0-9][A-Za-z0-9._-]{0,127})/report/(executive/)?export')
 ASSETS = {'/': ('index.html', 'text/html; charset=utf-8'),
           '/assets/operator.css': ('operator.css', 'text/css; charset=utf-8'),
@@ -75,6 +76,19 @@ class WebHandler(api.OperatorHandler):
         try:
             self._browser_origin()
             path = self._path()
+            if method == 'GET' and path.path == '/api/v1/operator/assessments':
+                self._empty_body()
+                token = self._bearer()
+                grants = self.server.service.auth.assessment_grants(token)
+                if path.query:
+                    raise api.AccessError('http_request_invalid', 400)
+                doc = dict(status='allowed', version=VERSION, source='local_operator_policy',
+                           assessment_existence_checked=False, assessment_ids=list(grants))
+                if len(json.dumps(doc).encode('utf-8')) > MAX_DIRECTORY_BYTES:
+                    raise api.AccessError('operator_request_failed', 503)
+                self.server.service.auth.assessment_grants(token)
+                self._send(200, doc)
+                return
             match = EXPORT_PATH.fullmatch(path.path)
             if match is not None and method == 'GET':
                 self._empty_body()

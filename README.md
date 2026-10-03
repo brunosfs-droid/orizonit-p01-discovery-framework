@@ -10,6 +10,9 @@
 
 ## Product baseline
 
+Operator Web v0.6.16: [selection of own permitted assessments](docs/OPERATOR_ASSESSMENT_SELECTION_v0.6.16.md)
+(CANDIDATE). Session policy IDs only, independent of PostgreSQL availability;
+selection fills the form for an explicit report query. Manual LAB tests remain deferred.
 Operator Web v0.6.15: [executive report download](docs/OPERATOR_WEB_EXECUTIVE_v0.6.15.md)
 (CANDIDATE). Technical download remains compatible with its v0.6.13 file format;
 manual LAB gates remain deferred and historical install guides use their Git pins.
