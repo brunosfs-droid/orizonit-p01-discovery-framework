@@ -10,6 +10,10 @@
 
 ## Product baseline
 
+Operator Web v0.6.17: [executive preview in the Web](docs/OPERATOR_WEB_PREVIEW_v0.6.17.md)
+(CANDIDATE). Complete fenced historical coverage, recorded severities and paginated
+recommendations; the existing technical/executive ZIP formats remain unchanged.
+Development and CI continue independently of postponed manual LAB tests.
 Operator Web v0.6.16: [selection of own permitted assessments](docs/OPERATOR_ASSESSMENT_SELECTION_v0.6.16.md)
 (CANDIDATE). Session policy IDs only, independent of PostgreSQL availability;
 selection fills the form for an explicit report query. Manual LAB tests remain deferred.

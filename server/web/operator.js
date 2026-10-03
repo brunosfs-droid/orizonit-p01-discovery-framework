@@ -3,7 +3,7 @@
   'use strict';
   const el = id => document.getElementById(id);
   let token = '', generation = 0, expiry = null, page = null, selection = null, busy = false;
-  let grants = null;
+  let grants = null, preview = null;
   const pending = new Set();
   const downloads = new Set();
   const messages = {
@@ -19,6 +19,7 @@
   function message(text) { el('message').textContent = text; }
   function clearReport() {
     page = null; selection = null;
+    clearPreview();
     el('report-panel').hidden = true;
     el('evaluations').replaceChildren();
     for (const id of ['report-title', 'lifecycle', 'asset-count', 'evaluation-count', 'finding-count', 'coverage', 'outcomes', 'scope', 'snapshot', 'page-label']) el(id).textContent = '';
@@ -34,6 +35,10 @@
     el('restart-button').disabled = busy || !selection;
     el('download-button').disabled = busy || !page || !selection;
     el('executive-download-button').disabled = busy || !page || !selection;
+    el('preview-button').disabled = busy || !page || !selection;
+    el('preview-hide-button').disabled = busy;
+    el('preview-first-button').disabled = busy || !preview || preview.pagination.offset === 0;
+    el('preview-next-button').disabled = busy || !preview || !preview.pagination.has_more;
   }
   function reset(text = '') {
     generation += 1;
@@ -133,6 +138,115 @@
   function textNode(tag, text) {
     const node = document.createElement(tag); node.textContent = text == null ? '—' : String(text); return node;
   }
+  function clearPreview() {
+    preview = null; el('preview-panel').hidden = true;
+    el('preview-groups').replaceChildren(); el('preview-severities').replaceChildren();
+    for (const id of ['preview-summary','preview-coverage','preview-outcomes','preview-identity','preview-page-label']) el(id).textContent = '';
+    el('preview-empty').hidden = true;
+  }
+  function validatePreview(doc, selected, scope, offset, technical) {
+    const count = n => Number.isInteger(n) && n >= 0 && n <= 10000;
+    const text = s => typeof s === 'string' && s.length > 0 && s.length <= 4096;
+    const object = o => o !== null && typeof o === 'object' && !Array.isArray(o);
+    const sha = s => typeof s === 'string' && /^[0-9a-f]{64}$/.test(s);
+    const c = doc.coverage, i = doc.identity, p = doc.pagination, semantics = doc.semantics;
+    if (doc.status !== 'found' || doc.preview_version !== '0.6.17' || doc.executive_version !== '0.6.14' ||
+        doc.assessment_id !== selected || doc.report_scope_sha256 !== scope || doc.scope_mode !== 'all_persisted_imports' ||
+        !object(doc.lifecycle) || doc.lifecycle.state !== technical.lifecycle.state || doc.lifecycle.revision !== technical.lifecycle.revision ||
+        !object(c) || !['import_count','asset_projected_import_count','analyzed_import_count','credentialed_sources_indexed',
+          'credentialed_sources_evaluated','evaluation_count','pending_asset_import_count','pending_analysis_import_count'].every(k=>count(c[k])) ||
+        !['no_imports','missing_analyses','all_imports_analyzed'].includes(c.projection_status) || !object(c.outcomes) ||
+        !Object.keys(outcomes).every(k=>count(c.outcomes[k])) || Object.keys(outcomes).reduce((n,k)=>n+c.outcomes[k],0) !== c.evaluation_count ||
+        !object(i) || !count(i.central_asset_count) || !count(i.observation_count) || !object(i.decisions) ||
+        !['new_asset','linked','review_required'].every(k=>count(i.decisions[k])) ||
+        Object.values(i.decisions).reduce((n,v)=>n+v,0) !== i.observation_count ||
+        !count(doc.recorded_finding_occurrences) || doc.recorded_finding_occurrences !== c.outcomes.finding ||
+        doc.recorded_finding_occurrences !== technical.recorded_finding_occurrences || c.evaluation_count !== technical.coverage.evaluation_count ||
+        !object(doc.findings_by_recorded_severity) || Object.keys(doc.findings_by_recorded_severity).length > 200 ||
+        !Object.entries(doc.findings_by_recorded_severity).every(([s,n])=>text(s)&&count(n)) ||
+        Object.values(doc.findings_by_recorded_severity).reduce((n,v)=>n+v,0) !== doc.recorded_finding_occurrences ||
+        !Number.isInteger(doc.recommendation_group_count) || doc.recommendation_group_count < 0 || doc.recommendation_group_count > 200 ||
+        !Array.isArray(doc.recommendation_groups) || !object(p) || p.offset !== offset || p.page_size !== 10 ||
+        doc.recommendation_groups.length !== Math.min(10,doc.recommendation_group_count-offset) ||
+        p.has_more !== (offset+doc.recommendation_groups.length<doc.recommendation_group_count) ||
+        p.next_offset !== (p.has_more ? offset+10 : null) || !object(doc.consistency) ||
+        doc.consistency.mode !== 'canonical_report_scope_fence' || doc.consistency.terminal_empty_page_verified !== true ||
+        !count(doc.consistency.data_pages) || !text(doc.consistency.first_snapshot_at_utc) || !text(doc.consistency.last_snapshot_at_utc) ||
+        !object(semantics) || semantics.findings !== 'historical_occurrences' || semantics.lifecycle !== 'administrative' ||
+        semantics.severity !== 'stored_rule_metadata' || semantics.recommendations !== 'stored_catalog_per_rule_and_engine' ||
+        !['source_bytes_revalidated','raw_evidence_included','extracted_evidence_included','current_risk_assessed','occurrence_references_included']
+          .every(k=>semantics[k]===false)) throw new Error('invalid_preview');
+    const ids = new Set();
+    for (const g of doc.recommendation_groups) {
+      if (!object(g) || !/^rec-[0-9a-f]{32}$/.test(g.group_id) || ids.has(g.group_id) || !object(g.rule) ||
+          !['id','version','title','category','severity','recommendation'].every(k=>text(g.rule[k])) ||
+          !object(g.provenance) || !text(g.provenance.policy_version) || !sha(g.provenance.catalog_sha256) || !sha(g.provenance.engine_sha256) ||
+          !['occurrence_count','linked_central_asset_count','occurrences_without_central_asset','occurrences_requiring_identity_review']
+            .every(k=>count(g[k])) || g.occurrence_count < 1 || g.linked_central_asset_count > g.occurrence_count ||
+          g.occurrences_without_central_asset > g.occurrence_count || g.occurrences_requiring_identity_review > g.occurrence_count ||
+          Object.hasOwn(g,'occurrences')) throw new Error('invalid_preview');
+      ids.add(g.group_id);
+    }
+  }
+  function renderPreview(doc) {
+    const c = doc.coverage, i = doc.identity;
+    el('preview-summary').textContent = `${doc.recorded_finding_occurrences} ocorrências históricas · ${doc.recommendation_group_count} grupos de recomendações`;
+    el('preview-coverage').textContent = `${c.evaluation_count} avaliações · ${c.analyzed_import_count} análises / ${c.import_count} imports · ${c.credentialed_sources_evaluated} fontes avaliadas / ${c.credentialed_sources_indexed} indexadas · Pendências: ${c.pending_asset_import_count} de assets, ${c.pending_analysis_import_count} de análise · projeção: ${c.projection_status}`;
+    el('preview-outcomes').textContent = Object.entries(outcomes).map(([key,label])=>`${label}: ${c.outcomes[key]}`).join(' · ');
+    el('preview-identity').textContent = `${i.central_asset_count} assets centrais · ${i.observation_count} observações · ${i.decisions.new_asset} novas, ${i.decisions.linked} vinculadas, ${i.decisions.review_required} requerem revisão de identidade`;
+    el('preview-severities').replaceChildren(...Object.entries(doc.findings_by_recorded_severity).map(([s,n])=>textNode('p',s+' · '+n)));
+    if (!doc.recorded_finding_occurrences) el('preview-severities').append(textNode('p','Sem ocorrências registradas'));
+    el('preview-groups').replaceChildren(...doc.recommendation_groups.map(g=>{
+      const card = document.createElement('article'); card.className = 'recommendation'; card.setAttribute('role','listitem');
+      card.append(textNode('h5',g.rule.id+' — '+g.rule.title),textNode('p',g.rule.recommendation),
+        textNode('p','Severidade registrada: '+g.rule.severity+' · Categoria: '+g.rule.category),
+        textNode('p',`${g.occurrence_count} ocorrências históricas · ${g.linked_central_asset_count} assets vinculados · ${g.occurrences_without_central_asset} ocorrências sem asset central · ${g.occurrences_requiring_identity_review} requerem revisão de identidade`));
+      detail(card,'Regra e proveniência',{rule_version:g.rule.version,group_id:g.group_id,
+        policy_version:g.provenance.policy_version,catalog_sha256:g.provenance.catalog_sha256,engine_sha256:g.provenance.engine_sha256});
+      return card;
+    }));
+    el('preview-empty').hidden = doc.recommendation_groups.length !== 0;
+    el('preview-page-label').textContent = doc.recommendation_group_count ?
+      `Grupos ${doc.pagination.offset+1}–${doc.pagination.offset+doc.recommendation_groups.length} de ${doc.recommendation_group_count}` : '0 grupos registrados';
+    el('preview-panel').hidden = false;
+  }
+  async function readPreview(offset = 0) {
+    if (busy || !token || !page || !selection) return;
+    if (offset && (!preview || preview.pagination.next_offset !== offset)) return;
+    const selected = selection.assessment, technical = page, scope = page.report_scope_sha256, stamp = generation;
+    clearPreview(); busy = true; controls(); message('Preparando resumo executivo…');
+    try {
+      const doc = await request('/api/v1/assessments/'+encodeURIComponent(selected)+'/report/executive?'+
+        new URLSearchParams({expected_scope_sha256:scope,group_offset:String(offset)}), {}, token, async response=>{
+          const length = response.headers.get('Content-Length'), digest = response.headers.get('X-Canca-Executive-Preview-SHA256');
+          if (response.headers.get('Content-Type') !== 'application/json; charset=utf-8' ||
+              response.headers.get('X-Canca-Report-Scope-SHA256') !== scope || !/^[0-9a-f]{64}$/.test(digest||'') ||
+              !/^[1-9][0-9]{0,6}$/.test(length||'') || Number(length)>1024**2 || !response.body) throw new Error('invalid_preview');
+          const bytes = new Uint8Array(Number(length)), reader = response.body.getReader(); let used = 0;
+          while (true) {
+            const {done,value} = await reader.read(); if (done) break;
+            if (used+value.byteLength>bytes.byteLength) throw new Error('invalid_preview');
+            bytes.set(value,used); used+=value.byteLength;
+          }
+          if (used!==bytes.byteLength) throw new Error('invalid_preview');
+          const actual = [...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(b=>b.toString(16).padStart(2,'0')).join('');
+          if (actual!==digest) throw new Error('invalid_preview');
+          return JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
+        },100000);
+      if (stamp!==generation) return;
+      validatePreview(doc,selected,scope,offset,technical); renderPreview(doc); preview = doc;
+      message('Resumo executivo carregado.'); el('preview-title').focus();
+    } catch (error) {
+      if (stamp!==generation) return;
+      if (error.status===401) reset(messages[401]);
+      else {
+        if ([403,404,409].includes(error.status)) clearReport(); else clearPreview();
+        message(error.status===413 ? 'O resumo excede o limite de visualização de 1 MiB. Use o download executivo.' :
+          error.code==='export_busy' ? 'Outra síntese ou exportação está em andamento. Aguarde e tente novamente.' :
+          messages[error.status] || 'Não foi possível carregar o resumo executivo. Tente novamente.');
+      }
+    } finally { if (stamp===generation) { busy=false; controls(); } }
+  }
   function clearAssessments(text = 'Entre para carregar a lista.') {
     grants = null;
     const placeholder = textNode('option', 'Selecione um assessment'); placeholder.value = '';
@@ -219,6 +333,7 @@
       query.set('after_ordinal', String(previous.next_cursor.after_ordinal));
       query.set('expected_scope_sha256', previous.report_scope_sha256);
     }
+    if (!continuation) clearPreview();
     const stamp = generation; busy = true; controls(); message('Consultando relatório…');
     try {
       const doc = await request('/api/v1/assessments/' + encodeURIComponent(selected.assessment) + '/report?' + query);
@@ -277,6 +392,10 @@
   el('next-button').addEventListener('click', () => read(true));
   el('download-button').addEventListener('click', () => download('technical'));
   el('executive-download-button').addEventListener('click', () => download('executive'));
+  el('preview-button').addEventListener('click', () => readPreview());
+  el('preview-next-button').addEventListener('click', () => { if (preview) return readPreview(preview.pagination.next_offset); });
+  el('preview-first-button').addEventListener('click', () => readPreview());
+  el('preview-hide-button').addEventListener('click', () => { if (!busy) { clearPreview(); controls(); el('preview-button').focus(); } });
   el('restart-button').addEventListener('click', () => {
     if (busy || !selection) return;
     el('assessment').value = selection.assessment; el('page-size').value = selection.limit; read();

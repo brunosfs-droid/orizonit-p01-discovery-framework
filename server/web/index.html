@@ -8,7 +8,7 @@
   <script src="/assets/operator.js" defer></script>
 </head>
 <body>
-  <header class="topbar"><a class="brand" href="/" aria-label="Cancã, início">Cancã<span>Community</span></a><span class="release">Product Alpha · v0.6.16</span></header>
+  <header class="topbar"><a class="brand" href="/" aria-label="Cancã, início">Cancã<span>Community</span></a><span class="release">Product Alpha · v0.6.17</span></header>
   <main>
     <div class="intro"><p class="eyebrow">Discovery &amp; Assessment</p><h1>Relatórios do ambiente</h1><p>Consulte os resultados registrados para o seu assessment.</p></div>
     <noscript>Ative JavaScript para entrar e consultar os relatórios.</noscript>
@@ -38,6 +38,16 @@
         <div class="report-heading"><div><p class="eyebrow">Relatório consolidado</p><h2 id="report-title" tabindex="-1"></h2></div><span id="lifecycle" class="badge"></span></div>
         <div class="metrics"><div class="card"><span>Assets registrados</span><strong id="asset-count"></strong></div><div class="card"><span>Avaliações registradas</span><strong id="evaluation-count"></strong></div><div class="card"><span>Findings históricos</span><strong id="finding-count"></strong></div></div>
         <p class="notice">São resultados históricos. Um assessment concluído não encerra findings. Esta consulta não revalida os arquivos de evidência.</p>
+        <div class="report-export"><p>Consulte cobertura, severidades e recomendações registradas.</p><button id="preview-button" class="secondary" type="button">Ver resumo executivo</button></div>
+        <section id="preview-panel" class="card executive-preview" hidden aria-labelledby="preview-title">
+          <div class="executive-heading"><h3 id="preview-title" tabindex="-1">Resumo executivo histórico</h3><button id="preview-hide-button" class="secondary" type="button">Ocultar resumo</button></div>
+          <p id="preview-summary"></p><p id="preview-coverage"></p><p id="preview-outcomes"></p><p id="preview-identity"></p>
+          <h4>Severidades registradas</h4><div id="preview-severities" class="severity-list" aria-label="Ocorrências históricas por severidade"></div>
+          <p class="notice">A cobertura corresponde aos imports persistidos. Severidades vêm das regras históricas. Não há avaliação de risco atual nem fechamento automático de findings.</p>
+          <h4>Recomendações registradas</h4><div id="preview-groups" role="list"></div>
+          <p id="preview-empty" hidden>Não há recomendações derivadas de findings registrados. Isso não comprova segurança do ambiente.</p>
+          <div class="executive-pagination"><span id="preview-page-label"></span><div><button id="preview-first-button" class="secondary" type="button">Primeiras recomendações</button><button id="preview-next-button" type="button">Próximas recomendações</button></div></div>
+        </section>
         <div class="report-export"><p>JSON e Markdown com todas as avaliações registradas.</p><button id="download-button" class="secondary" type="button">Baixar relatório completo (ZIP)</button></div>
         <div class="report-export"><p>Resumo de cobertura, findings históricos e recomendações.</p><button id="executive-download-button" class="secondary" type="button">Baixar relatório executivo (ZIP)</button></div>
         <div class="card coverage"><h3>Cobertura registrada</h3><p id="coverage"></p><p id="outcomes"></p><details><summary>Identificação do escopo consultado</summary><p id="scope" class="mono"></p><p id="snapshot"></p></details></div>

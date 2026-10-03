@@ -14,6 +14,7 @@ class Element {
   append(...nodes) { this.children.push(...nodes); }
   replaceChildren(...nodes) { this._text = ''; this.children = nodes; }
   addEventListener(type, handler) { this.handlers[type] = handler; }
+  setAttribute(key, value) { this[key] = value; }
   focus() { this.focused = true; }
   click() { this.onClick?.(this); }
   remove() { this.removed = true; }
@@ -29,7 +30,7 @@ function client() {
       const node = new Element(); if (tag === 'a') node.onClick = link => saved.push({filename:link.download, url:link.href}); return node;
     }},
     window: {addEventListener: (name, handler) => { events[name] = handler; }},
-    URLSearchParams, AbortController,
+    URLSearchParams, AbortController, TextDecoder,
     Blob, crypto: webcrypto,
     URL: {createObjectURL: blob => {const url='blob:synthetic-'+urls.size; urls.set(url,blob); return url;},
       revokeObjectURL: url => urls.delete(url)},
@@ -78,6 +79,33 @@ function archive(overrides = {}) {
     'X-Canca-Report-Scope-SHA256':'a'.repeat(64), 'X-Canca-Export-SHA256':createHash('sha256').update(bytes).digest('hex'), ...overrides};
   return {ok:true,status:200,headers:{get:key=>headers[key]??null},
     body:new ReadableStream({start(controller) {controller.enqueue(bytes); controller.close();}})};
+}
+function previewDoc(total = 2, offset = 0) {
+  const groups = Array.from({length:total},(_,index)=>({group_id:'rec-'+String(index+1).padStart(32,'0'),
+    rule:{id:'WIN-AD-001',version:'0.6.4',title:malicious,category:'Windows',severity:'High',recommendation:malicious},
+    provenance:{policy_version:'0.6.4',catalog_sha256:'c'.repeat(64),engine_sha256:'e'.repeat(64)},
+    occurrence_count:1,linked_central_asset_count:1,occurrences_without_central_asset:0,occurrences_requiring_identity_review:0}));
+  const imports = total > 2 ? total/2 : 2, evaluations = total > 2 ? total : 4;
+  return {status:'found',preview_version:'0.6.17',executive_version:'0.6.14',assessment_id:'LAB-001',
+    report_scope_sha256:'a'.repeat(64),scope_mode:'all_persisted_imports',lifecycle:{state:'completed',revision:4},
+    coverage:{import_count:imports,asset_projected_import_count:imports,analyzed_import_count:imports,
+      credentialed_sources_indexed:imports,credentialed_sources_evaluated:imports,evaluation_count:evaluations,
+      pending_asset_import_count:0,pending_analysis_import_count:0,projection_status:total?'all_imports_analyzed':'no_imports',
+      outcomes:{finding:total,no_finding:evaluations-total,insufficient_evidence:0,not_applicable:0,not_supported:0}},
+    identity:{central_asset_count:1,observation_count:imports,decisions:{new_asset:1,linked:imports-1,review_required:0}},
+    recorded_finding_occurrences:total,findings_by_recorded_severity:total?{High:total}:{},recommendation_group_count:total,
+    recommendation_groups:groups.slice(offset,offset+10),pagination:{offset,page_size:10,has_more:offset+10<total,next_offset:offset+10<total?offset+10:null},
+    consistency:{mode:'canonical_report_scope_fence',terminal_empty_page_verified:true,data_pages:1,
+      first_snapshot_at_utc:'2026-10-03T03:00:00Z',last_snapshot_at_utc:'2026-10-03T03:00:00Z'},
+    semantics:{findings:'historical_occurrences',lifecycle:'administrative',severity:'stored_rule_metadata',
+      recommendations:'stored_catalog_per_rule_and_engine',source_bytes_revalidated:false,raw_evidence_included:false,
+      extracted_evidence_included:false,current_risk_assessed:false,occurrence_references_included:false}};
+}
+function previewResponse(doc = previewDoc(), overrides = {}) {
+  const bytes=Buffer.from(JSON.stringify(doc));
+  const headers={'Content-Length':String(bytes.length),'Content-Type':'application/json; charset=utf-8',
+    'X-Canca-Report-Scope-SHA256':'a'.repeat(64),'X-Canca-Executive-Preview-SHA256':createHash('sha256').update(bytes).digest('hex'),...overrides};
+  return {ok:true,status:200,headers:{get:key=>headers[key]??null},body:new ReadableStream({start(controller){controller.enqueue(bytes);controller.close();}})};
 }
 (async () => {
   // Login failure clears the password; no bearer sent to the login endpoint.
@@ -238,5 +266,74 @@ function archive(overrides = {}) {
       {'Content-Disposition':'attachment; filename="canca-LAB-001-executive.zip"'} : {})); await downloading;
     assert.equal(c.saved.length,0); assert.equal(c.urls.size,0); assert.equal(c.element('workspace').hidden,true);
   }
-  console.log('OPERATOR WEB CLIENT PASS — 15 behavioral groups');
+  // Executive preview uses the displayed scope and only text; hide clears its data.
+  c=client(); await login(c); await read(c); c.element('assessment').value='LAB-OTHER';
+  c.replies.push(previewResponse()); await c.element('preview-button').fire('click');
+  const previewURL=new URL(c.calls.at(-1).url,'http://localhost');
+  assert.equal(previewURL.pathname,'/api/v1/assessments/LAB-001/report/executive');
+  assert.equal(previewURL.searchParams.get('expected_scope_sha256'),'a'.repeat(64));
+  assert.equal(previewURL.searchParams.get('group_offset'),'0'); assert.equal(previewURL.searchParams.has('after_ordinal'),false);
+  assert.equal(c.element('preview-panel').hidden,false); assert.equal(c.element('preview-groups').children.length,2);
+  assert.ok(c.element('preview-groups').textContent.includes(malicious)); assert.equal(c.element('preview-title').focused,true);
+  assert.match(c.element('preview-summary').textContent,/2 ocorrências históricas/);
+  assert.equal(c.element('report-panel').hidden,false); c.element('preview-hide-button').fire('click');
+  assert.equal(c.element('preview-panel').hidden,true); assert.equal(c.element('preview-groups').children.length,0);
+  assert.equal(c.element('preview-summary').textContent,''); assert.equal(c.element('preview-button').focused,true);
+  // Invalid bytes/semantics/group limits never render a partial executive view.
+  const badDoc=previewDoc(); badDoc.semantics.current_risk_assessed=true;
+  const rawRefs=previewDoc(); rawRefs.recommendation_groups[0].occurrences=[{finding_id:'SECRET'}];
+  const oversized=previewDoc(); oversized.recommendation_groups[0].rule.title='x'.repeat(4097);
+  const badPages=previewDoc(); badPages.pagination.next_offset=10;
+  for (const reply of [previewResponse(previewDoc(),{'X-Canca-Executive-Preview-SHA256':'0'.repeat(64)}),
+      previewResponse(previewDoc(),{'Content-Type':'text/html'}), previewResponse(previewDoc(),{'Content-Length':'1048577'}),
+      previewResponse(previewDoc(),{'Content-Length':'1'}),previewResponse(previewDoc(),{'X-Canca-Report-Scope-SHA256':'b'.repeat(64)}),
+      previewResponse(badDoc),previewResponse(rawRefs),previewResponse(oversized),previewResponse(badPages),response(413,{}),response(429,{error_code:'export_busy'})]) {
+    c=client(); await login(c); await read(c); c.replies.push(reply); await c.element('preview-button').fire('click');
+    assert.equal(c.element('preview-panel').hidden,true); assert.equal(c.element('preview-groups').children.length,0);
+    assert.equal(c.element('report-panel').hidden,false); assert.equal(c.element('download-button').disabled,false);
+    assert.equal(c.element('executive-download-button').disabled,false);
+  }
+  // Group pagination is independent of technical pagination, and shares the client busy guard.
+  c=client(); await login(c); const many=report({recorded_finding_occurrences:12,
+    coverage:{...report().coverage,evaluation_count:12,outcomes:{...report().coverage.outcomes,finding:12,no_finding:0}}});
+  await read(c,many); c.replies.push(previewResponse(previewDoc(12))); await c.element('preview-button').fire('click');
+  assert.equal(c.element('preview-groups').children.length,10); assert.equal(c.element('preview-next-button').disabled,false);
+  let previewRelease; c.replies.push(()=>new Promise(resolve=>{previewRelease=resolve;}));
+  const previewPending=c.element('preview-next-button').fire('click'); await tick();
+  assert.equal(c.element('download-button').disabled,true); assert.equal(c.element('executive-download-button').disabled,true);
+  assert.equal(c.element('assessment-selector').disabled,true); assert.equal(c.element('report-button').disabled,true);
+  const beforePreview=c.calls.length; await c.element('download-button').fire('click'); assert.equal(c.calls.length,beforePreview);
+  assert.equal(new URL(c.calls.at(-1).url,'http://localhost').searchParams.get('group_offset'),'10');
+  previewRelease(previewResponse(previewDoc(12,10))); await previewPending;
+  assert.equal(c.element('preview-groups').children.length,2); assert.match(c.element('preview-page-label').textContent,/11–12 de 12/);
+  assert.equal(c.element('preview-next-button').disabled,true); assert.equal(c.element('preview-first-button').disabled,false);
+  c.replies.push(previewResponse(previewDoc(12))); await c.element('preview-first-button').fire('click');
+  assert.equal(c.element('preview-groups').children.length,10);
+  c.replies.push(response(200,many)); c.element('next-button').fire('click'); await tick();
+  assert.equal(c.element('preview-panel').hidden,false);
+  c.replies.push(response(200,many)); c.element('restart-button').fire('click'); await tick();
+  assert.equal(c.element('preview-panel').hidden,true);
+  // Access/scope failures clear both views; logout/expiry suppress a pending preview across sessions.
+  for (const code of [403,404,409]) {
+    c=client(); await login(c); await read(c); c.replies.push(response(code,{})); await c.element('preview-button').fire('click');
+    assert.equal(c.element('report-panel').hidden,true); assert.equal(c.element('preview-panel').hidden,true);
+  }
+  for (const expire of [false,true]) {
+    c=client(); await login(c); await read(c); let releasePreview;
+    c.replies.push(()=>new Promise(resolve=>{releasePreview=resolve;})); const loading=c.element('preview-button').fire('click'); await tick();
+    const signal=c.calls.at(-1).options.signal;
+    if (expire) [...c.timers.values()].find(x=>x.delay===900000).handler();
+    else {c.replies.push(response(200,{status:'logged_out'})); await c.element('logout-button').fire('click');}
+    assert.equal(signal.aborted,true); await login(c,directory({assessment_ids:['NEW-ACCOUNT']}));
+    releasePreview(previewResponse()); await loading;
+    assert.equal(c.element('preview-panel').hidden,true); assert.equal(c.element('preview-groups').children.length,0);
+    assert.equal(c.element('report-panel').hidden,true);
+  }
+  // Zero findings remain a historical coverage statement; selection clears an existing preview.
+  c=client(); await login(c); await read(c,report({recorded_finding_occurrences:0}));
+  c.replies.push(previewResponse(previewDoc(0))); await c.element('preview-button').fire('click');
+  assert.equal(c.element('preview-empty').hidden,false); assert.match(c.element('preview-severities').textContent,/Sem ocorrências/);
+  c.element('assessment-selector').value='LAB-MISSING'; c.element('assessment-selector').fire('change');
+  assert.equal(c.element('preview-panel').hidden,true); assert.equal(c.element('preview-summary').textContent,'');
+  console.log('OPERATOR WEB CLIENT PASS — 20 behavioral groups');
 })().catch(error => { console.error(error); process.exitCode = 1; });

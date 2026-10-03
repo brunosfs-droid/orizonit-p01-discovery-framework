@@ -26,6 +26,15 @@ Fonte `0cbba0c2742b4c10d59c993e65680c208de98c48` qualificada em oito runs / 16 j
 incluindo 186 casos em cada PostgreSQL 16/17 e Chromium desktop/mobile;
 [registro e limites](validation/OPERATOR_ASSESSMENT_SELECTION_CI_v0.6.16.md).
 
+v0.6.17 acrescenta [resumo executivo na própria Web](OPERATOR_WEB_PREVIEW_v0.6.17.md):
+cobertura completa do escopo exibido, severidades históricas e recomendações em
+páginas de dez grupos, com proveniência. Usa a síntese executiva v0.6.14 e um slot
+compartilhado com os dois downloads. Nenhum formato ZIP ou guia histórico muda.
+CI sintético/PostgreSQL/Chromium segue independente; nenhum novo passo manual hoje.
+Fonte `d2947213df84cdb9896ee193c421970dec39a08f` qualificada em oito runs / 16 jobs:
+187 casos em cada PostgreSQL 16/17, Chromium a 1280/390 px e ZIPs preservados.
+[Registro de qualificação](validation/OPERATOR_WEB_PREVIEW_CI_v0.6.17.md).
+
 O exportador funcional está **LAB VALIDATED no R1 sintético Rocky**. As cinco
 capturas 014007/014025/014138/014149/014247 demonstram instalação corrigida,
 duas respostas `exported`, verificação PASS e exportação da sessão `true`.

@@ -13,9 +13,12 @@ from urllib.parse import parse_qsl, urlsplit
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import P01_Operator_API as api
 import P01_Operator_Export as exports
+import P01_Operator_Preview as previews
 
-VERSION = '0.6.16'
+VERSION = '0.6.17'
+DIRECTORY_VERSION = '0.6.16'
 MAX_DIRECTORY_BYTES = 32768
+PREVIEW_PATH = re.compile(r'/api/v1/assessments/([A-Za-z0-9][A-Za-z0-9._-]{0,127})/report/executive')
 EXPORT_PATH = re.compile(r'/api/v1/assessments/([A-Za-z0-9][A-Za-z0-9._-]{0,127})/report/(executive/)?export')
 ASSETS = {'/': ('index.html', 'text/html; charset=utf-8'),
           '/assets/operator.css': ('operator.css', 'text/css; charset=utf-8'),
@@ -82,12 +85,36 @@ class WebHandler(api.OperatorHandler):
                 grants = self.server.service.auth.assessment_grants(token)
                 if path.query:
                     raise api.AccessError('http_request_invalid', 400)
-                doc = dict(status='allowed', version=VERSION, source='local_operator_policy',
+                doc = dict(status='allowed', version=DIRECTORY_VERSION, source='local_operator_policy',
                            assessment_existence_checked=False, assessment_ids=list(grants))
                 if len(json.dumps(doc).encode('utf-8')) > MAX_DIRECTORY_BYTES:
                     raise api.AccessError('operator_request_failed', 503)
                 self.server.service.auth.assessment_grants(token)
                 self._send(200, doc)
+                return
+            preview = PREVIEW_PATH.fullmatch(path.path)
+            if method == 'GET' and preview is not None:
+                self._empty_body()
+                token = self._bearer(); assessment = preview[1]
+                self.server.service.auth.require(token, assessment)
+                try:
+                    pairs = parse_qsl(path.query, keep_blank_values=True, strict_parsing=True, max_num_fields=2)
+                    values = dict(pairs)
+                    if (len(values) != len(pairs) or 'expected_scope_sha256' not in values
+                            or set(values) - {'expected_scope_sha256', 'group_offset'}
+                            or not re.fullmatch(r'0|[1-9][0-9]{0,2}', values.get('group_offset', '0'))):
+                        raise ValueError('invalid preview query')
+                    scope = values['expected_scope_sha256']; offset = int(values.get('group_offset', '0'))
+                    api.report.validate_query(assessment, expected_scope_sha256=scope)
+                    previews.validate_offset(offset)
+                except (ValueError, api.report.pg.PersistenceError):
+                    raise api.AccessError('report_input_invalid', 400) from None
+                with self.server.executive_previews.build(token, assessment, scope, offset) as (raw, checksum):
+                    self.send_response(200)
+                    self.send_header('X-Canca-Report-Scope-SHA256', scope)
+                    self.send_header('X-Canca-Executive-Preview-SHA256', checksum)
+                    self._asset_headers(raw, 'application/json; charset=utf-8')
+                    self.wfile.write(raw)
                 return
             match = EXPORT_PATH.fullmatch(path.path)
             if match is not None and method == 'GET':
@@ -159,6 +186,7 @@ def create_server(policy_path, host='127.0.0.1', port=8878, *, tls_cert=None, tl
     server = api.create_server(policy_path, host, port, tls_cert=tls_cert, tls_key=tls_key)
     server.web_assets = assets
     server.report_exports = exports.ExportDelivery(server.service.auth)
+    server.executive_previews = previews.ExecutivePreview(server.report_exports)
     server.RequestHandlerClass = WebHandler
     return server
 

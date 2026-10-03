@@ -77,7 +77,7 @@ class OperatorAssessmentHTTPTests(unittest.TestCase):
         with patch.object(web.api.report.pg, 'open_connection', side_effect=AssertionError('SQL must not run')) as connect:
             status, response_headers, raw = self.request('GET', ROUTE, headers=headers)
             self.assertEqual(status, 200)
-            self.assertEqual(json.loads(raw), dict(status='allowed', version=web.VERSION,
+            self.assertEqual(json.loads(raw), dict(status='allowed', version=web.DIRECTORY_VERSION,
                 source='local_operator_policy', assessment_existence_checked=False, assessment_ids=IDS))
             self.assertEqual(int(response_headers['Content-Length']), len(raw))
             self.assertLess(len(raw), web.MAX_DIRECTORY_BYTES)

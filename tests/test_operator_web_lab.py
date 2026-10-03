@@ -69,7 +69,7 @@ class OperatorWebExportLabTests(OperatorWebLabTests):
 
     def test_wrong_web_revision_fails_before_snapshot_password_and_listener(self):
         lab=self.LAB
-        for version in ('0.6.12', '0.6.15', '0.6.16'):
+        for version in ('0.6.12', '0.6.15', '0.6.16', '0.6.17'):
             with patch.object(lab.web,'VERSION',version), patch.object(lab.lab,'snapshot') as snapshot, \
                     patch.object(lab.getpass,'getpass') as prompt, redirect_stdout(io.StringIO()):
                 self.assertEqual(lab.cli(),2)

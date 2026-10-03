@@ -28,28 +28,38 @@ class ExportDelivery:
         self._slot = threading.BoundedSemaphore(1)
 
     @contextmanager
-    def build(self, token, assessment, expected_scope_sha256, limit=100, *, kind='technical'):
+    def snapshot(self, token, assessment, expected_scope_sha256, limit=100):
         # Authorization and query validation precede slot acquisition and any SQL.
         self.auth.require(token, assessment)
         export.report.validate_query(assessment, limit=limit,
                                      expected_scope_sha256=expected_scope_sha256)
-        if expected_scope_sha256 is None or not isinstance(kind, str) or kind not in {'technical', 'executive'}:
+        if expected_scope_sha256 is None:
             raise AccessError('report_input_invalid', 400)
         if not self._slot.acquire(blocking=False):
             raise AccessError('export_busy', 429)
-        deadline = time.monotonic() + MAX_SECONDS
-
-        def checkpoint():
-            self.auth.require(token, assessment)
-            if time.monotonic() > deadline:
-                raise AccessError('export_timeout', 503)
-
         try:
+            deadline = time.monotonic() + MAX_SECONDS
+
+            def checkpoint():
+                self.auth.require(token, assessment)
+                if time.monotonic() > deadline:
+                    raise AccessError('export_timeout', 503)
+
             checkpoint()
             with export.pg.open_connection() as conn:
                 doc = export.collect(conn, assessment, limit,
                     expected_scope_sha256=expected_scope_sha256, checkpoint=checkpoint)
             checkpoint()
+            yield doc, checkpoint
+        finally:
+            self._slot.release()
+
+    @contextmanager
+    def build(self, token, assessment, expected_scope_sha256, limit=100, *, kind='technical'):
+        self.auth.require(token, assessment)
+        if not isinstance(kind, str) or kind not in {'technical', 'executive'}:
+            raise AccessError('report_input_invalid', 400)
+        with self.snapshot(token, assessment, expected_scope_sha256, limit) as (doc, checkpoint):
             if kind == 'executive':
                 doc = executive.summarize(doc)
                 checkpoint()
@@ -83,5 +93,3 @@ class ExportDelivery:
             checkpoint()
             # Retain the slot while the HTTP handler sends the archive.
             yield raw, checksum
-        finally:
-            self._slot.release()
