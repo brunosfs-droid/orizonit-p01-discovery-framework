@@ -1,15 +1,14 @@
 Cancã — Open Infrastructure Assessment & Intelligence Platform
 Copyright (C) 2026 Orizon IT.
 
-Project license: GNU Affero General Public License version 3 (AGPLv3).
-SPDX-License-Identifier: AGPL-3.0-only
+Licensed under the Apache License, Version 2.0.
+SPDX-License-Identifier: Apache-2.0
+See LICENSE for the complete terms.
 
 Cancã is the official product name of Orizon IT Product 01 (P01).
+This NOTICE records attribution and does not modify the Apache License.
+The license does not grant permission to use Orizon IT or Cancã trademarks,
+except for the reasonable and customary uses described in Section 6.
 
-The AGPLv3 applies to the software source code and other materials explicitly
-distributed under that license. Orizon IT trademarks, the Cancã name as a
-brand, logos, visual identity and other distinctive brand assets are not
-granted for unrestricted trademark use by the software license.
-
-External contributions will require acceptance of the Orizon IT Contributor
-License Agreement (CLA) once the public contribution process is opened.
+Third-party components retain their own licenses and notices.
+See docs/DEPENDENCIES.md and the license inventory for each release.

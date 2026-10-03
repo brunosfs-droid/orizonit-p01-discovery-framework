@@ -56,3 +56,19 @@ A PR should state:
 - rollback considerations when applicable.
 
 Do not include real customer output in issues or pull requests.
+
+## License and provenance
+
+Intentionally submitted contributions to the Community core are under
+Apache-2.0, subject to Section 5 and any applicable separate agreement.
+Contributors must have the rights to submit their work, identify third-party
+code and preserve its original license and attribution.
+
+Orizon IT retains the planned CLA process for public contributions. The final
+CLA and operational acceptance flow remain a Community Beta prerequisite; this
+document does not assert that contributors have already signed an agreement.
+No CLA acceptance is required merely to run the Community software.
+
+Do not import proprietary commercial module code into this repository without
+explicit authorization and a compatible license grant. See
+[licensing and editions](docs/LICENSING_AND_EDITIONS.md).
