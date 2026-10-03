@@ -6,7 +6,7 @@ Approved by Bruno Feitoza on 02/10/2026, America/Sao_Paulo.
 
 - The Cancã-owned Community source is licensed under **Apache-2.0**.
 - The first stable release is **Cancã Community**.
-- The official Community distribution may have feature and item limits, with
+- The official Community distribution will have feature and item limits, with
   exact values/counting semantics still to be defined.
 - A commercial edition follows development and qualification of specific
   modules, with no commercial item quota.

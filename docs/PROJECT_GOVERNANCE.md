@@ -68,7 +68,7 @@ The open-source project is intended to support a commercial ecosystem around:
 
 The approved distribution strategy is Community first, with its first stable
 release preceding a commercial edition with specific modules and no commercial
-item quota. The official Community distribution may have documented feature and
+item quota. The official Community distribution will have documented feature and
 item limits. Exact values, counting semantics, prices and module allocation
 remain undecided; no runtime quota is introduced by this decision.
 
