@@ -448,3 +448,20 @@ Follow-up: após fechar v0.5e, iniciar v0.5f Optional Installed Service/Agent e 
 - Somente canca_p01_restore_r1; fontes/12 tabelas comparadas contra snapshot original, sem migração nova.
 - Qualificação CI PostgreSQL 16/17 e LAB são gates distintos; próximo produto: exportação consolidada somente leitura.
 - [Roteiro](LAB_POSTGRESQL_LIFECYCLE_R1_v0.6.8.md) · [ADR 0019](ADR_0019_LAB_Lifecycle_Pagination_v0.6.8.md).
+
+## v0.6.9 — exportação consolidada somente leitura
+
+- JSON/Markdown completos com hashes, diretório privado e paginação fenced.
+- Código integrado; PR #106 mantém URLs persistidas inertes no Markdown.
+- PR #107 corrige inventário de instalação para aceitar a pasta criada pelo Git.
+- Aceite Rocky permanece CANDIDATE; capturas 003724/003738/003753 repetiram o bloco antigo.
+- [Guia](REPORT_EXPORT_v0.6.9.md) · [LAB](LAB_POSTGRESQL_EXPORT_R1_v0.6.9.md).
+
+## v0.6.10 — autorização de node por assessment (CANDIDATE)
+
+- Política opt-in no servidor mTLS: grant exato de envio e/ou consulta por node/assessment.
+- Negações antes de importer/index; node desconhecido bloqueado antes do body.
+- Política limitada/imutável, startup validado e restart controlado para revogação.
+- Preserva binding mTLS e propriedade do bundle; sem migração ou principal de usuário.
+- Próxima fronteira: autenticação/autorização de operadores na API/Web.
+- [Guia](NODE_AUTHORIZATION_v0.6.10.md) · [ADR 0021](ADR_0021_Node_Assessment_Authorization_v0.6.10.md).

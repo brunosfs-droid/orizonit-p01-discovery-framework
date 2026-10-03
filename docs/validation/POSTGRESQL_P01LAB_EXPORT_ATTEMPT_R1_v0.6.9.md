@@ -44,3 +44,19 @@ Não repetir restore, lifecycle, AUTH/FULL/POST ou serviços. A falha de instala
 não invalida os aceites anteriores e não prova falha da consulta ao banco.
 Aceite requer `EXPORTADOR OK`, dois JSONs `exported`, `POSTGRESQL LAB EXPORT PASS`
 e `Exportacao validada nesta sessao: true`, além da revisão de apresentação.
+
+## Capturas adicionais 003724/003738/003753
+
+Recebidas em 02/10/2026 (-03). A captura 003724 mostra novo envio de um TAR
+da revisão a70af461c9d35dd97aaa6810995c920e4d77df22, anterior ao escape de URLs
+do PR #106. A captura 003753 mostra o mesmo SHA256 do TAR no Rocky e a execução
+do bloco antigo `assert len(members) == 1`; ele termina em `inventario do tar
+diferente` e `instalacao nao validada`. A captura 003738 contém comandos do
+bloco de exportação; 003724 termina com `execute a instalacao validada da etapa
+1 primeiro`. Não há JSON `exported` nem PASS demonstrado.
+
+Gate permanece CANDIDATE. A correção de inventário foi integrada pela PR #107,
+merge 6e040af501470d80d76ede889f29a00ade4167f1. Usar as etapas 1 e 2 do
+roteiro atual: o TAR deve partir de d1b32cf6d6185e87fc4a08abb57654c29d8e8c4b,
+e o bloco Rocky aceita somente o arquivo esperado mais a pasta opcional.
+Preservar o deployment e o engine original; não repetir restore/lifecycle.

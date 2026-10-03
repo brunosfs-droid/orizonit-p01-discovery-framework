@@ -81,7 +81,10 @@ aceite de exportação no Rocky ainda depende do teste somente leitura dessa ent
 PR #106 integrado (d1b32cf6d6185e87fc4a08abb57654c29d8e8c4b): texto persistido
 inclui escape de URLs simples para evitar autolinks no Markdown. Não há mudança
 no banco, nas regras ou no formato JSON. O roteiro novo usa essa revisão qualificada.
-Próxima frente: definir autenticação/autorização para a superfície API/Web; ainda
-não há principal de produto, tenancy ou RBAC implementados. Roles/TLS continuam gates próprios.
+v0.6.10 adiciona uma política opt-in de node/assessment ao mTLS da ingestão,
+com grants independentes para envio/consulta e negação antes do importer/index.
+O principal continua sendo o Discovery Node; autenticação de operadores na
+API/Web, tenancy e RBAC de usuários ainda não estão implementados.
+[Guia e limites](NODE_AUTHORIZATION_v0.6.10.md). Roles/TLS continuam gates próprios.
 
 [Relatório v0.6.5](ASSESSMENT_REPORT_v0.6.5.md) · [Backup/restore CI v0.6.6](BACKUP_RESTORE_v0.6.6.md).

@@ -119,3 +119,13 @@ Remote/non-loopback use is permitted only in `mtls` mode.
 The first DNS Subject Alternative Name of the client certificate is used as the node identity. Common Name is a compatibility fallback only when no DNS SAN exists.
 
 The server also verifies that the bundle manifest `node_id` matches the authenticated node.
+
+## v0.6.10 — explicit assessment grants
+
+For mTLS deployments requiring assessment isolation, add `--node-policy` with a
+validated node/assessment grant file. `bundle:ingest` and `bundle:read` are
+independent; absent grants deny access before import/index or receipt output.
+The certificate/header/bundle identity and ownership checks remain mandatory.
+Policy changes require a controlled restart. Without this opt-in flag, health
+reports `authorization_mode: transport_only`; legacy transport is not assessment
+authorization. [Configuration and limits](../docs/NODE_AUTHORIZATION_v0.6.10.md).
