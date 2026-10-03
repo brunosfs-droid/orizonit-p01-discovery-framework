@@ -22,6 +22,9 @@ v0.6.16 acrescenta [seleção dos assessments permitidos](OPERATOR_ASSESSMENT_SE
 na Web. A lista lê apenas os grants da sessão e não depende de PostgreSQL;
 selecionar preenche o formulário, com consulta explícita e autorização preservada.
 Não cria assessments nem qualifica downloads no LAB. Nenhuma nova ação manual hoje.
+Fonte `0cbba0c2742b4c10d59c993e65680c208de98c48` qualificada em oito runs / 16 jobs,
+incluindo 186 casos em cada PostgreSQL 16/17 e Chromium desktop/mobile;
+[registro e limites](validation/OPERATOR_ASSESSMENT_SELECTION_CI_v0.6.16.md).
 
 O exportador funcional está **LAB VALIDATED no R1 sintético Rocky**. As cinco
 capturas 014007/014025/014138/014149/014247 demonstram instalação corrigida,
