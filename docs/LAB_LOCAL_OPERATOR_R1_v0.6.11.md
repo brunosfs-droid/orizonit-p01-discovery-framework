@@ -18,7 +18,7 @@ PowerShell no repositório `C:\GitHub\orizonit-p01-discovery-framework`:
 ```powershell
 git fetch origin
 if ($LASTEXITCODE -ne 0) { throw 'PARAR: git fetch falhou.' }
-$P01OperatorRelease = 'origin/feature/local-operator-api-v0.6.11'
+$P01OperatorRelease = '84437c8e6f0e6aa6976279ae26e1866cd123371a'
 git archive --format=tar --output "$env:TEMP\canca-operator-v0.6.11.tar" $P01OperatorRelease server/P01_Operator_Auth.py server/P01_Operator_API.py docs/validation/LOCAL_OPERATOR_LAB_R1_v0.6.11.py
 if ($LASTEXITCODE -ne 0) { throw 'PARAR: git archive falhou.' }
 Get-FileHash "$env:TEMP\canca-operator-v0.6.11.tar" -Algorithm SHA256
