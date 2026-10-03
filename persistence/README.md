@@ -112,3 +112,12 @@ com cobertura e ocorrências históricas. Sem migração nova; schema mínimo 4.
 [Exportação consolidada somente leitura](../docs/REPORT_EXPORT_v0.6.9.md) reutiliza
 a consulta v0.6.5: JSON completo, Markdown e hashes em diretório privado novo.
 Sem migração, escrita SQL ou leitura do store; mesmas permissões SELECT do relatório.
+
+## Relatório executivo v0.6.14
+
+[CLI executivo independente](../docs/EXECUTIVE_REPORT_v0.6.14.md) resume cobertura,
+identidade e ocorrências históricas, consolidando recomendações somente quando
+regra/catálogo/engine salvos coincidem. JSON/Markdown com referências e hashes em
+diretório privado novo. Reutiliza a coleta completa fenced, as permissões SELECT
+e o driver existentes, sem migração ou acesso ao store. CANDIDATE; gate manual
+futuro, independente do download Web v0.6.13 adiado pelo mantenedor.

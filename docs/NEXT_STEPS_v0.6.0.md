@@ -1,8 +1,15 @@
 # P01 — Próximos passos da Product Alpha
 
-Atualizado em 02/10/2026 (-03), após aceite de lifecycle/paginação v0.6.8 e exportação v0.6.9.
+Atualizado em 03/10/2026 (-03), com desenvolvimento independente do LAB.
 
 ## Preciso testar alguma coisa agora?
+
+**Não há validação solicitada hoje.** O mantenedor adiou os testes de LAB em
+03/10. O novo download Web v0.6.13 permanece CANDIDATE, com seu pacote qualificado
+fixado em `9cb8442e4a9ff84384b6b4f42bf5c8db0a65d871` e os onze arquivos intactos.
+O [relatório executivo v0.6.14](EXECUTIVE_REPORT_v0.6.14.md) avança como CLI
+somente leitura, com testes sintéticos/PostgreSQL no CI e qualificação operacional
+futura. Não depende de acesso ao LAB ou de execução pelo mantenedor para desenvolver.
 
 O exportador funcional está **LAB VALIDATED no R1 sintético Rocky**. As cinco
 capturas 014007/014025/014138/014149/014247 demonstram instalação corrigida,
