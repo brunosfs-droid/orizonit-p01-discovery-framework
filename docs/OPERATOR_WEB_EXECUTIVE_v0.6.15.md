@@ -2,6 +2,8 @@
 
 **CANDIDATE para LAB.** Desenvolvimento e CI independentes das validações manuais
 adiadas pelo mantenedor em 03/10/2026 (-03). Nenhum teste no LAB é solicitado hoje.
+Código qualificado em oito runs/16 jobs, com downloads reais nos dois tamanhos
+de Chromium; [resultados e limites](validation/OPERATOR_WEB_EXECUTIVE_CI_v0.6.15.md).
 
 A Web oferece dois downloads no assessment consultado. O novo botão
 **Baixar relatório executivo (ZIP)** apresenta cobertura, identidade, findings

@@ -1,7 +1,8 @@
 # ADR 0027 — Executive download in the operator Web
 
-03/10/2026 (-03). Scope A — MVP. Implementation/CI qualification in progress;
+03/10/2026 (-03). Scope A — MVP. Code CI qualified in eight runs / sixteen jobs;
 operational LAB CANDIDATE. The maintainer has deferred manual tests today.
+[Qualification and limits](validation/OPERATOR_WEB_EXECUTIVE_CI_v0.6.15.md).
 
 ## Decision
 
