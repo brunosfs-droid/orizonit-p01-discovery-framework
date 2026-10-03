@@ -113,3 +113,8 @@ sem alterar a persistência. Sessão somente em memória; consultas paginadas co
 Validar no Windows via túnel SSH ao Rocky: telas, quatro avaliações, dois findings
 históricos, cobertura, paginação, negação fora do assessment e logout/recarregamento.
 O launcher compara as 14 tabelas ao encerrar, sem migração ou acesso ao store.
+Nove capturas de 03/10 demonstram instalação, túnel, login, resumo/cobertura,
+proveniência/evidência e páginas 1/2/4. Falta evidência de negação OTHER,
+logout/recarregamento, janela estreita e STOP PASS com invariantes/limpeza.
+[Validação parcial e retomada](validation/LOCAL_OPERATOR_WEB_P01LAB_R1_v0.6.12.md).
+Não repetir instalação nem os gates de backend, restore, lifecycle ou exportação.

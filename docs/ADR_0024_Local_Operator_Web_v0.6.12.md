@@ -1,6 +1,8 @@
 # ADR 0024 — First local operator Web screens
 
-03/10/2026 (-03). **CANDIDATE**, browser LAB pending. The v0.6.11 API same-host
+03/10/2026 (-03). **CANDIDATE**, browser LAB partially demonstrated; final gates pending.
+[Nine captures and exact remaining steps](validation/LOCAL_OPERATOR_WEB_P01LAB_R1_v0.6.12.md).
+The v0.6.11 API same-host
 R1 was accepted from Bruno's two captures; its code remains byte-for-byte intact.
 
 ## Decision

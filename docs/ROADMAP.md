@@ -504,3 +504,4 @@ See [edition policy](LICENSING_AND_EDITIONS.md) and [ADR 0021](ADR_0021_Apache_2
 - Sem alteração no banco, collector, credenciais de alvos ou mTLS de upload.
 - Próximo gate: navegador Windows via túnel SSH para listener temporário Rocky; não repetir R1 de backend/restore/lifecycle/exportação.
 - [ADR 0024](ADR_0024_Local_Operator_Web_v0.6.12.md) · [R1 Web](LAB_LOCAL_OPERATOR_WEB_R1_v0.6.12.md).
+- R1 Web parcial em 03/10: instalação/login/relatório desktop e páginas 1/2/4 demonstrados; aguarda negação OTHER, logout/recarregamento, janela estreita e STOP PASS. [Registro](validation/LOCAL_OPERATOR_WEB_P01LAB_R1_v0.6.12.md).

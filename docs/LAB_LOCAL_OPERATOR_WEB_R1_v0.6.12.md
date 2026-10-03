@@ -1,6 +1,9 @@
 # Cancã — primeiras telas Web, R1 v0.6.12
 
-**CANDIDATE; aceite de navegador pendente.** Executar quando Bruno retornar.
+**CANDIDATE; R1 em validação.** As nove capturas de 03/10 demonstram instalação,
+login, relatório desktop e páginas 1/2/4. [Registro e etapas restantes](validation/LOCAL_OPERATOR_WEB_P01LAB_R1_v0.6.12.md).
+Retomar somente negação OTHER, janela estreita, logout/recarregamento e STOP PASS;
+não repetir a instalação abaixo nem reiniciar um launcher ainda ativo.
 API v0.6.11 já aprovada; não repetir seu helper, restore, lifecycle ou exportação.
 Collector portable continua sem login Cancã. AD permanece opcional/futuro.
 
@@ -121,6 +124,7 @@ O acesso HTTP está restrito ao loopback em cada ponta; o trecho Windows–Rocky
 usa SSH. Este teste não qualifica HTTPS remoto do produto.
 
 1. Entre como `reader-web` com a senha sintética escolhida. Não capture a senha.
+   Se o navegador oferecer salvar essa senha temporária, escolher Agora não/Not now.
 2. Consulte `P01-PG-LAB-R1`, com **1 avaliação por página**. Esperado: 1 asset,
    4 avaliações, 2 findings históricos e lifecycle completed/revisão 4.
 3. Percorra as quatro páginas e volte à primeira. A última desabilita Próxima.

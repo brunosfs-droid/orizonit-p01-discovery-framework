@@ -1,6 +1,9 @@
 # Cancã — local operator Web v0.6.12 / report API v0.6.11
 
-**Web CANDIDATE; browser LAB pending.** API v0.6.11 same-host synthetic R1 is
+**Web CANDIDATE; browser LAB in progress.** Desktop login/report/page rendering
+are demonstrated in Bruno's nine captures; denied scope, logout/reload, narrow
+window and launcher STOP PASS remain pending. [Progress and remaining steps](../docs/validation/LOCAL_OPERATOR_WEB_P01LAB_R1_v0.6.12.md).
+API v0.6.11 same-host synthetic R1 is
 [LAB VALIDATED](../docs/validation/LOCAL_OPERATOR_P01LAB_R1_v0.6.11.md).
 Separate server boundary for Web/API operator access.
 Local login first, as selected by Bruno; optional AD/SSO integration follows.
