@@ -10,7 +10,8 @@ The Web listener adds an executive ZIP download using the unchanged v0.6.14
 synthesis and v0.6.9 complete collector. Both download kinds share the existing
 bounded slot/deadline and authentication/read-grant boundary. Technical payload
 and delivery versions remain 0.6.9/0.6.13; executive content/delivery are
-0.6.14/0.6.15. API/auth, collector and executive CLI sources remain unchanged.
+0.6.14/0.6.15. At the qualified v0.6.15 source pin, API/auth, collector and
+executive CLI sources remained unchanged. Later Web increments use their own pins.
 
 Six new actual HTTP cases cover complete seven-query/six-page executive history,
 authorization/origin/query denials before SQL, redacted backend failures,

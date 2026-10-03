@@ -8,7 +8,7 @@
   <script src="/assets/operator.js" defer></script>
 </head>
 <body>
-  <header class="topbar"><a class="brand" href="/" aria-label="Cancã, início">Cancã<span>Community</span></a><span class="release">Product Alpha · v0.6.15</span></header>
+  <header class="topbar"><a class="brand" href="/" aria-label="Cancã, início">Cancã<span>Community</span></a><span class="release">Product Alpha · v0.6.16</span></header>
   <main>
     <div class="intro"><p class="eyebrow">Discovery &amp; Assessment</p><h1>Relatórios do ambiente</h1><p>Consulte os resultados registrados para o seu assessment.</p></div>
     <noscript>Ative JavaScript para entrar e consultar os relatórios.</noscript>
@@ -25,6 +25,10 @@
     </section>
     <section id="workspace" hidden aria-label="Consulta de relatório">
       <div class="session"><p>Operador <strong id="operator-name"></strong></p><button id="logout-button" class="secondary" type="button">Sair</button></div>
+      <section class="card assessment-directory" aria-label="Seleção de assessment">
+        <div><label for="assessment-selector">Assessments permitidos</label><select id="assessment-selector" aria-describedby="assessment-list-message"><option value="">Selecione um assessment</option></select><p id="assessment-list-message" class="hint" role="status" aria-live="polite">Entre para carregar a lista.</p></div>
+        <button id="assessment-refresh-button" class="secondary" type="button">Atualizar lista</button>
+      </section>
       <form id="report-form" class="card search">
         <div><label for="assessment">ID do assessment</label><input id="assessment" name="assessment" required maxlength="128" pattern="[A-Za-z0-9][A-Za-z0-9._\-]{0,127}" placeholder="Ex.: P01-PG-LAB-R1" spellcheck="false" autocapitalize="none"></div>
         <div><label for="page-size">Avaliações por página</label><select id="page-size"><option value="25">25</option><option value="100">100</option><option value="1">1</option></select></div>

@@ -540,3 +540,14 @@ See [edition policy](LICENSING_AND_EDITIONS.md) and [ADR 0021](ADR_0021_Apache_2
 - Gates operacionais adiados; os pacotes históricos continuam nos pins qualificados.
 - [Guia](OPERATOR_WEB_EXECUTIVE_v0.6.15.md) · [ADR 0027](ADR_0027_Operator_Web_Executive_Export_v0.6.15.md) ·
   [Registro CI](validation/OPERATOR_WEB_EXECUTIVE_CI_v0.6.15.md).
+
+## v0.6.16 — seleção de assessments permitidos (CANDIDATE)
+
+- Lista somente os grants da sessão local, sem verificar existência em PostgreSQL.
+- Seletor preenche o formulário; consultar permanece explícito e autorizado por ID.
+- Limites de 128 IDs/32 KiB, opções como texto, expiração/logout e descarte de respostas tardias.
+- Atualização/fallback manual; isolamento entre contas e relatório anterior limpo na seleção.
+- Auth/HTTP/eventos, PostgreSQL 16/17 e Chromium desktop/mobile; LAB adiado.
+- API standalone e formatos de download preservados; pacotes históricos ficam nos pins.
+- [Contrato](OPERATOR_ASSESSMENT_SELECTION_v0.6.16.md) · [ADR 0028](ADR_0028_Operator_Assessment_Selection_v0.6.16.md) ·
+  [Registro CI](validation/OPERATOR_ASSESSMENT_SELECTION_CI_v0.6.16.md).

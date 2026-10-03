@@ -24,6 +24,8 @@ ENGINE_SHA = 'e' * 64
 
 def read_report(self, token, assessment, *, after_analysis_id='', after_ordinal=-1, limit=100, expected_scope_sha256=None):
     self.auth.require(token, assessment)
+    if assessment != 'LAB-001':
+        return dict(status='not_found')
     return canonical_page(None, assessment, after_analysis_id, after_ordinal, limit, expected_scope_sha256)
 
 
@@ -68,7 +70,14 @@ def main():
     # Account/server are temporary. CI child is stopped with SIGINT by the harness.
     with tempfile.TemporaryDirectory(prefix='canca-web-browser-ci-') as temporary:
         policy = Path(temporary) / 'accounts.json'
-        auth.create_policy(policy, 'OP-BROWSER-CI', 'browser-reader', ['LAB-001'], PASSWORD)
+        auth.create_policy(policy, 'OP-BROWSER-CI', 'browser-reader', ['LAB-001', 'LAB-MISSING'], PASSWORD)
+        doc = json.loads(policy.read_bytes())
+        for operator, username, ids in [('OP-OTHER', 'other-reader', ['PRIVATE-OTHER']), ('OP-EMPTY', 'empty-reader', [])]:
+            row = deepcopy(doc['accounts'][0])
+            row.update(operator_id=operator, username=username,
+                       grants=[dict(assessment_id=a, permissions=['assessment:read']) for a in ids])
+            doc['accounts'].append(row)
+        policy.write_text(json.dumps(doc))
         with web.create_server(policy, port=0) as server:
             from types import MethodType
             server.service.read_report = MethodType(read_report, server.service)

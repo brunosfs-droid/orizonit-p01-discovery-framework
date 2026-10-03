@@ -3,6 +3,7 @@
   'use strict';
   const el = id => document.getElementById(id);
   let token = '', generation = 0, expiry = null, page = null, selection = null, busy = false;
+  let grants = null;
   const pending = new Set();
   const downloads = new Set();
   const messages = {
@@ -27,6 +28,8 @@
     el('report-button').disabled = busy;
     el('assessment').disabled = busy;
     el('page-size').disabled = busy;
+    el('assessment-selector').disabled = busy || !grants || grants.length === 0;
+    el('assessment-refresh-button').disabled = busy || !token;
     el('next-button').disabled = busy || !page || !page.has_more;
     el('restart-button').disabled = busy || !selection;
     el('download-button').disabled = busy || !page || !selection;
@@ -42,6 +45,7 @@
     token = ''; busy = false;
     el('password').value = ''; el('username').value = ''; el('assessment').value = '';
     el('operator-name').textContent = '';
+    clearAssessments();
     clearReport(); controls();
     el('workspace').hidden = true; el('login-panel').hidden = false;
     message(text);
@@ -129,6 +133,39 @@
   function textNode(tag, text) {
     const node = document.createElement(tag); node.textContent = text == null ? '—' : String(text); return node;
   }
+  function clearAssessments(text = 'Entre para carregar a lista.') {
+    grants = null;
+    const placeholder = textNode('option', 'Selecione um assessment'); placeholder.value = '';
+    el('assessment-selector').replaceChildren(placeholder); el('assessment-selector').value = '';
+    el('assessment-list-message').textContent = text;
+  }
+  async function loadAssessments() {
+    if (busy || !token) return;
+    const stamp = generation; busy = true;
+    clearAssessments('Carregando assessments permitidos…'); controls();
+    try {
+      const doc = await request('/api/v1/operator/assessments');
+      if (stamp !== generation) return;
+      const ids = doc.assessment_ids;
+      if (doc.status !== 'allowed' || doc.version !== '0.6.16' || doc.source !== 'local_operator_policy' ||
+          doc.assessment_existence_checked !== false || !Array.isArray(ids) || ids.length > 128 ||
+          ids.some((id, index) => typeof id !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/.test(id) ||
+            (index > 0 && ids[index - 1] >= id))) throw new Error('invalid_assessment_directory');
+      grants = ids.slice();
+      const options = grants.map(id => { const option = textNode('option', id); option.value = id; return option; });
+      el('assessment-selector').append(...options);
+      if (grants.includes(el('assessment').value)) el('assessment-selector').value = el('assessment').value;
+      el('assessment-list-message').textContent = grants.length ?
+        grants.length + ' assessment(s) permitido(s). Selecione e clique em Consultar.' :
+        'Sua conta não possui assessments permitidos.';
+    } catch (error) {
+      if (stamp !== generation) return;
+      if (error.status === 401) reset(messages[401]);
+      else clearAssessments('Não foi possível carregar a lista. Atualize ou informe um ID autorizado abaixo.');
+    } finally {
+      if (stamp === generation) { busy = false; controls(); }
+    }
+  }
   function detail(cell, label, data) {
     const block = document.createElement('details');
     block.append(textNode('summary', label), textNode('pre', JSON.stringify(data, null, 2)));
@@ -198,7 +235,7 @@
   }
   el('login-form').addEventListener('submit', async event => {
     event.preventDefault(); if (busy || token) return;
-    const stamp = generation; busy = true; controls(); message('Entrando…');
+    const stamp = generation; let loggedIn = false; busy = true; controls(); message('Entrando…');
     const body = JSON.stringify({username: el('username').value, password: el('password').value});
     el('password').value = '';
     try {
@@ -211,9 +248,23 @@
       el('username').value = '';
       el('operator-name').textContent = doc.operator_id;
       el('login-panel').hidden = true; el('workspace').hidden = false;
-      el('assessment').focus(); message('Informe o ID de um assessment autorizado.');
+      el('assessment').focus(); message('Escolha um assessment permitido ou informe seu ID.');
+      loggedIn = true;
     } catch (error) { fail(error, stamp, true); }
     finally { if (stamp === generation) { busy = false; controls(); } }
+    if (loggedIn && stamp === generation) await loadAssessments();
+  });
+  el('assessment-refresh-button').addEventListener('click', loadAssessments);
+  el('assessment-selector').addEventListener('change', () => {
+    if (busy || !token) return;
+    const selected = el('assessment-selector').value;
+    if (!selected) return;
+    if (!grants || !grants.includes(selected)) { message(messages[400]); return; }
+    el('assessment').value = selected;
+    clearReport(); controls(); message('Assessment selecionado. Clique em Consultar.');
+  });
+  el('assessment').addEventListener('input', () => {
+    el('assessment-selector').value = grants && grants.includes(el('assessment').value) ? el('assessment').value : '';
   });
   el('logout-button').addEventListener('click', async () => {
     const previous = token; reset('Sessão encerrada neste navegador.'); el('username').focus();
