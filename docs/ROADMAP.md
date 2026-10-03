@@ -505,4 +505,13 @@ See [edition policy](LICENSING_AND_EDITIONS.md) and [ADR 0021](ADR_0021_Apache_2
 - R1 Windows/Rocky via túnel SSH aprovado; não repetir instalação, Web, backend, restore, lifecycle ou exportação. Qualificação ampliada/produção continua separada.
 - [ADR 0024](ADR_0024_Local_Operator_Web_v0.6.12.md) · [R1 Web](LAB_LOCAL_OPERATOR_WEB_R1_v0.6.12.md).
 - Quinze capturas de 03/10 demonstram instalação/login/relatório, negação OTHER, logout/login vazio, janela reduzida e dois STOP PASS com 14 tabelas preservadas e contas removidas. [Aceite](validation/LOCAL_OPERATOR_WEB_P01LAB_R1_v0.6.12.md).
-- Pendência de engenharia: CI da nova documentação falhou antes de iniciar etapas; inspecionar Annotations antes de integrar o PR #112. Sem alteração no pacote aprovado.
+- CI recuperado em 03/10: oito runs/sixteen jobs passaram no attempt 2; PR #112 integrado em dcfb654507428f2a4287caed18e4a6b7d5431b8f. Falhas antes das etapas permanecem históricas; pacote aprovado preservado.
+
+## v0.6.13 — download completo na Web (CANDIDATE)
+
+- ZIP em memória com JSON/Markdown completos e hashes, usando o exportador canônico.
+- Grant de leitura, sessão e escopo exibido validados; páginas/terminal fenced, sem retry ou gravação no servidor.
+- Um export ativo, deadline cooperativo e 32 MiB; navegador confere bytes/escopo/SHA256 e bloqueia respostas tardias após logout.
+- CI HTTP/eventos/Chromium e reader PostgreSQL 16/17; gate manual novo apenas download/verificação no túnel existente.
+- Nenhuma migração, coleta, alteração do collector ou repetição dos R1 aprovados.
+- [Guia](OPERATOR_WEB_EXPORT_v0.6.13.md) · [ADR 0025](ADR_0025_Operator_Web_Report_Export_v0.6.13.md).

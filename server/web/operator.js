@@ -4,12 +4,14 @@
   const el = id => document.getElementById(id);
   let token = '', generation = 0, expiry = null, page = null, selection = null, busy = false;
   const pending = new Set();
+  const downloads = new Set();
   const messages = {
     400: 'Confira o ID do assessment e os parâmetros da consulta.',
     401: 'Sessão encerrada ou expirada. Entre novamente.',
     403: 'Sua conta não possui acesso a este assessment.',
     404: 'Assessment não encontrado.',
     409: 'O escopo mudou. Consulte novamente a primeira página.',
+    413: 'O relatório excede o limite de download de 32 MiB. Use a exportação local no servidor.',
     429: 'Limite de tentativas atingido. Aguarde antes de tentar novamente.',
     503: 'Serviço indisponível. Tente novamente em instantes.'
   };
@@ -27,11 +29,14 @@
     el('page-size').disabled = busy;
     el('next-button').disabled = busy || !page || !page.has_more;
     el('restart-button').disabled = busy || !selection;
+    el('download-button').disabled = busy || !page || !selection;
   }
   function reset(text = '') {
     generation += 1;
     for (const request of pending) request.abort();
     pending.clear();
+    for (const url of downloads) URL.revokeObjectURL(url);
+    downloads.clear();
     clearTimeout(expiry); expiry = null;
     token = ''; busy = false;
     el('password').value = ''; el('username').value = ''; el('assessment').value = '';
@@ -40,19 +45,73 @@
     el('workspace').hidden = true; el('login-panel').hidden = false;
     message(text);
   }
-  async function request(path, options = {}, bearer = token) {
+  async function request(path, options = {}, bearer = token, parse = response => response.json(), milliseconds = 12000) {
     const controller = new AbortController(); pending.add(controller);
-    const timeout = setTimeout(() => controller.abort(), 12000);
+    const timeout = setTimeout(() => controller.abort(), milliseconds);
     const headers = {...(options.headers || {})};
     if (bearer) headers.Authorization = 'Bearer ' + bearer;
     try {
       const response = await fetch(path, {...options, headers, signal: controller.signal,
         credentials: 'omit', cache: 'no-store', redirect: 'error', mode: 'same-origin'});
-      const body = await response.json();
-      if (!response.ok) throw Object.assign(new Error('request_failed'), {status: response.status});
-      return body;
+      if (!response.ok) {
+        const body = await response.json();
+        throw Object.assign(new Error('request_failed'), {status: response.status, code: body.error_code});
+      }
+      return await parse(response);
     } finally {
+      controller.abort();
       clearTimeout(timeout); pending.delete(controller);
+    }
+  }
+  async function download() {
+    if (busy || !token || !page || !selection) return;
+    const selected = selection, scope = page.report_scope_sha256, stamp = generation;
+    const filename = 'canca-' + selected.assessment + '-report.zip';
+    busy = true; controls(); message('Preparando relatório completo…');
+    try {
+      const blob = await request('/api/v1/assessments/' + encodeURIComponent(selected.assessment) +
+        '/report/export?' + new URLSearchParams({expected_scope_sha256: scope}), {}, token, async response => {
+          const length = response.headers.get('Content-Length'), digest = response.headers.get('X-Canca-Export-SHA256');
+          if (response.headers.get('Content-Type') !== 'application/zip' ||
+              response.headers.get('Content-Disposition') !== 'attachment; filename="' + filename + '"' ||
+              response.headers.get('X-Canca-Report-Scope-SHA256') !== scope ||
+              !/^[0-9a-f]{64}$/.test(digest || '') || !/^[1-9][0-9]{0,8}$/.test(length || '') ||
+              Number(length) > 32 * 1024**2 || !response.body) throw new Error('invalid_export');
+          const data = new Uint8Array(Number(length)), reader = response.body.getReader();
+          let offset = 0;
+          while (true) {
+            const {done, value} = await reader.read();
+            if (done) break;
+            if (offset + value.byteLength > data.byteLength) throw new Error('invalid_export');
+            data.set(value, offset); offset += value.byteLength;
+          }
+          if (offset !== data.byteLength) throw new Error('invalid_export');
+          const actual = [...new Uint8Array(await crypto.subtle.digest('SHA-256', data))]
+            .map(byte => byte.toString(16).padStart(2, '0')).join('');
+          if (actual !== digest) throw new Error('invalid_export');
+          return new Blob([data], {type: 'application/zip'});
+        }, 100000);
+      if (stamp !== generation) return;
+      const url = URL.createObjectURL(blob); downloads.add(url);
+      const link = document.createElement('a'); link.href = url; link.download = filename;
+      document.body.append(link);
+      try { link.click(); } finally { link.remove(); }
+      setTimeout(() => { URL.revokeObjectURL(url); downloads.delete(url); }, 1000);
+      message('Relatório completo preparado para download.');
+    } catch (error) {
+      if (stamp !== generation) return;
+      if (error.status === 401) reset(messages[401]);
+      else {
+        if ([403, 404, 409].includes(error.status)) clearReport();
+        message(error.code === 'export_busy' ? 'Outra exportação está em andamento. Aguarde e tente novamente.' :
+          messages[error.status] || 'Não foi possível preparar o download. Tente novamente.');
+      }
+    } finally {
+      if (stamp === generation) {
+        busy = false; controls();
+        if (page) el('download-button').focus();
+        else if (token) el('assessment').focus();
+      }
     }
   }
   function fail(error, stamp, login = false) {
@@ -161,6 +220,7 @@
   });
   el('report-form').addEventListener('submit', event => { event.preventDefault(); read(); });
   el('next-button').addEventListener('click', () => read(true));
+  el('download-button').addEventListener('click', download);
   el('restart-button').addEventListener('click', () => {
     if (busy || !selection) return;
     el('assessment').value = selection.assessment; el('page-size').value = selection.limit; read();

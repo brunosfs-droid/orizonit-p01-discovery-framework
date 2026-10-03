@@ -117,10 +117,16 @@ sem mutação no banco/acesso ao store e com servidor/contas temporários removi
 [Aceite e limites](validation/LOCAL_OPERATOR_WEB_P01LAB_R1_v0.6.12.md).
 Não repetir instalação nem Web, backend, restore, lifecycle ou exportação.
 
-## Pendência para continuar a integração
+## Actions recuperado; próxima entrega v0.6.13
 
-O registro está no PR #112, com pacote/executáveis preservados. GitHub Actions
-falhou antes de qualquer etapa na revisão anterior, sem logs recuperáveis.
-Inspecionar Annotations para determinar a causa e restabelecer CI antes de integrar
-essa documentação e novos incrementos. Essa pendência é independente do LAB;
-o pacote aprovado está preservado e o R1 não deve ser repetido.
+Em 03/10 Bruno resolveu o bloqueio e o repositório está público. Oito runs, com
+16 jobs, passaram no attempt 2 do head 64e0fa65547840a407a9c9588524898a8a7f8678.
+PR #112 integrado em dcfb654507428f2a4287caed18e4a6b7d5431b8f; o aceite Web R1
+está no main. Nenhum R1 aprovado deve ser repetido para essa recuperação de CI.
+
+v0.6.13 acrescenta download completo de relatório pela Web: ZIP em memória com
+JSON/Markdown, manifesto/SHA256 e cerca ligada ao relatório exibido. Mantém
+somente SELECT e sessões/grants; não altera collector, store ou banco.
+[Guia e limites](OPERATOR_WEB_EXPORT_v0.6.13.md). O novo gate de LAB será somente
+baixar/verificar o arquivo e encerrar o servidor temporário; o roteiro ficará
+fixado na revisão qualificada em CI. Mapa/topologia permanecem após 1.0.

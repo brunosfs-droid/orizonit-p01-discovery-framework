@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const {spawn} = require('node:child_process');
+const {spawnSync} = require('node:child_process');
 const {once} = require('node:events');
 const readline = require('node:readline');
 const {chromium} = require(process.env.CANCA_PLAYWRIGHT_MODULE || 'playwright');
@@ -50,6 +51,19 @@ const {chromium} = require(process.env.CANCA_PLAYWRIGHT_MODULE || 'playwright');
       assert.equal(await page.locator('#next-button').isDisabled(), true);
       await page.getByRole('button', {name:'Primeira página', exact:true}).click();
       await page.getByText('Página 1 · 1 avaliação(ões)', {exact:true}).waitFor();
+      const downloadEvent = page.waitForEvent('download');
+      await page.getByRole('button', {name:'Baixar relatório completo (ZIP)', exact:true}).click();
+      const download = await downloadEvent;
+      assert.equal(download.suggestedFilename(),'canca-LAB-001-report.zip');
+      const archive = path.join(artifacts,`report-${width}.zip`);
+      await download.saveAs(archive);
+      await page.getByText('Relatório completo preparado para download.',{exact:true}).waitFor();
+      assert.equal(await page.evaluate(()=>document.activeElement.id),'download-button');
+      const verify=spawnSync(process.env.CANCA_BROWSER_PYTHON || 'python',[
+        path.join(__dirname,'../docs/validation/VERIFY_OPERATOR_WEB_EXPORT_v0.6.13.py'),
+        '--archive',archive,'--assessment-id','LAB-001','--evaluation-count','4','--finding-count','2'],{encoding:'utf8'});
+      assert.equal(verify.status,0,verify.stdout+verify.stderr);
+      assert.equal(JSON.parse(verify.stdout).files_verified,4);
       await page.screenshot({path:path.join(artifacts, `report-${width}.png`), fullPage:true});
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true);
       assert.equal(await page.evaluate(() => localStorage.length + sessionStorage.length), 0);
@@ -65,7 +79,7 @@ const {chromium} = require(process.env.CANCA_PLAYWRIGHT_MODULE || 'playwright');
       assert.deepEqual(errors, []); assert.deepEqual(external, []);
       await context.close();
     }
-    console.log('OPERATOR WEB BROWSER PASS — Chromium desktop/mobile synthetic fixture');
+    console.log('OPERATOR WEB BROWSER PASS — Chromium desktop/mobile, complete ZIP/hash verification');
   } finally {
     clearTimeout(readyTimeout); if (browser) await browser.close(); lines.close();
     if (fixture.exitCode === null) { const exit = once(fixture, 'exit'); fixture.kill('SIGINT'); await exit; }

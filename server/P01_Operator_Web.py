@@ -6,13 +6,16 @@ import argparse
 import ipaddress
 import json
 from pathlib import Path
+import re
 import sys
-from urllib.parse import urlsplit
+from urllib.parse import parse_qsl, urlsplit
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import P01_Operator_API as api
+import P01_Operator_Export as exports
 
-VERSION = '0.6.12'
+VERSION = '0.6.13'
+EXPORT_PATH = re.compile(r'/api/v1/assessments/([A-Za-z0-9][A-Za-z0-9._-]{0,127})/report/export')
 ASSETS = {'/': ('index.html', 'text/html; charset=utf-8'),
           '/assets/operator.css': ('operator.css', 'text/css; charset=utf-8'),
           '/assets/operator.js': ('operator.js', 'text/javascript; charset=utf-8')}
@@ -53,6 +56,10 @@ class WebHandler(api.OperatorHandler):
 
     def _asset(self, raw, content_type):
         self.send_response(200)
+        self._asset_headers(raw, content_type)
+        self.wfile.write(raw)
+
+    def _asset_headers(self, raw, content_type):
         self.send_header('Content-Type', content_type)
         self.send_header('Content-Length', str(len(raw)))
         self.send_header('Cache-Control', 'no-store')
@@ -63,12 +70,35 @@ class WebHandler(api.OperatorHandler):
         self.send_header('Connection', 'close')
         self.close_connection = True
         self.end_headers()
-        self.wfile.write(raw)
 
     def _dispatch(self, method):
         try:
             self._browser_origin()
             path = self._path()
+            match = EXPORT_PATH.fullmatch(path.path)
+            if match is not None and method == 'GET':
+                self._empty_body()
+                token = self._bearer(); assessment = match[1]
+                self.server.service.auth.require(token, assessment)
+                try:
+                    pairs = parse_qsl(path.query, keep_blank_values=True, strict_parsing=True, max_num_fields=2)
+                    values = dict(pairs)
+                    if (len(values) != len(pairs) or 'expected_scope_sha256' not in values
+                            or set(values) - {'expected_scope_sha256', 'limit'}
+                            or not re.fullmatch(r'[1-9][0-9]{0,2}', values.get('limit', '100'))):
+                        raise ValueError('invalid export query')
+                    scope = values['expected_scope_sha256']; limit = int(values.get('limit', '100'))
+                    api.report.validate_query(assessment, limit=limit, expected_scope_sha256=scope)
+                except (ValueError, api.report.pg.PersistenceError):
+                    raise api.AccessError('report_input_invalid', 400) from None
+                with self.server.report_exports.build(token, assessment, scope, limit) as (raw, checksum):
+                    self.send_response(200)
+                    self.send_header('Content-Disposition', 'attachment; filename="canca-' + assessment + '-report.zip"')
+                    self.send_header('X-Canca-Report-Scope-SHA256', scope)
+                    self.send_header('X-Canca-Export-SHA256', checksum)
+                    self._asset_headers(raw, 'application/zip')
+                    self.wfile.write(raw)
+                return
             if method == 'GET' and path.path in ASSETS:
                 self._empty_body()
                 if path.query:
@@ -82,6 +112,18 @@ class WebHandler(api.OperatorHandler):
                 return
         except api.AccessError as exc:
             self._send(exc.status, dict(status='failed', error_code=str(exc)))
+            return
+        except api.report.pg.PersistenceError as exc:
+            code = str(exc) if str(exc) in exports.export.ERRORS else 'database_failed'
+            status = (404 if code == 'assessment_not_found' else 409 if code == 'report_scope_conflict'
+                      else 413 if code == 'export_limit_exceeded' else 503)
+            self._send(status, dict(status='failed', error_code=code))
+            return
+        except (BrokenPipeError, ConnectionResetError, TimeoutError):
+            self.close_connection = True
+            return
+        except Exception:
+            self._send(503, dict(status='failed', error_code='operator_request_failed'))
             return
         super()._dispatch(method)
 
@@ -100,6 +142,7 @@ def create_server(policy_path, host='127.0.0.1', port=8878, *, tls_cert=None, tl
         assets[route] = (raw, content_type)
     server = api.create_server(policy_path, host, port, tls_cert=tls_cert, tls_key=tls_key)
     server.web_assets = assets
+    server.report_exports = exports.ExportDelivery(server.service.auth)
     server.RequestHandlerClass = WebHandler
     return server
 

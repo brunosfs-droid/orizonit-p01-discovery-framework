@@ -10,7 +10,8 @@
 
 ## Product baseline
 
-Operator Web v0.6.12: [local login and read-only reports](server/README.md)
+Operator Web v0.6.13: [complete report download](docs/OPERATOR_WEB_EXPORT_v0.6.13.md)
+(CANDIDATE). Web v0.6.12: [local login and read-only reports](server/README.md)
 (short synthetic browser R1 [LAB VALIDATED](docs/validation/LOCAL_OPERATOR_WEB_P01LAB_R1_v0.6.12.md);
 wider release CANDIDATE). API v0.6.11 same-host R1 is
 [LAB VALIDATED](docs/validation/LOCAL_OPERATOR_P01LAB_R1_v0.6.11.md).

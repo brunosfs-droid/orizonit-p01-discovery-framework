@@ -3,6 +3,8 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
+const {createHash, webcrypto} = require('node:crypto');
+const {ReadableStream} = require('node:stream/web');
 
 class Element {
   constructor() { this.children = []; this.handlers = {}; this.value = ''; this.hidden = false; this.disabled = false; this._text = ''; }
@@ -13,17 +15,24 @@ class Element {
   replaceChildren(...nodes) { this._text = ''; this.children = nodes; }
   addEventListener(type, handler) { this.handlers[type] = handler; }
   focus() { this.focused = true; }
+  click() { this.onClick?.(this); }
+  remove() { this.removed = true; }
   fire(type, extra = {}) { return this.handlers[type]?.({preventDefault() {}, ...extra}); }
 }
 const source = fs.readFileSync(path.join(__dirname, '../server/web/operator.js'), 'utf8');
 function client() {
-  const elements = new Map(), calls = [], timers = new Map(), events = {}, replies = [];
+  const elements = new Map(), calls = [], timers = new Map(), events = {}, replies = [], saved = [], urls = new Map();
   let next = 1;
   const element = id => { if (!elements.has(id)) elements.set(id, new Element()); return elements.get(id); };
   const context = {
-    document: {getElementById: element, createElement: () => new Element()},
+    document: {getElementById: element, body: new Element(), createElement: tag => {
+      const node = new Element(); if (tag === 'a') node.onClick = link => saved.push({filename:link.download, url:link.href}); return node;
+    }},
     window: {addEventListener: (name, handler) => { events[name] = handler; }},
     URLSearchParams, AbortController,
+    Blob, crypto: webcrypto,
+    URL: {createObjectURL: blob => {const url='blob:synthetic-'+urls.size; urls.set(url,blob); return url;},
+      revokeObjectURL: url => urls.delete(url)},
     setTimeout: (handler, delay) => { const id = next++; timers.set(id, {handler, delay}); return id; },
     clearTimeout: id => timers.delete(id),
     fetch: async (url, options) => {
@@ -34,7 +43,7 @@ function client() {
   };
   vm.runInNewContext(source, context, {filename: 'operator.js'});
   element('page-size').value = '1';
-  return {element, calls, timers, events, replies};
+  return {element, calls, timers, events, replies, saved, urls};
 }
 const response = (status, body) => ({ok: status >= 200 && status < 300, status, json: async () => body});
 const session = {access_token: 't'.repeat(43), token_type: 'Bearer', operator_id: 'OP-01', expires_in: 900};
@@ -59,6 +68,14 @@ async function login(c) {
 }
 async function read(c, doc = report()) {
   c.element('assessment').value = 'LAB-001'; c.replies.push(response(200, doc)); c.element('report-form').fire('submit'); await tick();
+}
+function archive(overrides = {}) {
+  const bytes = Buffer.from('synthetic binary archive for event-level checks');
+  const headers = {'Content-Length':String(bytes.length), 'Content-Type':'application/zip',
+    'Content-Disposition':'attachment; filename="canca-LAB-001-report.zip"',
+    'X-Canca-Report-Scope-SHA256':'a'.repeat(64), 'X-Canca-Export-SHA256':createHash('sha256').update(bytes).digest('hex'), ...overrides};
+  return {ok:true,status:200,headers:{get:key=>headers[key]??null},
+    body:new ReadableStream({start(controller) {controller.enqueue(bytes); controller.close();}})};
 }
 (async () => {
   // Login failure clears the password; no bearer sent to the login endpoint.
@@ -100,5 +117,37 @@ async function read(c, doc = report()) {
   await login(c); const timer = [...c.timers.values()].find(x => x.delay === 900000); assert.ok(timer); timer.handler();
   assert.equal(c.element('workspace').hidden, true); assert.equal(c.element('assessment').value, '');
   await login(c); c.events.pageshow({persisted:true}); assert.equal(c.element('workspace').hidden, true);
-  console.log('OPERATOR WEB CLIENT PASS — 6 behavioral groups');
+  // Download targets the displayed assessment/fence and includes no UI page cursor.
+  c=client(); await login(c); await read(c); c.element('assessment').value='LAB-OTHER';
+  c.replies.push(archive()); await c.element('download-button').fire('click');
+  const exported=new URL(c.calls.at(-1).url,'http://localhost');
+  assert.equal(exported.pathname,'/api/v1/assessments/LAB-001/report/export');
+  assert.equal(exported.searchParams.get('expected_scope_sha256'),'a'.repeat(64));
+  assert.equal(exported.searchParams.has('after_ordinal'),false); assert.equal(exported.searchParams.has('limit'),false);
+  assert.equal(c.saved.length,1); assert.equal(c.saved[0].filename,'canca-LAB-001-report.zip');
+  assert.equal(c.element('download-button').focused,true); assert.equal(c.urls.size,1);
+  c.replies.push(response(200,{status:'logged_out'})); await c.element('logout-button').fire('click');
+  assert.equal(c.urls.size,0);
+  // Invalid body/hash/type/scope/length must not create a download or destroy a valid page.
+  for (const change of [{'X-Canca-Export-SHA256':'0'.repeat(64)}, {'Content-Type':'text/html'},
+      {'X-Canca-Report-Scope-SHA256':'b'.repeat(64)}, {'Content-Length':'999999999'}, {'Content-Length':'1'}]) {
+    c=client(); await login(c); await read(c); c.replies.push(archive(change)); await c.element('download-button').fire('click');
+    assert.equal(c.saved.length,0); assert.equal(c.urls.size,0); assert.equal(c.element('report-panel').hidden,false);
+    assert.match(c.element('message').textContent,/Não foi possível preparar/);
+  }
+  c.replies.push(response(409,{error_code:'report_scope_conflict'})); await c.element('download-button').fire('click');
+  assert.equal(c.element('report-panel').hidden,true); assert.equal(c.element('download-button').disabled,true);
+  // Logout/expiry while the download is pending suppress all late downloads.
+  for (const expiry of [false,true]) {
+    c=client(); await login(c); await read(c);
+    let release; c.replies.push(()=>new Promise(resolve=>{release=resolve;}));
+    const downloading=c.element('download-button').fire('click'); await tick();
+    assert.equal(c.element('download-button').disabled,true);
+    const signal=c.calls.at(-1).options.signal;
+    if (expiry) [...c.timers.values()].find(x=>x.delay===900000).handler();
+    else {c.replies.push(response(200,{status:'logged_out'})); await c.element('logout-button').fire('click');}
+    assert.equal(signal.aborted,true); release(archive()); await downloading;
+    assert.equal(c.saved.length,0); assert.equal(c.urls.size,0); assert.equal(c.element('workspace').hidden,true);
+  }
+  console.log('OPERATOR WEB CLIENT PASS — 9 behavioral groups');
 })().catch(error => { console.error(error); process.exitCode = 1; });

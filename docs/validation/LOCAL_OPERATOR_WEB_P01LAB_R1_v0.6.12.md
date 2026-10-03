@@ -85,10 +85,12 @@ superada pelos READY e dois encerramentos aprovados.
 
 Os testes anteriores de API, restore, lifecycle e exportação continuam aprovados.
 CI de Chromium e PostgreSQL 16/17 é uma qualificação independente já realizada
-para o pacote. O PR #112 registra o aceite, porém a nova documentação aguarda CI:
-os jobs de 06:58 falharam antes de qualquer etapa, sem logs recuperáveis.
-O diagnóstico depende da mensagem de Annotations do GitHub Actions; nenhuma
-causa financeira ou falha de código é presumida. Não repetir LAB para resolver CI.
+para o pacote. Os jobs iniciais falharam antes de qualquer etapa, sem logs
+recuperáveis. Em 03/10 Bruno resolveu o bloqueio; o repositório está público e
+os oito runs/16 jobs do head 64e0fa65547840a407a9c9588524898a8a7f8678 passaram
+no attempt 2. PR #112 integrado em dcfb654507428f2a4287caed18e4a6b7d5431b8f,
+com árvore/pacote preservados. Nenhuma causa financeira é inferida dessa
+recuperação; as falhas anteriores permanecem históricas. Não repetir LAB.
 
 Não qualifica HTTPS remoto do produto, AD/SSO, MFA, HA, roles de produção ou
 produção. O collector portable permanece sem login Cancã; credenciais de alvos

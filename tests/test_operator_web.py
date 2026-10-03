@@ -42,7 +42,7 @@ class OperatorWebTests(unittest.TestCase):
                 self.assertNotIn('unsafe-inline', web.CSP); self.assertNotIn('unsafe-eval', web.CSP)
                 self.assertEqual(headers['Referrer-Policy'], 'no-referrer'); self.assertTrue(raw)
             status, _, raw = self.request('GET', '/healthz')
-            self.assertEqual(status, 200); self.assertEqual(json.loads(raw)['web_version'], '0.6.12')
+            self.assertEqual(status, 200); self.assertEqual(json.loads(raw)['web_version'], web.VERSION)
         connect.assert_not_called()
 
     def test_private_paths_traversal_and_asset_queries_never_read_files_or_database(self):
