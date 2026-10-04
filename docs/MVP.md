@@ -76,7 +76,8 @@ Product Alpha v0.6.x includes PostgreSQL indexing, lifecycle, asset identity,
 historical findings and fenced technical/executive reporting. Synthetic Rocky R1
 for basic PostgreSQL, recovery, lifecycle and CLI technical export passed, as did
 local operator API and the initial Web R1. New Web downloads/selection/executive
-preview, offline account revisions and opt-in private operator audit remain operational CANDIDATE, with manual
+preview, offline account revisions, opt-in private operator audit and read-only
+audit review remain operational CANDIDATE, with manual
 tests deferred by the maintainer on 03/10/2026. The filesystem store and ingestion
 API retain their independent boundaries; full production roles/TLS/recovery are
 separate gates.

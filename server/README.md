@@ -141,6 +141,12 @@ new authentication or backend work. Audit remains off by default. New filename,
 private directory/Windows ACLs and controlled restart are deployment requirements;
 no live LAB configuration change is requested.
 
+The [offline audit review v0.6.20](../docs/OPERATOR_AUDIT_CHECK_v0.6.20.md) reads
+a stable private file and distinguishes closed structure (exit 0) from valid
+open/partial prefixes (exit 3) and invalid input (exit 2). Fixed counts and the
+full-file SHA256 omit private IDs/lines; it never repairs or changes the log.
+It does not attest authorship, actual grant enforcement or durable fsync.
+
 The [offline administrator CLI v0.6.18](../docs/OPERATOR_ACCOUNTS_v0.6.18.md)
 inspects a private policy and creates a distinct revision for add, exact grant
 replacement, enable/disable or password rotation. Each change requires the source

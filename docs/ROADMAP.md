@@ -583,3 +583,14 @@ See [edition policy](LICENSING_AND_EDITIONS.md) and [ADR 0021](ADR_0021_Apache_2
 - Sem implantação no LAB, SIEM/imutabilidade/retenção automática, migração, store, AD/SSO, collector login ou alteração de mTLS.
 - [Contrato](OPERATOR_SERVER_AUDIT_v0.6.19.md) · [ADR 0031](ADR_0031_Operator_Server_Audit_v0.6.19.md) ·
   [Registro CI](validation/OPERATOR_SERVER_AUDIT_CI_v0.6.19.md).
+
+## v0.6.20 — revisão offline da auditoria (CANDIDATE)
+
+- A — MVP: diagnóstico local somente leitura de arquivo privado até 8 MiB.
+- Formato independente/estrito, sequência e pares; encerramento completo distinto de prefixo aberto ou cauda não interpretada.
+- Saída agregada e SHA256 completo sem IDs/paths/linhas; exit 0 encerrado, 3 prefixo e 2 inválido/conflito.
+- Drift observado bloqueia a revisão; não repara, apaga, reutiliza ou modifica registros. Produtor e contratos Web/API preservados.
+- CI nativo Linux/Windows, saída abrupta em subprocesso, HTTP, Chromium e PostgreSQL SELECT-only sem alteração do LAB.
+- Hash/estrutura não provam autoria, autorização real dos IDs, fsync durável ou entrega ao cliente; sem SIEM/retenção automática.
+- [Contrato](OPERATOR_AUDIT_CHECK_v0.6.20.md) · [ADR 0032](ADR_0032_Offline_Operator_Audit_Check_v0.6.20.md) ·
+  [Registro CI](validation/OPERATOR_AUDIT_CHECK_CI_v0.6.20.md).

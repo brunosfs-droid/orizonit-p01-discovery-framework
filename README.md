@@ -10,6 +10,9 @@
 
 ## Product baseline
 
+Operator audit review v0.6.20: [private offline structural review](docs/OPERATOR_AUDIT_CHECK_v0.6.20.md)
+(CANDIDATE). Read-only closed/open/partial diagnosis with fixed aggregate counts,
+no private IDs in output and no repair of incomplete records. No manual LAB action.
 Operator server audit v0.6.19: [opt-in private application audit](docs/OPERATOR_SERVER_AUDIT_v0.6.19.md)
 (CANDIDATE). Bounded new JSONL per listener, trusted IDs and no submitted secrets;
 failed audit admission blocks new work. Default off; no manual LAB action required.
