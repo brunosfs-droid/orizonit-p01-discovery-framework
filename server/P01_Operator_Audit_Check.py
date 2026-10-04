@@ -71,7 +71,9 @@ def read_snapshot(value):
         flags = os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0) | getattr(os, 'O_NONBLOCK', 0) | getattr(os, 'O_BINARY', 0)
         fd = os.open(path, flags)
         before = os.fstat(fd)
-        require(_stamp(before) == _stamp(current) and before.st_nlink == 1
+        # Windows path/fd ctime can mean creation/change time respectively.
+        # Bind identity/size across APIs, then compare each full stamp to itself.
+        require(_stamp(before)[:6] == _stamp(current)[:6] and before.st_nlink == 1
                 and 0 < before.st_size <= MAX_BYTES, 'operator_audit_read_failed')
         if os.name == 'posix':
             require(before.st_uid in {0, os.geteuid()} and not before.st_mode & 0o077,
@@ -80,7 +82,7 @@ def read_snapshot(value):
             fd = None
             raw = stream.read(MAX_BYTES + 1)
             after = os.fstat(stream.fileno())
-        require(_stamp(before) == _stamp(after) == _stamp(path.lstat())
+        require(_stamp(before) == _stamp(after) and _stamp(current) == _stamp(path.lstat())
                 and _directory(path.parent) == parent and len(raw) == before.st_size,
                 'operator_audit_read_failed')
         return raw

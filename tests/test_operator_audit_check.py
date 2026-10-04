@@ -10,6 +10,7 @@ import subprocess
 import sys
 import tempfile
 import threading
+from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
@@ -252,6 +253,34 @@ class PrivateAuditReviewTests(unittest.TestCase):
         with patch.object(check.os,'fstat',side_effect=changed):
             with self.assertRaisesRegex(check.CheckError,'^operator_audit_read_failed$'): check.inspect_log(self.path)
         self.assertTrue(self.path.read_bytes().endswith(MARKER.encode()))
+
+    def test_path_and_descriptor_ctime_semantics_can_differ_for_stable_same_file(self):
+        original = check.os.fstat
+        def by_descriptor(fd):
+            info = original(fd)
+            values = {name:getattr(info,name) for name in
+                      ('st_dev','st_ino','st_mode','st_uid','st_nlink','st_size','st_mtime_ns','st_ctime_ns')}
+            values['st_ctime_ns'] += 1000000
+            return SimpleNamespace(**values)
+        raw = self.path.read_bytes()
+        with patch.object(check.os,'fstat',side_effect=by_descriptor):
+            self.assertEqual(check.inspect_log(self.path)['state'],'closed')
+        self.assertEqual(self.path.read_bytes(),raw)
+
+    def test_descriptor_ctime_drift_is_rejected_even_when_path_and_bytes_are_unchanged(self):
+        original = check.os.fstat; count = 0
+        def by_descriptor(fd):
+            nonlocal count
+            count += 1
+            info = original(fd)
+            values = {name:getattr(info,name) for name in
+                      ('st_dev','st_ino','st_mode','st_uid','st_nlink','st_size','st_mtime_ns','st_ctime_ns')}
+            values['st_ctime_ns'] += count * 1000000
+            return SimpleNamespace(**values)
+        raw = self.path.read_bytes()
+        with patch.object(check.os,'fstat',side_effect=by_descriptor):
+            with self.assertRaisesRegex(check.CheckError,'^operator_audit_read_failed$'): check.inspect_log(self.path)
+        self.assertEqual(self.path.read_bytes(),raw)
 
     @unittest.skipUnless(os.name=='posix','POSIX directory privacy drift')
     def test_posix_directory_privacy_change_during_read_blocks_review(self):
