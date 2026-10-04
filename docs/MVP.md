@@ -23,7 +23,7 @@ The MVP ends at **recommendation**. General-purpose automation and remediation a
 - distributed Discovery Node;
 - secure credential profiles and Secret Provider abstraction;
 - SSH and WinRM enrichment;
-- essential SNMP/network-device read-only enrichment before Community Beta;
+- essential SNMP/network-device read-only enrichment before Community Beta; single-target [SNMP v0.4b.7 adapter](../credentialed_enrichment/README-SNMP.md) is CANDIDATE with independent loopback CI, automatic pipeline integration remains pending;
 - Assessment Manifest;
 - logical Asset Resolver;
 - Evidence Bundle;

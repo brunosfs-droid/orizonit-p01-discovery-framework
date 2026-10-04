@@ -109,8 +109,16 @@ See [MVP.md](MVP.md) and [PROJECT_GOVERNANCE.md](PROJECT_GOVERNANCE.md).
 - rich profiles não podem ser usados sem contexto.
 - **Status:** LAB VALIDATED no P01LAB. Positive gate confirmou declared+observed -> adapter_candidate; negative gate confirmou declared-only -> not_planned, sem resolver secret ou autenticar.
 
-### v0.4b.7+ — próximos adapters
-- SNMPv3/SNMPv2c;
+### v0.4b.7 — SNMP essencial de alvo único
+- Adapter independente CANDIDATE: SNMPv3 authPriv SHA-256/AES-128; SNMPv2c explicitamente escolhido, sem fallback.
+- Dry-run sem rede/secret; profile ID único revalidado por scope/protocolo/contexto, execução autorizada explícita.
+- GETs numéricos fixos, até oito operações, retries zero, timeout/prazo global; JSON/SHA256 com cobertura por campo e falhas parciais.
+- CI loopback com UDP/USM/criptografia reais em Linux/Windows e Python 3.10/3.12/3.13; vendors e operação real permanecem CANDIDATE.
+- [Guia](../credentialed_enrichment/README-SNMP.md) · [ADR 0033](ADR_0033_Read_Only_SNMP_v0.4b.7.md).
+- Integração planner/executor/portable, resolver e bundle seguirá em incremento próprio, sem mudar a cadeia aprovada hoje.
+
+### v0.4b.8+ — próximos adapters e integrações
+- integração SNMP na cadeia de evidência;
 - Kerberos/HTTPS/certificate para WinRM;
 - WMI/DCOM fallback quando necessário;
 - auditoria de autenticação multi-protocolo.

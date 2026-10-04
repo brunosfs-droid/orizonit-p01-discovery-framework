@@ -25,6 +25,7 @@ Current optional dependency declarations to review for each actual release:
 | --- | --- |
 | SSH enrichment | `paramiko>=5.0,<6` |
 | WinRM enrichment | `pywinrm>=0.5,<1` |
+| SNMP enrichment v0.4b.7 | `pysnmp==7.1.24`, `pyasn1==0.6.3`, `cryptography==46.0.3`, `cffi==2.0.0`, `pycparser==2.23` |
 | PostgreSQL | `psycopg[binary]>=3.2,<4` |
 | Windows service | `pywin32==312; sys_platform == "win32"` |
 
@@ -32,3 +33,13 @@ This is a direct-dependency checklist, not a complete SBOM or a completed
 binary-redistribution review. Exact resolved versions, transitive dependencies,
 binary contents (including bundled libraries), notices and applicable obligations
 must be inventoried for Community and commercial installers independently.
+
+## Optional SNMP runtime
+
+The standalone adapter uses [PySNMP 7.1.24](https://pypi.org/project/pysnmp/7.1.24/),
+an upstream BSD-2-Clause implementation. The qualified versions are declared in
+[requirements-snmp.txt](../credentialed_enrichment/requirements-snmp.txt), including
+the ASN.1 and cryptographic runtime. They are installed separately, not vendored.
+The CI additionally uses jsonschema 4.25.1 to validate synthetic output contracts;
+it is not needed to run the adapter. This adds an explicit optional runtime,
+not a complete SBOM or approval to redistribute its wheels/bundled libraries.
