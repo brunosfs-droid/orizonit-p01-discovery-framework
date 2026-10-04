@@ -1,6 +1,6 @@
 # P01 — Próximos passos da Product Alpha
 
-Atualizado em 03/10/2026 (-03), com desenvolvimento independente do LAB.
+Atualizado em 04/10/2026 (-03), com desenvolvimento independente do LAB.
 
 ## Preciso testar alguma coisa agora?
 
@@ -45,6 +45,19 @@ Fonte `7e769df77f7ee89b87ba299fc8a4dc36333be316` qualificada em dez runs / 24 jo
 24 casos nativos em Linux/Windows, suíte Python com 496 casos / 109 skips,
 187 casos em cada PostgreSQL 16/17 e artefatos Web byte a byte preservados.
 [Registro de qualificação](validation/OPERATOR_ACCOUNTS_CI_v0.6.18.md).
+
+v0.6.19 acrescenta [auditoria privada opcional do servidor](OPERATOR_SERVER_AUDIT_v0.6.19.md):
+início/fim de requests, operações fixas e IDs autorizados, sem copiar senhas,
+tokens, URLs ou relatórios. Arquivo novo por listener com orçamento de 8 MiB;
+falha de admissão da auditoria nega novo trabalho antes de autenticação/SQL.
+Default desativado; CI HTTP, filesystem Linux/Windows, reader PostgreSQL e
+Chromium usam somente dados sintéticos. Nenhum novo passo manual ou alteração
+de conta, serviço ou configuração do LAB solicitado em 04/10.
+Fonte `2a7fa52943903b12eda1ba7c25671a21cbf11482` qualificada em dez runs / 24 jobs:
+28 casos de auditoria na matriz Linux/Windows, suíte Python com 525 casos / 111 skips,
+188 casos em cada PostgreSQL 16/17 e Chromium com fechamento privado verificado.
+Os 14 payloads Web permanecem byte a byte iguais aos da v0.6.18.
+[Registro de qualificação](validation/OPERATOR_SERVER_AUDIT_CI_v0.6.19.md).
 
 O exportador funcional está **LAB VALIDATED no R1 sintético Rocky**. As cinco
 capturas 014007/014025/014138/014149/014247 demonstram instalação corrigida,

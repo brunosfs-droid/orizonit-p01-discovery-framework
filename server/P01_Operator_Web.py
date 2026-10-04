@@ -96,7 +96,7 @@ class WebHandler(api.OperatorHandler):
             if method == 'GET' and preview is not None:
                 self._empty_body()
                 token = self._bearer(); assessment = preview[1]
-                self.server.service.auth.require(token, assessment)
+                self._authorize(token, assessment)
                 try:
                     pairs = parse_qsl(path.query, keep_blank_values=True, strict_parsing=True, max_num_fields=2)
                     values = dict(pairs)
@@ -121,7 +121,7 @@ class WebHandler(api.OperatorHandler):
                 self._empty_body()
                 token = self._bearer(); assessment = match[1]
                 kind = 'executive' if match[2] else 'technical'
-                self.server.service.auth.require(token, assessment)
+                self._authorize(token, assessment)
                 try:
                     pairs = parse_qsl(path.query, keep_blank_values=True, strict_parsing=True, max_num_fields=2)
                     values = dict(pairs)
@@ -163,6 +163,7 @@ class WebHandler(api.OperatorHandler):
             self._send(status, dict(status='failed', error_code=code))
             return
         except (BrokenPipeError, ConnectionResetError, TimeoutError):
+            self._audit_delivery_failed = True
             self.close_connection = True
             return
         except Exception:
@@ -171,7 +172,7 @@ class WebHandler(api.OperatorHandler):
         super()._dispatch(method)
 
 
-def create_server(policy_path, host='127.0.0.1', port=8878, *, tls_cert=None, tls_key=None):
+def create_server(policy_path, host='127.0.0.1', port=8878, *, tls_cert=None, tls_key=None, audit_path=None):
     directory = Path(__file__).resolve().parent / 'web'
     assets = {}
     for route, (name, content_type) in ASSETS.items():
@@ -183,7 +184,8 @@ def create_server(policy_path, host='127.0.0.1', port=8878, *, tls_cert=None, tl
             raise ValueError('invalid Web asset')
         raw.decode('utf-8')
         assets[route] = (raw, content_type)
-    server = api.create_server(policy_path, host, port, tls_cert=tls_cert, tls_key=tls_key)
+    server = api.create_server(policy_path, host, port, tls_cert=tls_cert, tls_key=tls_key,
+                               audit_path=audit_path, audit_listener='web')
     server.web_assets = assets
     server.report_exports = exports.ExportDelivery(server.service.auth)
     server.executive_previews = previews.ExecutivePreview(server.report_exports)
@@ -197,14 +199,19 @@ def cli(argv=None):
     parser.add_argument('--host', default='127.0.0.1')
     parser.add_argument('--port', type=int, default=8878)
     parser.add_argument('--tls-cert'); parser.add_argument('--tls-key')
+    parser.add_argument('--audit-file')
     args = parser.parse_args(argv)
     try:
-        with create_server(args.accounts, args.host, args.port, tls_cert=args.tls_cert, tls_key=args.tls_key) as server:
+        with create_server(args.accounts, args.host, args.port, tls_cert=args.tls_cert, tls_key=args.tls_key,
+                           audit_path=args.audit_file) as server:
             print(json.dumps(dict(status='listening', web_version=VERSION, api_version=api.VERSION)), flush=True)
             server.serve_forever()
         return 0
     except KeyboardInterrupt:
         return 0
+    except api.audit.AuditError:
+        print(json.dumps(dict(status='failed', error_code='operator_audit_unavailable')))
+        return 2
     except Exception:
         print(json.dumps(dict(status='failed', error_code='operator_web_startup_failed')))
         return 2

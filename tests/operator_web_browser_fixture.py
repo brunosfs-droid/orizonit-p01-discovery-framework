@@ -88,7 +88,8 @@ def main():
                        grants=[dict(assessment_id=a, permissions=['assessment:read']) for a in ids])
             doc['accounts'].append(row)
         policy.write_text(json.dumps(doc))
-        with web.create_server(policy, port=0) as server:
+        audit_path = Path(temporary) / 'browser-audit.jsonl'
+        with web.create_server(policy, port=0, audit_path=audit_path) as server:
             from types import MethodType
             server.service.read_report = MethodType(read_report, server.service)
             web.exports.export.pg.open_connection = lambda: nullcontext(object())
@@ -96,6 +97,28 @@ def main():
             print(json.dumps(dict(url='http://127.0.0.1:'+str(server.server_port)+'/')), flush=True)
             try: server.serve_forever()
             except KeyboardInterrupt: pass
+        # Independent synthetic audit check after all HTTP workers have closed.
+        raw = audit_path.read_bytes(); assert raw.endswith(b'\n')
+        records = [json.loads(line) for line in raw.splitlines()]
+        assert records[0]['event'] == 'listener_started' and records[-1]['event'] == 'listener_stopped'
+        pending = {}; finished = []
+        for sequence, record in enumerate(records, 1):
+            assert record['sequence'] == sequence and record['audit_version'] == '1'
+            assert record['listener'] == 'web'
+            if record['event'] == 'request_started':
+                assert record['request_id'] not in pending
+                pending[record['request_id']] = record['operation']
+            elif record['event'] == 'request_finished':
+                assert pending.pop(record['request_id']) == record['operation']
+                finished.append(record)
+        assert not pending
+        assert {'login','logout','assessment_directory','report_page','executive_preview',
+                'technical_export','executive_export'} <= {r['operation'] for r in finished}
+        assert any(r['http_status'] == 403 and r['assessment_id'] is None for r in finished)
+        assert not any(r['assessment_id'] == 'LAB-OTHER' for r in finished)
+        assert PASSWORD.encode() not in raw and ATTACK.encode() not in raw
+        assert all(doc['accounts'][0]['password'][key].encode() not in raw for key in ('salt','hash'))
+        assert all(not (set(r) & {'username','password','token','access_token','headers','query','path'}) for r in records)
 
 
 if __name__ == '__main__': main()
