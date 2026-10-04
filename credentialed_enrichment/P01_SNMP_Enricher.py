@@ -147,10 +147,11 @@ class SNMPClient:
         self.api = snmp
         self.engine = snmp.SnmpEngine(maxMessageSize=8192)
         if profile["auth_type"] == "snmpv2c":
-            self.auth = snmp.CommunityData(secrets["community"], mpModel=1)
+            self.auth = snmp.CommunityData(secrets["community"].encode("utf-8"), mpModel=1)
         else:
             self.auth = snmp.UsmUserData(
-                profile["username"], secrets["auth_key"], secrets["priv_key"],
+                profile["username"].encode("utf-8"), secrets["auth_key"].encode("utf-8"),
+                secrets["priv_key"].encode("utf-8"),
                 authProtocol=snmp.USM_AUTH_HMAC192_SHA256,
                 privProtocol=snmp.USM_PRIV_CFB128_AES,
             )

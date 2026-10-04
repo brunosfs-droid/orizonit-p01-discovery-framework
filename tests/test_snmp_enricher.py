@@ -236,9 +236,11 @@ class ResponseTests(unittest.TestCase):
 
 class LoopbackAgent:
     """Actual UDP/SNMP server with synthetic data, no device or host collection."""
-    def __init__(self, missing=None, denied=False, secret_text=False):
+    def __init__(self, missing=None, denied=False, secret_text=False, community=COMMUNITY,
+                 auth_key=AUTH, priv_key=PRIV, username="synthetic-reader"):
         self.ready = threading.Event(); self.error = None; self.requests = []; self.messages = []
         self.missing, self.denied, self.secret_text = missing, denied, secret_text
+        self.community, self.auth_key, self.priv_key, self.username = community, auth_key, priv_key, username
 
     def __enter__(self):
         self.thread = threading.Thread(target=self.serve, daemon=True); self.thread.start()
@@ -266,11 +268,11 @@ class LoopbackAgent:
             self.engine = engine.SnmpEngine()
             transport = udp.UdpTransport().open_server_mode(("127.0.0.1", 0))
             config.add_transport(self.engine, udp.DOMAIN_NAME, transport)
-            config.add_v1_system(self.engine, "synthetic-v2", COMMUNITY)
-            config.add_v3_user(self.engine, "synthetic-reader", snmp.USM_AUTH_HMAC192_SHA256, AUTH,
-                               snmp.USM_PRIV_CFB128_AES, PRIV)
+            config.add_v1_system(self.engine, "synthetic-v2", self.community.encode("utf-8"))
+            config.add_v3_user(self.engine, self.username.encode("utf-8"), snmp.USM_AUTH_HMAC192_SHA256,
+                               self.auth_key.encode("utf-8"), snmp.USM_PRIV_CFB128_AES, self.priv_key.encode("utf-8"))
             config.add_vacm_user(self.engine, 2, "synthetic-v2", "noAuthNoPriv", (1, 3, 6, 1, 2, 1))
-            config.add_vacm_user(self.engine, 3, "synthetic-reader", "authPriv", (1, 3, 6, 1, 2, 1))
+            config.add_vacm_user(self.engine, 3, self.username.encode("utf-8"), "authPriv", (1, 3, 6, 1, 2, 1))
             owner = self
             def observe(snmp_engine, execution_point, variables, callback_context):
                 owner.messages.append({"model": int(variables["securityModel"]),
@@ -313,6 +315,22 @@ class LoopbackAgent:
 
 @unittest.skipUnless(HAS_SNMP, "optional SNMP runtime is not installed")
 class ProtocolTests(unittest.TestCase):
+    def test_unicode_credentials_use_utf8_octets(self):
+        community, auth, priv, username = "comunidade-sintética-C51", "chave-sintética-A61", "privacidade-sintética-P71", "leitor-sintético"
+        for version in ("snmpv2c", "snmpv3"):
+            document = profiles(version)
+            if version == "snmpv3":
+                document["profiles"][0]["username"] = username
+            def unicode_provider(ref):
+                return {"env://CANCA_TEST_COMMUNITY": community, "env://CANCA_TEST_AUTH": auth,
+                        "env://CANCA_TEST_PRIV": priv}[ref]
+            with self.subTest(version=version), LoopbackAgent(community=community, auth_key=auth,
+                                                            priv_key=priv, username=username) as agent:
+                result = mod.collect(document, "127.0.0.1", "network-read", CONTEXT, execute=True,
+                                     authorized=True, auth_only=True, port=agent.port, provider=unicode_provider)
+                self.assertTrue(result["authentication"]["success"])
+                self.assertEqual(agent.requests, [mod.FIELDS[0][1]])
+
     def test_real_v2c_and_v3_full_gets_and_crypto(self):
         for version in ("snmpv2c", "snmpv3"):
             with self.subTest(version=version), LoopbackAgent() as agent:
