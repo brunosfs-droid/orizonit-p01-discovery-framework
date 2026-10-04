@@ -17,6 +17,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'persistence'))
 from P01_Operator_Auth import AccessError, LocalAuth, load_policy, unique_object
 import P01_Assessment_Report as report
+import P01_Operator_Audit as audit
 
 VERSION = '0.6.11'
 MAX_BODY = 4096
@@ -47,6 +48,7 @@ class OperatorServer(ThreadingHTTPServer):
 
     def __init__(self, address, service):
         self.service = service
+        self.audit = None
         self._slots = threading.BoundedSemaphore(MAX_WORKERS)
         super().__init__(address, OperatorHandler)
 
@@ -79,6 +81,13 @@ class OperatorServer(ThreadingHTTPServer):
         # No traceback can expose backend connection, credential or request data.
         pass
 
+    def server_close(self):
+        try:
+            super().server_close()
+        finally:
+            if self.audit is not None:
+                self.audit.close()
+
 
 class OperatorHandler(BaseHTTPRequestHandler):
     protocol_version = 'HTTP/1.0'
@@ -90,6 +99,10 @@ class OperatorHandler(BaseHTTPRequestHandler):
 
     def send_error(self, code, message=None, explain=None):
         self._send(code, dict(status='failed', error_code='http_request_invalid'))
+
+    def send_response(self, code, message=None):
+        self._audit_http_status = code
+        super().send_response(code, message)
 
     def _send(self, status, payload):
         try:
@@ -120,7 +133,17 @@ class OperatorHandler(BaseHTTPRequestHandler):
         value = self._header('Authorization')
         if not isinstance(value, str) or not re.fullmatch(r'Bearer [A-Za-z0-9_-]{43}', value):
             raise AccessError('authentication_required')
+        if getattr(self, '_audit_request', None) is not None:
+            try:
+                self._audit_operator = self.server.service.auth.operator_id(value[7:])
+            except AccessError:
+                pass
         return value[7:]
+
+    def _authorize(self, token, assessment):
+        operator = self.server.service.auth.require(token, assessment)
+        if getattr(self, '_audit_request', None) is not None:
+            self._audit_operator = operator; self._audit_assessment = assessment
 
     def _path(self):
         if (len(self.path) > 2048 or self._header('Transfer-Encoding') is not None
@@ -161,6 +184,8 @@ class OperatorHandler(BaseHTTPRequestHandler):
                     raise AccessError('http_request_invalid', 400)
                 doc = self._login_json()
                 result = self.server.service.auth.login(doc['username'], doc['password'])
+                if getattr(self, '_audit_request', None) is not None:
+                    self._audit_operator = result['operator_id']
                 self._send(201, result)
                 return
             self._empty_body()
@@ -176,7 +201,7 @@ class OperatorHandler(BaseHTTPRequestHandler):
             if method != 'GET' or match is None:
                 raise AccessError('route_not_found', 404)
             token = self._bearer(); assessment = match[1]
-            self.server.service.auth.require(token, assessment)
+            self._authorize(token, assessment)
             try:
                 pairs = parse_qsl(path.query, keep_blank_values=True, strict_parsing=True, max_num_fields=4)
                 values = dict(pairs)
@@ -200,17 +225,47 @@ class OperatorHandler(BaseHTTPRequestHandler):
         except Exception:
             self._send(503, dict(status='failed', error_code='operator_request_failed'))
 
+    def _serve(self, method):
+        sink = self.server.audit
+        if sink is None:
+            self._dispatch(method)
+            return
+        self._audit_request = None; self._audit_operator = None
+        self._audit_assessment = None; self._audit_http_status = None
+        self._audit_delivery_failed = False
+        try:
+            self._audit_request = sink.begin(audit.operation(method, self.path))
+        except audit.AuditError:
+            self._send(503, dict(status='failed', error_code='operator_audit_unavailable'))
+            return
+        outcome = 'response_written'
+        try:
+            self._dispatch(method)
+            if self._audit_delivery_failed: outcome = 'delivery_failed'
+            elif self._audit_http_status is None: outcome = 'handler_failed'
+        except (BrokenPipeError, ConnectionResetError, TimeoutError):
+            outcome = 'delivery_failed'; self.close_connection = True
+        except Exception:
+            outcome = 'handler_failed'; self.close_connection = True
+        finally:
+            try:
+                sink.finish(self._audit_request, http_status=self._audit_http_status, outcome=outcome,
+                            operator_id=self._audit_operator, assessment_id=self._audit_assessment)
+            except audit.AuditError:
+                self.close_connection = True
+
     def do_GET(self):
-        self._dispatch('GET')
+        self._serve('GET')
 
     def do_POST(self):
-        self._dispatch('POST')
+        self._serve('POST')
 
     def do_DELETE(self):
-        self._dispatch('DELETE')
+        self._serve('DELETE')
 
 
-def create_server(policy_path, host='127.0.0.1', port=8878, *, tls_cert=None, tls_key=None):
+def create_server(policy_path, host='127.0.0.1', port=8878, *, tls_cert=None, tls_key=None,
+                  audit_path=None, audit_listener='api'):
     if type(port) is not int or not 0 <= port <= 65535:
         raise ValueError('invalid operator port')
     address = ipaddress.ip_address(host)
@@ -225,6 +280,8 @@ def create_server(policy_path, host='127.0.0.1', port=8878, *, tls_cert=None, tl
     service = OperatorService(LocalAuth(load_policy(policy_path)))
     server = OperatorServer((str(address), port), service)
     try:
+        if audit_path is not None:
+            server.audit = audit.FileAudit(audit_path, audit_listener)
         if context:
             # Handshake in get_request would block the accept loop; wrap per worker.
             server.tls_context = context
@@ -240,14 +297,19 @@ def cli(argv=None):
     parser.add_argument('--host', default='127.0.0.1')
     parser.add_argument('--port', type=int, default=8878)
     parser.add_argument('--tls-cert'); parser.add_argument('--tls-key')
+    parser.add_argument('--audit-file')
     args = parser.parse_args(argv)
     try:
-        with create_server(args.accounts, args.host, args.port, tls_cert=args.tls_cert, tls_key=args.tls_key) as server:
+        with create_server(args.accounts, args.host, args.port, tls_cert=args.tls_cert, tls_key=args.tls_key,
+                           audit_path=args.audit_file) as server:
             print(json.dumps(dict(status='listening', version=VERSION)), flush=True)
             server.serve_forever()
         return 0
     except KeyboardInterrupt:
         return 0
+    except audit.AuditError:
+        print(json.dumps(dict(status='failed', error_code='operator_audit_unavailable')))
+        return 2
     except Exception:
         print(json.dumps(dict(status='failed', error_code='operator_startup_failed')))
         return 2

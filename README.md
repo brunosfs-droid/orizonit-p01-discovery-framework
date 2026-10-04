@@ -10,6 +10,9 @@
 
 ## Product baseline
 
+Operator server audit v0.6.19: [opt-in private application audit](docs/OPERATOR_SERVER_AUDIT_v0.6.19.md)
+(CANDIDATE). Bounded new JSONL per listener, trusted IDs and no submitted secrets;
+failed audit admission blocks new work. Default off; no manual LAB action required.
 Operator administration v0.6.18: [private offline account revisions](docs/OPERATOR_ACCOUNTS_v0.6.18.md)
 (CANDIDATE). Add operators, replace exact read grants, enable/disable and rotate
 passwords into a new private file for controlled restart. Live policies stay immutable;

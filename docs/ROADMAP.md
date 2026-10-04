@@ -572,3 +572,14 @@ See [edition policy](LICENSING_AND_EDITIONS.md) and [ADR 0021](ADR_0021_Apache_2
 - Sem alteração de conta real, collector login, credenciais dos alvos, Node mTLS, migração, store, AD/SSO ou implantação no LAB.
 - [Contrato](OPERATOR_ACCOUNTS_v0.6.18.md) · [ADR 0030](ADR_0030_Offline_Operator_Accounts_v0.6.18.md) ·
   [Registro CI](validation/OPERATOR_ACCOUNTS_CI_v0.6.18.md).
+
+## v0.6.19 — auditoria privada opcional do servidor (CANDIDATE)
+
+- A — MVP: registros de login, consultas/downloads, negações e encerramento do listener.
+- JSONL novo/exclusivo por execução, operações fixas e IDs de sessão/grant autorizado; não copiar senhas, tokens, URLs ou conteúdo de relatório.
+- Default off; 8 MiB/1024 bytes por registro, sequência serializada, reserva para fim dos requests e encerramento, fsync antes de novo trabalho.
+- Auditoria indisponível nega novas operações antes de autenticação/SQL; falha depois da resposta preserva o prefixo e bloqueia admissões futuras.
+- CI nativo Linux/Windows, HTTP, PostgreSQL SELECT-only e Chromium; política de contas, síntese e formatos ZIP preservados.
+- Sem implantação no LAB, SIEM/imutabilidade/retenção automática, migração, store, AD/SSO, collector login ou alteração de mTLS.
+- [Contrato](OPERATOR_SERVER_AUDIT_v0.6.19.md) · [ADR 0031](ADR_0031_Operator_Server_Audit_v0.6.19.md) ·
+  [Registro CI](validation/OPERATOR_SERVER_AUDIT_CI_v0.6.19.md).

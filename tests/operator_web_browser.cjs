@@ -193,5 +193,7 @@ const {chromium} = require(process.env.CANCA_PLAYWRIGHT_MODULE || 'playwright');
   } finally {
     clearTimeout(readyTimeout); if (browser) await browser.close(); lines.close();
     if (fixture.exitCode === null) { const exit = once(fixture, 'exit'); fixture.kill('SIGINT'); await exit; }
+    assert.equal(fixture.exitCode,0,'Browser HTTP fixture and private audit must close successfully');
+    console.log('OPERATOR WEB AUDIT PASS — private JSONL, paired events, trusted IDs and no submitted secrets');
   }
 })().catch(error => { console.error('OPERATOR WEB BROWSER FAILED', error); process.exitCode=1; });

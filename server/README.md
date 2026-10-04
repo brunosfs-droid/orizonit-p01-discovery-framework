@@ -132,6 +132,15 @@ access under abuse; they are controlled Alpha limits, not distributed DoS protec
 
 ## Administrative changes and limits
 
+The [optional private audit v0.6.19](../docs/OPERATOR_SERVER_AUDIT_v0.6.19.md)
+records handled requests into one new private JSONL file per listener when
+`--audit-file` is specified. Fixed operation labels, authenticated operator IDs
+and authorized assessment IDs exclude submitted secrets/URLs/report content.
+An 8 MiB budget reserves request completions; failed admission returns 503 before
+new authentication or backend work. Audit remains off by default. New filename,
+private directory/Windows ACLs and controlled restart are deployment requirements;
+no live LAB configuration change is requested.
+
 The [offline administrator CLI v0.6.18](../docs/OPERATOR_ACCOUNTS_v0.6.18.md)
 inspects a private policy and creates a distinct revision for add, exact grant
 replacement, enable/disable or password rotation. Each change requires the source
@@ -143,7 +152,7 @@ is requested by this CANDIDATE increment.
 
 Account/grant changes require a controlled restart and invalidate all sessions.
 Stop admitting traffic and wait for active requests to finish before restart.
-No signup, password recovery, account mutation endpoint, MFA, persistent audit,
+No signup, password recovery, account mutation endpoint, MFA, immutable remote audit,
 HA sessions, tenancy or SSO yet. Breached-password screening/public login
 hardening remain release gates. No PostgreSQL assessment inventory, import,
 lifecycle update, server-side scan or commercial entitlement. The standalone API

@@ -227,6 +227,12 @@ class LocalAuth:
             _, account = self._session(token)
             return tuple(sorted(account.assessments))
 
+    def operator_id(self, token):
+        """Current session's trusted principal ID; never submitted username/token."""
+        with self._lock:
+            _, account = self._session(token)
+            return account.operator_id
+
     def logout(self, token):
         with self._lock:
             key, _ = self._session(token)
