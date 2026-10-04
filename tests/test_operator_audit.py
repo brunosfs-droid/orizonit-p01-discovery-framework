@@ -329,11 +329,14 @@ class OperatorAuditHTTPTests(unittest.TestCase):
         self.start(); token,headers=self.login()
         with patch.object(api.report.pg,'open_connection',side_effect=RuntimeError(MARKER)):
             self.assertEqual(self.request('GET','/api/v1/assessments/LAB-001/report',headers=headers)[0],503)
-        self.assertEqual(self.request('GET','/api/v1/assessments/LAB-001/report?password='+MARKER,headers=headers)[0],400)
+        with patch.object(api.report.pg,'open_connection') as connect:
+            for suffix in ('password='+MARKER,'limit=1&limit=2','limit=1&','&'):
+                self.assertEqual(self.request('GET','/api/v1/assessments/LAB-001/report?'+suffix,headers=headers)[0],400)
+            connect.assert_not_called()
         self.assertEqual(self.request('GET','/api/v1/assessments/LAB-001/report',headers={'Authorization':'Bearer '+'x'*43})[0],401)
         self.server.service.auth.clock=lambda:time.monotonic()+1000
         self.assertEqual(self.request('GET','/api/v1/assessments/LAB-001/report',headers=headers)[0],401)
-        rows=self.finished(); self.assertEqual([r['http_status'] for r in rows],[201,503,400,401,401])
+        rows=self.finished(); self.assertEqual([r['http_status'] for r in rows],[201,503,400,400,400,400,401,401])
         self.assertIsNone(rows[-1]['operator_id']); self.assertIsNone(rows[-2]['operator_id'])
 
     def test_web_origin_denial_directory_preview_and_both_downloads(self):

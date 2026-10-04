@@ -203,7 +203,8 @@ class OperatorHandler(BaseHTTPRequestHandler):
             token = self._bearer(); assessment = match[1]
             self._authorize(token, assessment)
             try:
-                pairs = parse_qsl(path.query, keep_blank_values=True, strict_parsing=True, max_num_fields=4)
+                # An exactly empty query uses defaults on every supported parser.
+                pairs = parse_qsl(path.query, keep_blank_values=True, strict_parsing=True, max_num_fields=4) if path.query else []
                 values = dict(pairs)
                 if len(values) != len(pairs) or set(values) - {'after_analysis_id', 'after_ordinal', 'limit', 'expected_scope_sha256'}:
                     raise ValueError('invalid query')
