@@ -132,6 +132,15 @@ access under abuse; they are controlled Alpha limits, not distributed DoS protec
 
 ## Administrative changes and limits
 
+The [offline administrator CLI v0.6.18](../docs/OPERATOR_ACCOUNTS_v0.6.18.md)
+inspects a private policy and creates a distinct revision for add, exact grant
+replacement, enable/disable or password rotation. Each change requires the source
+file SHA256 and a new private output name; passwords use hidden terminal prompts.
+It does not reload a running listener or revoke its live tokens. Review the
+revision, then use its file only through a controlled restart. Policy v1 and
+Web/API authentication contracts remain unchanged. No real account/LAB change
+is requested by this CANDIDATE increment.
+
 Account/grant changes require a controlled restart and invalidate all sessions.
 Stop admitting traffic and wait for active requests to finish before restart.
 No signup, password recovery, account mutation endpoint, MFA, persistent audit,

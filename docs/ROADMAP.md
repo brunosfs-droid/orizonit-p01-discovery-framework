@@ -562,3 +562,13 @@ See [edition policy](LICENSING_AND_EDITIONS.md) and [ADR 0021](ADR_0021_Apache_2
 - Sem migração, SQL de escrita, store, AD/SSO, collector login, inventário ou mapper. Diretório e formatos ZIP anteriores preservados.
 - [Contrato](OPERATOR_WEB_PREVIEW_v0.6.17.md) · [ADR 0029](ADR_0029_Operator_Executive_Preview_v0.6.17.md) ·
   [Registro CI](validation/OPERATOR_WEB_PREVIEW_CI_v0.6.17.md).
+
+## v0.6.18 — revisões offline das contas locais (CANDIDATE)
+
+- A — MVP: adicionar operadores, substituir grants exatos, habilitar/desabilitar e trocar senha em arquivo privado novo.
+- Formato v1 e scrypt v0.6.11 preservados; origem cercada por SHA/identidade, publicação exclusiva sem overwrite e erros redigidos.
+- Senhas em prompts ocultos; inspeção sem salts/hashes de senha. Não há recarga/revogação de sessões live ou endpoint de escrita.
+- CI Linux/Windows com filesystem/crypto reais, isolamento de grants, startup snapshots, falhas e interrupção; pipelines Web/API/SQL permanecem compatíveis.
+- Sem alteração de conta real, collector login, credenciais dos alvos, Node mTLS, migração, store, AD/SSO ou implantação no LAB.
+- [Contrato](OPERATOR_ACCOUNTS_v0.6.18.md) · [ADR 0030](ADR_0030_Offline_Operator_Accounts_v0.6.18.md) ·
+  [Registro CI](validation/OPERATOR_ACCOUNTS_CI_v0.6.18.md).

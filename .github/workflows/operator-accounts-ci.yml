@@ -1,0 +1,35 @@
+name: Operator Accounts CI
+
+on:
+  push:
+    branches: [main, "feature/**", "fix/**", "chore/**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  private-policy-revisions:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            python: "3.10"
+          - os: ubuntu-latest
+            python: "3.12"
+          - os: windows-latest
+            python: "3.12"
+          - os: windows-latest
+            python: "3.13"
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Compile offline operator account revisions
+        run: python -m py_compile server/P01_Operator_Auth.py server/P01_Operator_Accounts.py tests/test_operator_accounts.py
+      - name: Qualify private policy revisions on native filesystem and scrypt
+        run: python -m unittest discover -s tests -p "test_operator_accounts.py" -v
