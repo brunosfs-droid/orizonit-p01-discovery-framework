@@ -58,6 +58,7 @@ connected node mTLS retain their separate purposes. Optional AD integration foll
 - **SSH Credentialed Enrichment:** 0.4b.2.1 — LAB VALIDATED em Ubuntu e Rocky via P01-MGMT01; appliance SSH restrito também classificado corretamente.
 - **Context-aware Credential Resolver / Planner:** 0.4b.3.2 — v0.4b.3.1 LAB VALIDATED; candidate passa a consumir Assessment Manifest, distinguir realm declarado/observado e bloquear conflito de contexto.
 - **WinRM Credentialed Enrichment:** 0.4b.4.3 — LAB VALIDATED em P01-MGMT01 (local realm), P01-DC01 (domain controller/domain realm) e P01-W11-01 (domain workstation); failure semantics transport/auth também validados em runtime.
+- **SNMP Credentialed Enrichment:** 0.4b.7 — CANDIDATE, adapter independente de alvo único; SNMPv3 authPriv SHA-256/AES-128 e SNMPv2c explícito, GETs fixos limitados, dry-run sem secrets/rede, JSON/SHA256 e cobertura por campo. [Guia](credentialed_enrichment/README-SNMP.md). Integração automática segue para incremento próprio; nenhum novo teste de LAB solicitado.
 - **Multi-target Credentialed Executor:** 0.4b.5 — LAB VALIDATED em dry-run, AUTH-only e FULL nos cinco ativos P01LAB; SHA256 binding, profile-drift guard e shared-credential circuit breaker.
 - **Assessment Context & Credential Intake:** 0.4b.6 — LAB VALIDATED; manifest não secreto, intake estruturado, declared/observed realm gating e high-privilege guardrails.
 - **Asset Resolver:** 0.4c.0 — LAB VALIDATED; 5 Network Discovery + 5 FULL observations -> 5 logical assets, 0 unresolved, 0 ambiguous, 0 conflicts.

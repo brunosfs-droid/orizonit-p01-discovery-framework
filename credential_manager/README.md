@@ -98,7 +98,7 @@ The secret value is not exposed by the P01 CLI.
 ## Security model
 
 - no plaintext secrets in Git;
-- no plaintext secrets in Google Drive;
+- no plaintext secrets in OneDrive/SharePoint or legacy Google Drive;
 - no plaintext secrets in JSON output;
 - credential profiles are scoped by protocol/network;
 - optional contextual selectors narrow eligibility by discovered service and asset identity;
@@ -116,6 +116,12 @@ v0.4b.1 foundation has been validated on Windows for:
 - target/protocol matching.
 
 Real device authentication begins in v0.4b.2+.
+
+The [SNMP v0.4b.7 adapter](../credentialed_enrichment/README-SNMP.md) consumes
+community or auth_key/priv_key references with a single explicit profile ID.
+[Disabled SNMP examples](credentials.snmp.example.json) declare metadata only;
+SNMPv3 requires the exact authPriv/SHA-256/AES-128 policy. No Cancã login is
+required to run the adapter. Real device qualification remains CANDIDATE.
 
 
 ## v0.4b.3 context-aware resolver

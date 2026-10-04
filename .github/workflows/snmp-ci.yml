@@ -1,0 +1,35 @@
+name: Read-only SNMP CI
+
+on:
+  push:
+    branches: [ main, "feature/**", "fix/**", "chore/**" ]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  snmp-loopback:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ["3.10", "3.12", "3.13"]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install qualified optional SNMP runtime
+        run: python -m pip install -r credentialed_enrichment/requirements-snmp.txt jsonschema==4.25.1
+      - name: Compile read-only SNMP adapter
+        run: python -m py_compile credentialed_enrichment/P01_SNMP_Enricher.py tests/test_snmp_enricher.py
+      - name: Qualify real loopback SNMPv2c and SNMPv3 authPriv
+        env:
+          CANCA_REQUIRE_SNMP_TESTS: "1"
+        run: python -m unittest discover -s tests -p test_snmp_enricher.py -v
+      - name: Validate SNMP contracts and disabled examples
+        run: |
+          python -c "import json; from pathlib import Path; from jsonschema import Draft202012Validator; s=json.loads(Path('schemas/p01-snmp-enrichment-schema-v0.4b.7.json').read_text()); Draft202012Validator.check_schema(s); p=json.loads(Path('credential_manager/credentials.snmp.example.json').read_text()); c=json.loads(Path('schemas/p01-credential-profiles-schema-v0.4b.json').read_text()); Draft202012Validator(c).validate(p); assert all(x['enabled'] is False for x in p['profiles'])"

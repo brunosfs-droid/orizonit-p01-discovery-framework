@@ -4,6 +4,13 @@ Atualizado em 04/10/2026 (-03), com desenvolvimento independente do LAB.
 
 ## Preciso testar alguma coisa agora?
 
+v0.4b.7 acrescenta [enriquecimento SNMP de alvo único](../credentialed_enrichment/README-SNMP.md)
+como pendência independente do MVP: v3 authPriv SHA-256/AES-128 e v2c explícito,
+GETs fixos limitados, profiles/scopes/contextos e JSON/SHA256 com cobertura.
+Agentes sintéticos loopback no CI não dependem do LAB. Integração automática
+com portable/executor/bundle terá incremento próprio. Nenhuma nova validação
+manual ou alteração de credencial, target, conta ou serviço solicitada hoje.
+
 **Não há validação solicitada hoje.** O mantenedor adiou os testes de LAB em
 03/10. O novo download Web v0.6.13 permanece CANDIDATE, com seu pacote qualificado
 fixado em `9cb8442e4a9ff84384b6b4f42bf5c8db0a65d871`, com os onze arquivos
