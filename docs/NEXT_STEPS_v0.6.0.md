@@ -41,6 +41,9 @@ substituir grants, habilitar/desabilitar ou trocar senha. Exige o hash da origem
 preserva os demais operadores e não altera políticas/sessões em execução.
 CI Linux/Windows usa apenas políticas sintéticas. Web v0.6.17 e API v0.6.11
 permanecem compatíveis; nenhuma conta real ou serviço do LAB é alterado hoje.
+Fonte `7e769df77f7ee89b87ba299fc8a4dc36333be316` qualificada em dez runs / 24 jobs:
+24 casos nativos em Linux/Windows, suíte Python com 496 casos / 109 skips,
+187 casos em cada PostgreSQL 16/17 e artefatos Web byte a byte preservados.
 [Registro de qualificação](validation/OPERATOR_ACCOUNTS_CI_v0.6.18.md).
 
 O exportador funcional está **LAB VALIDATED no R1 sintético Rocky**. As cinco
