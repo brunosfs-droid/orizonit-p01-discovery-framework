@@ -53,6 +53,10 @@ falha de admissão da auditoria nega novo trabalho antes de autenticação/SQL.
 Default desativado; CI HTTP, filesystem Linux/Windows, reader PostgreSQL e
 Chromium usam somente dados sintéticos. Nenhum novo passo manual ou alteração
 de conta, serviço ou configuração do LAB solicitado em 04/10.
+Fonte `2a7fa52943903b12eda1ba7c25671a21cbf11482` qualificada em dez runs / 24 jobs:
+28 casos de auditoria na matriz Linux/Windows, suíte Python com 525 casos / 111 skips,
+188 casos em cada PostgreSQL 16/17 e Chromium com fechamento privado verificado.
+Os 14 payloads Web permanecem byte a byte iguais aos da v0.6.18.
 [Registro de qualificação](validation/OPERATOR_SERVER_AUDIT_CI_v0.6.19.md).
 
 O exportador funcional está **LAB VALIDATED no R1 sintético Rocky**. As cinco
