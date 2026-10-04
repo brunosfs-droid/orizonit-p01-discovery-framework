@@ -35,6 +35,14 @@ Fonte `d2947213df84cdb9896ee193c421970dec39a08f` qualificada em oito runs / 16 j
 187 casos em cada PostgreSQL 16/17, Chromium a 1280/390 px e ZIPs preservados.
 [Registro de qualificação](validation/OPERATOR_WEB_PREVIEW_CI_v0.6.17.md).
 
+v0.6.18 acrescenta [administração offline das contas locais](OPERATOR_ACCOUNTS_v0.6.18.md):
+inspeção redigida e geração de arquivo privado novo para adicionar operadores,
+substituir grants, habilitar/desabilitar ou trocar senha. Exige o hash da origem,
+preserva os demais operadores e não altera políticas/sessões em execução.
+CI Linux/Windows usa apenas políticas sintéticas. Web v0.6.17 e API v0.6.11
+permanecem compatíveis; nenhuma conta real ou serviço do LAB é alterado hoje.
+[Registro de qualificação](validation/OPERATOR_ACCOUNTS_CI_v0.6.18.md).
+
 O exportador funcional está **LAB VALIDATED no R1 sintético Rocky**. As cinco
 capturas 014007/014025/014138/014149/014247 demonstram instalação corrigida,
 duas respostas `exported`, verificação PASS e exportação da sessão `true`.

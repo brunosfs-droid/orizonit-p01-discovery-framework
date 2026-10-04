@@ -10,6 +10,10 @@
 
 ## Product baseline
 
+Operator administration v0.6.18: [private offline account revisions](docs/OPERATOR_ACCOUNTS_v0.6.18.md)
+(CANDIDATE). Add operators, replace exact read grants, enable/disable and rotate
+passwords into a new private file for controlled restart. Live policies stay immutable;
+development/CI need no manual LAB action.
 Operator Web v0.6.17: [executive preview in the Web](docs/OPERATOR_WEB_PREVIEW_v0.6.17.md)
 (CANDIDATE). Complete fenced historical coverage, recorded severities and paginated
 recommendations; the existing technical/executive ZIP formats remain unchanged.

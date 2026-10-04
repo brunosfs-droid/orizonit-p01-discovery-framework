@@ -72,13 +72,18 @@ The MVP ends at **recommendation**. General-purpose automation and remediation a
 Distributed mTLS R2 passed on separate hosts, including certificate/hostname
 trust, node binding, semantic equivalence and cross-host idempotency.
 
-Product Alpha v0.6.x now starts with the PostgreSQL metadata foundation v0.6.0
-(CANDIDATE): explicit indexing of validated imports, versioned migration and
-atomic/idempotent transactions. The filesystem store and ingestion API remain
-independent. PostgreSQL LAB qualification and backup/restore are pending.
+Product Alpha v0.6.x includes PostgreSQL indexing, lifecycle, asset identity,
+historical findings and fenced technical/executive reporting. Synthetic Rocky R1
+for basic PostgreSQL, recovery, lifecycle and CLI technical export passed, as did
+local operator API and the initial Web R1. New Web downloads/selection/executive
+preview and offline account revisions remain operational CANDIDATE, with manual
+tests deferred by the maintainer on 03/10/2026. The filesystem store and ingestion
+API retain their independent boundaries; full production roles/TLS/recovery are
+separate gates.
 
-The scheduler v0.5f.3 short offline R1 passed on Windows/Rocky. Extended soak
-remains a separate pending gate and does not block synthetic persistence work.
+The scheduler v0.5f.3 short offline R1 and ten-tick/60-second extended soak passed
+on Windows/Rocky. Multi-day and live AUTH/FULL/POST qualification remain separate;
+accepted R1/soak gates should not be repeated for subsequent synthetic development.
 See [status](STATUS_PERSISTENCE_v0.6.0.md) and [next steps](NEXT_STEPS_v0.6.0.md).
 
 ## Community Beta exit criteria
