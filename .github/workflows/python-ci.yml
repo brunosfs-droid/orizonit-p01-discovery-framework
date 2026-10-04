@@ -49,6 +49,8 @@ jobs:
         run: python -m py_compile server/P01_Operator_Accounts.py tests/test_operator_accounts.py
       - name: Compile optional operator server audit
         run: python -m py_compile server/P01_Operator_Audit.py server/P01_Operator_API.py server/P01_Operator_Web.py tests/test_operator_audit.py
+      - name: Compile offline operator audit review
+        run: python -m py_compile server/P01_Operator_Audit_Check.py tests/test_operator_audit_check.py
 
       - name: Validate JSON artifacts
         run: |

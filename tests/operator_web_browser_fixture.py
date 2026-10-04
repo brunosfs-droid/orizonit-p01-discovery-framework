@@ -9,6 +9,7 @@ import tempfile
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'server'))
 import P01_Operator_Auth as auth
+import P01_Operator_Audit_Check as audit_check
 import P01_Operator_Web as web
 
 PASSWORD = 'Synthetic browser CI passphrase 01!'
@@ -119,6 +120,13 @@ def main():
         assert PASSWORD.encode() not in raw and ATTACK.encode() not in raw
         assert all(doc['accounts'][0]['password'][key].encode() not in raw for key in ('salt','hash'))
         assert all(not (set(r) & {'username','password','token','access_token','headers','query','path'}) for r in records)
+        review = audit_check.inspect_log(audit_path)
+        assert review['state'] == 'closed' and review['unfinished_requests'] == 0
+        assert review['valid_records'] == len(records)
+        assert review['events']['request_finished'] == len(finished)
+        assert review['http_classes']['4xx'] > 0
+        assert not any(private in json.dumps(review) for private in
+                       (PASSWORD, ATTACK, 'OP-BROWSER-CI', 'LAB-001', 'PRIVATE-OTHER'))
 
 
 if __name__ == '__main__': main()

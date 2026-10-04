@@ -10,6 +10,7 @@ import unittest
 from unittest.mock import patch
 
 import test_postgres_operator_api as fixture
+import P01_Operator_Audit_Check as audit_check
 import P01_Operator_Web as web
 
 
@@ -85,6 +86,13 @@ class PostgreSQLOperatorAuditTests(unittest.TestCase):
         finished=[r for r in rows if r['event']=='request_finished']
         self.assertTrue(any(r['assessment_id']==assessment and r['http_status']==200 for r in finished))
         self.assertTrue(any(r['assessment_id'] is None and r['operator_id']=='OP-AUDIT-CI' and r['http_status']==403 for r in finished))
+        review=audit_check.inspect_log(audit_path)
+        self.assertEqual(review['state'],'open_prefix')
+        self.assertEqual(review['unfinished_requests'],1)
+        self.assertEqual(review['events']['listener_stopped'],0)
+        self.assertEqual(review['events']['request_finished'],len(finished))
+        for private in (assessment,'OP-AUDIT-CI',password,token):
+            self.assertNotIn(private,json.dumps(review))
         self.assertEqual(before,fixture.lab.snapshot('canca_ci'))
         self.assertEqual(files,{str(p):pg.digest(p.read_bytes()) for p in self.store.rglob('*') if p.is_file()})
 
