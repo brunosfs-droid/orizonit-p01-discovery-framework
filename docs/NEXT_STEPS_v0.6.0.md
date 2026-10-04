@@ -64,6 +64,11 @@ leitura privada, estados encerrado/prefixo aberto/cauda parcial e contagens fixa
 sem IDs privados. Não repara registros nem declara um prefixo como encerramento.
 CLI e fixtures Linux/Windows, HTTP, PostgreSQL e Chromium seguem independentes;
 nenhum novo passo manual ou alteração no LAB solicitado hoje.
+Fonte `43b7a510e92f3d01b993a1847cd1695879ef85bf` qualificada em dez runs / 24 jobs:
+30 casos de revisão na matriz Linux/Windows, suíte Python 555 casos / 112 skips,
+188 casos por PostgreSQL 16/17 e Chromium com estrutura encerrada verificada.
+Quatro ZIP e dois JSON de relatórios preservados byte a byte; uma diferença
+pontual na captura desktop de seleção está documentada no registro abaixo.
 [Registro de qualificação](validation/OPERATOR_AUDIT_CHECK_CI_v0.6.20.md).
 
 O exportador funcional está **LAB VALIDATED no R1 sintético Rocky**. As cinco
