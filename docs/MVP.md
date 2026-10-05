@@ -23,7 +23,7 @@ The MVP ends at **recommendation**. General-purpose automation and remediation a
 - distributed Discovery Node;
 - secure credential profiles and Secret Provider abstraction;
 - SSH and WinRM enrichment;
-- essential SNMP/network-device read-only enrichment before Community Beta; [SNMP v0.4b.7 adapter](../credentialed_enrichment/README-SNMP.md) and [explicit planning/execution v0.4b.8](SNMP_PLANNED_EXECUTION_v0.4b.8.md) are CANDIDATE with loopback CI; resolver/bundle/managed integration remains pending;
+- essential SNMP/network-device read-only enrichment before Community Beta; [SNMP v0.4b.7 adapter](../credentialed_enrichment/README-SNMP.md), [explicit planning/execution v0.4b.8](SNMP_PLANNED_EXECUTION_v0.4b.8.md) and [resolver/bundle/portable integration v0.4b.9](SNMP_EVIDENCE_PORTABLE_v0.4b.9.md) are CANDIDATE with Linux/Windows synthetic CI; real vendors/LAB remain pending;
 - Assessment Manifest;
 - logical Asset Resolver;
 - Evidence Bundle;
@@ -78,7 +78,9 @@ for basic PostgreSQL, recovery, lifecycle and CLI technical export passed, as di
 local operator API and the initial Web R1. New Web downloads/selection/executive
 preview, offline account revisions, opt-in private operator audit and read-only
 audit review remain operational CANDIDATE, with manual
-tests deferred by the maintainer on 03/10/2026. The filesystem store and ingestion
+tests deferred by the maintainer on 03/10/2026. SNMP v0.4b.9 now carries
+validated synthetic evidence through resolver, bundle, offline replay and the
+managed portable flow without changing the default-off/LAB boundary. The filesystem store and ingestion
 API retain their independent boundaries; full production roles/TLS/recovery are
 separate gates.
 
