@@ -1,0 +1,30 @@
+version: 2
+
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: "pip"
+    directory: "/agent"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: "pip"
+    directory: "/credentialed_enrichment"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    groups:
+      credentialed-enrichment:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "pip"
+    directory: "/persistence"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
