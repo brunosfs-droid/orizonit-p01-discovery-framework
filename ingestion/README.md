@@ -1,4 +1,6 @@
-# P01 Offline Import — v0.5b.0
+# P01 Offline Import — v0.5b.1
+
+SNMP replay now compares field/OID provenance, source hashes, coverage, diagnostics and correlation with the embedded edge result. Receipt/format and the semantic projection of legacy flows remain unchanged. The replay imports no SNMP adapter or credential provider. [SNMP integration](../docs/SNMP_EVIDENCE_PORTABLE_v0.4b.9.md).
 
 The Offline Import stage materializes a validated `.p01bundle` into a local/server evidence store and can re-run the Asset Resolver using only the imported evidence.
 

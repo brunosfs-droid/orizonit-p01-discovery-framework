@@ -1,4 +1,4 @@
-# P01 Asset Resolver — v0.4c.0
+# P01 Asset Resolver — v0.4c.1
 
 The Asset Resolver is an **offline-only** correlation engine that consolidates independent P01 evidence into canonical logical assets while preserving provenance.
 
@@ -6,12 +6,15 @@ It does not scan, authenticate, resolve secrets, pivot, or expand scope.
 
 ## Inputs
 
-Current v0.4c.0 inputs:
+Current v0.4c.1 inputs:
 
 - Network Discovery JSON;
 - Credentialed Target JSON from the v0.4b.5 Multi-target Executor;
 - raw WinRM/SSH enrichment JSON is also accepted;
+- validated SNMP standalone v0.4b.7 and executor target v0.4b.8 evidence; AUTH-only/dry/failed probes remain diagnostics;
 - optional v0.4b.6 Assessment Manifest.
+
+SNMP fields retain observed OID/source-SHA claims and field coverage. `sysObjectID` identifies a product/model and is never a strong identifier. Remote usable `sysName` requires independent corroboration and does not promote AD realm through a manifest suffix. Plan hints do not become collected identity. [SNMP evidence contract](../docs/SNMP_EVIDENCE_PORTABLE_v0.4b.9.md).
 
 ## Core safety rule
 

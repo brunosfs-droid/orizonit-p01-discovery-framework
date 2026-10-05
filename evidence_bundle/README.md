@@ -1,4 +1,6 @@
-# P01 Evidence Bundle — v0.5a.0
+# P01 Evidence Bundle — v0.5a.1
+
+The v0.5a format/roles remain unchanged. Creation and validation now check recognized SNMP evidence contracts while retaining exact raw bytes and hashes. [SNMP bundle/replay contract](../docs/SNMP_EVIDENCE_PORTABLE_v0.4b.9.md).
 
 The Evidence Bundle is the portable transport contract between a P01 Discovery Node and the future P01 Server/Ingestion Plane.
 

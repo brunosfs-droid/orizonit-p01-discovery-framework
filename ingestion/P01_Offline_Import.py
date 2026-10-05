@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Orizon IT P01 Offline Import v0.5b.0.
+"""Orizon IT P01 Offline Import v0.5b.1.
 
 Imports a validated .p01bundle into a local/server evidence store and can
 reprocess the imported raw evidence with the Asset Resolver.
@@ -30,7 +30,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any, Dict, Mapping, Optional, Sequence, Tuple
 
 NAME = "P01-Offline-Import"
-VERSION = "0.5b.0"
+VERSION = "0.5b.1"
 RECEIPT_SCHEMA_VERSION = "0.5b"
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -134,6 +134,10 @@ def _artifacts_by_role(payload_dir: Path, manifest: Mapping[str, Any]) -> Dict[s
 
 def semantic_projection(doc: Mapping[str, Any]) -> Dict[str, Any]:
     """Stable Asset Resolver semantic view for edge/server equivalence checks."""
+    inputs = doc.get("inputs") or {}
+    snmp_present = ("snmp_evidence" in inputs or (doc.get("metadata") or {}).get("snmp_evidence_version") or
+                    any(any(str(field).startswith("snmp.") for field in asset.get("field_provenance", {}))
+                        for asset in doc.get("assets", []) if isinstance(asset, Mapping)))
     assets = []
     for asset in doc.get("assets", []) or []:
         if not isinstance(asset, Mapping):
@@ -148,10 +152,23 @@ def semantic_projection(doc: Mapping[str, Any]) -> Dict[str, Any]:
             "conflicts": asset.get("conflicts", []),
             "confidence": asset.get("confidence"),
         })
+        if snmp_present:
+            provenance = {}
+            for field, claims in (asset.get("field_provenance") or {}).items():
+                selected = [claim for claim in claims if str(field).startswith("snmp.") or
+                            claim.get("evidence") == "snmp_sys_name"]
+                if selected:
+                    provenance[field] = selected
+            assets[-1]["snmp_field_provenance"] = provenance
+            assets[-1]["snmp_sources"] = [
+                {key: value for key, value in source.items() if key != "sha256_verified"}
+                for source in asset.get("sources", []) if source.get("source_kind") == "snmp_enrichment"]
+            if provenance:
+                assets[-1]["correlations"] = asset.get("correlations", [])
     assets.sort(key=lambda x: str(x.get("asset_id") or ""))
 
     summary = doc.get("summary") if isinstance(doc.get("summary"), Mapping) else {}
-    return {
+    projection = {
         "summary": {
             "network_assets_seen": summary.get("network_assets_seen"),
             "credentialed_observations_seen": summary.get("credentialed_observations_seen"),
@@ -165,6 +182,18 @@ def semantic_projection(doc: Mapping[str, Any]) -> Dict[str, Any]:
         "unresolved_observations": doc.get("unresolved_observations", []),
         "ambiguous_correlations": doc.get("ambiguous_correlations", []),
     }
+    if snmp_present:
+        evidence = []
+        for item in inputs.get("snmp_evidence", []):
+            normalized = dict(item)
+            normalized["source"] = {key: value for key, value in (item.get("source") or {}).items()
+                                    if key != "sha256_verified"}
+            evidence.append(normalized)
+        projection["snmp_evidence"] = evidence
+        projection["snmp_evidence_version"] = (doc.get("metadata") or {}).get("snmp_evidence_version")
+        projection["summary"].update({key: summary.get(key) for key in (
+            "snmp_evidence_seen", "snmp_inventory_observations", "snmp_diagnostic_observations")})
+    return projection
 
 
 def semantic_digest(doc: Mapping[str, Any]) -> str:

@@ -1,10 +1,13 @@
-# Cancã Portable Discovery Node — v0.5e.6
+# Cancã Portable Discovery Node — v0.5e.7
 
 The portable runtime is the first unified operator workflow for the Cancã Discovery Node.
 
 It is intentionally **portable-first**: no Windows service or systemd installation is required.
 
-## Scope of v0.5e.6
+SNMP is explicit opt-in in v0.5e.7: [requests, preview, AUTH, FULL and offline replay](../docs/SNMP_EVIDENCE_PORTABLE_v0.4b.9.md).
+The portable collector requires no Cancã login. Target credentials remain in the existing provider; Web login and node mTLS stay separate.
+
+## Scope of v0.5e.7
 
 Implemented:
 
@@ -197,7 +200,7 @@ python .\runtime\P01_Discovery_Node.py run `
 
 The runtime selects the Network Discovery artifact from state and **only** the per-target evidence referenced by the validated EXEC-FULL aggregate job. AUTH-only target evidence is not mixed into resolution. Network, FULL job and every target sidecar are revalidated before correlation.
 
-The existing Asset Resolver v0.4c.0 runs offline/read-only and writes JSON + SHA256 under `resolved`. It performs no network access, secret resolution or authentication. A repeated `run` returns `already_complete`; `--force-reresolve` is refused once downstream bundle/upload steps are complete.
+Asset Resolver v0.4c.1 runs offline/read-only and writes JSON + SHA256 under `resolved`. It performs no network access, secret resolution or authentication. A repeated `run` returns `already_complete`; `--force-reresolve` is refused once downstream bundle/upload steps are complete.
 
 ## Workspace-driven Evidence Bundle export
 

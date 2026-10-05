@@ -115,7 +115,7 @@ See [MVP.md](MVP.md) and [PROJECT_GOVERNANCE.md](PROJECT_GOVERNANCE.md).
 - GETs numéricos fixos, até oito operações, retries zero, timeout/prazo global; JSON/SHA256 com cobertura por campo e falhas parciais.
 - CI loopback com UDP/USM/criptografia reais em Linux/Windows e Python 3.10/3.12/3.13; vendors e operação real permanecem CANDIDATE.
 - [Guia](../credentialed_enrichment/README-SNMP.md) · [ADR 0033](ADR_0033_Read_Only_SNMP_v0.4b.7.md).
-- Planner/executor recebem extensão explícita v0.4b.8; portable managed, resolver e bundle continuam pendentes.
+- Planner/executor recebem extensão explícita v0.4b.8; integração de evidência/portable segue em v0.4b.9.
 
 ### v0.4b.8 — planejamento e execução SNMP explícitos
 - Até 25 endpoints UDP em seeds existentes, profile ID escolhido, scopes/protocolo autorizado no manifest; serviço declarado não vira UDP observado.
@@ -125,8 +125,16 @@ See [MVP.md](MVP.md) and [PROJECT_GOVERNANCE.md](PROJECT_GOVERNANCE.md).
 - JSON/SHA256 exclusivos e privados; agentes loopback reais em matriz Linux/Windows/Python, sem novo teste de LAB.
 - [Contrato](SNMP_PLANNED_EXECUTION_v0.4b.8.md) · [ADR 0034](ADR_0034_Planned_SNMP_Execution_v0.4b.8.md). Operação/vendores permanecem CANDIDATE.
 
-### v0.4b.9+ — próximos adapters e integrações
-- integração SNMP no resolver/bundle/ingestão e controles managed do portable;
+### v0.4b.9 — evidência SNMP e portable gerenciado
+- Reader puro valida envelopes standalone/target, OIDs, tipos, limites, estados e cobertura; sem provider/runtime SNMP no replay.
+- Resolver v0.4c.1 conserva claims observados e fontes; sysObjectID não é identidade forte, sysName exige corroboration e não promove realm AD.
+- AUTH/dry/falhas ficam em diagnósticos; FULL parcial conserva cobertura; uptime variável não gera conflito de configuração.
+- Bundle v0.5a.1 mantém bytes/formato e valida SNMP; importer v0.5b.1 compara campos/fontes/cobertura/correlação no replay.
+- Portable v0.5e.7 recebe requests explícitos, congela hashes e exige enable-snmp em prévia/AUTH/FULL; diretórios privados novos e resume sem rede.
+- Collector sem login Cancã; defaults do agent/scheduler preservados. Operação real CANDIDATE, CI sintético separado de LAB.
+- [Contrato](SNMP_EVIDENCE_PORTABLE_v0.4b.9.md) · [ADR 0035](ADR_0035_SNMP_Evidence_and_Portable_v0.4b.9.md).
+
+### v0.4b.10+ — próximos adapters e integrações
 - Kerberos/HTTPS/certificate para WinRM;
 - WMI/DCOM fallback quando necessário;
 - auditoria de autenticação multi-protocolo.
@@ -145,12 +153,17 @@ See [MVP.md](MVP.md) and [PROJECT_GOVERNANCE.md](PROJECT_GOVERNANCE.md).
 - zero network access, authentication ou secret resolution.
 - **Status:** LAB VALIDATED. O P01LAB real resolveu 5 Network Discovery assets + 5 FULL observations em 5 logical assets, 0 unresolved, 0 ambiguous e 0 conflicts. O realm de autenticação foi separado da identidade de diretório.
 
+### v0.4c.1 — evidência SNMP observada
+- Integração do contrato SNMP v0.4b.9, preservando schema 0.4c e semântica legada.
+- sysName remoto observado + evidência independente; sysObjectID somente modelo.
+- Proveniência por OID/SHA e cobertura por fonte; nenhuma inferência de associação AD.
+
 ### Próximas iterações v0.4c
 - AD computer object / objectGUID / SID;
 - system UUID / SMBIOS UUID / service tag;
 - Windows Collector e Linux Collector locais;
 - registry persistente de asset IDs entre assessment runs;
-- SNMP sysName/sysObjectID e VMware identifiers futuramente.
+- identificação SNMP ampliada e VMware identifiers futuramente.
 
 Objetivo: um ativo lógico, múltiplas fontes de evidência, sem duplicidade no relatório.
 
@@ -373,7 +386,14 @@ O LAB inicial usará P01-MGMT01 como Discovery Node por possuir acesso ao segmen
 - receipt JSON/SHA256 e state transition para `upload: completed` permanecem.
 - **Status:** LAB VALIDATED no P01LAB-RUNTIME-R3. Upload mTLS HTTP 201/imported, semantic_match=true, node P01-MGMT01, receipt JSON/SHA256, state `upload: completed`, `Next action: complete`, zero-input repeat `already_complete` sem novo POST e force-resend sem transporte bloqueado.
 
-Follow-up: após fechar v0.5e, iniciar v0.5f Optional Installed Service/Agent e os gates de product alpha/persistência central.
+### v0.5e.7 — SNMP gerenciado explícito
+- Requests no planejamento; hashes de request/manifest/profiles verificados antes de prévia/acesso.
+- enable-snmp obrigatório em cada estágio; AUTH validado antes de FULL; nenhuma ativação pelo scheduler.
+- FULL SNMP parcial com acesso confirmado permite resolver/export com cobertura explícita.
+- Tentativas privadas novas, preservação de retry e conclusão sem repetir rede; nenhum login Cancã.
+- [Contrato e limites](SNMP_EVIDENCE_PORTABLE_v0.4b.9.md). Vendors/LAB permanecem CANDIDATE.
+
+Follow-up: v0.5f Optional Installed Service/Agent e gates de product alpha/persistência central mantêm seu fluxo independente.
 
 
 ### v0.5f.3 — Explicit bounded service scheduling (LAB VALIDATED for bounded offline soak)
