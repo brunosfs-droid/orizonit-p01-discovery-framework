@@ -1,2 +1,2 @@
 # Optional database component only; portable/agent core stays stdlib.
-psycopg[binary]>=3.2,<4
+psycopg[binary]>=3.3.6,<4
