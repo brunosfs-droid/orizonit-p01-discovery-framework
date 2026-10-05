@@ -116,6 +116,9 @@ permanecem. Export inclui somente targets FULL registrados, sem misturar AUTH.
 
 ## Qualificação e limites
 
+Fonte qualificada no CI: 14 runs / 38 jobs / 198 etapas críticas; 88 testes SNMP
+sem skips em cada job da matriz. A operação em dispositivos reais permanece CANDIDATE.
+
 Testes sintéticos exercitam contratos, identidade negativa, adulteração, drift,
 resume e a cadeia com UDP v2c/v3 authPriv reais. CI requer dependências opcionais
 e executa em Linux/Windows × Python 3.10/3.12/3.13. Regressão default continua

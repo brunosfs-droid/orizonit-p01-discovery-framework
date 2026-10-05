@@ -3,6 +3,8 @@
 Data: 05/10/2026 (-03). Decisão de implementação: aceita.
 Classificação: A — MVP. Qualificação operacional: CANDIDATE.
 Base: `e9250e12d53bb2e941c9e6bb888561166f69b94e`.
+Qualificação sintética da fonte: PASS em 14 runs / 38 jobs / 198 etapas críticas.
+88 testes SNMP sem skips por job. [Registro do SHA qualificado](validation/SNMP_EVIDENCE_PORTABLE_CI_v0.4b.9.md).
 
 ## Contexto
 
