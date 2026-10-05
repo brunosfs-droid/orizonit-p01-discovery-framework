@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Cancã / Orizon IT Portable Discovery Node Runtime v0.5e.6.
+"""Cancã / Orizon IT Portable Discovery Node Runtime v0.5e.7.
 
 Portable-first operator workflow foundation.
 
@@ -29,6 +29,7 @@ import re
 import socket
 import sys
 import tempfile
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
@@ -43,7 +44,7 @@ from P01_Workspace_Lock import locked_workspace, workspace_lock
 
 NAME = "Canca-Portable-Discovery-Node"
 DISPLAY_NAME = "Cancã Portable Discovery Node"
-VERSION = "0.5e.6"
+VERSION = "0.5e.7"
 SCHEMA_VERSION = "0.5e"
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -774,12 +775,55 @@ def run_network_discovery(
     }
 
 
+def _snmp_stage_options(state: Mapping[str, Any], plan: Mapping[str, Any],
+                        enable_snmp: bool, *previous: Mapping[str, Any]) -> bool:
+    """Explicit stage opt-in and frozen source inputs; never consult a provider."""
+    if type(enable_snmp) is not bool:
+        raise RuntimeErrorSafe("enable_snmp must be boolean")
+    has_snmp = any(pp.get("protocol") == "snmp" for asset in plan.get("assets", [])
+                   for pp in asset.get("protocol_plans", []))
+    if not has_snmp:
+        return False
+    if not enable_snmp:
+        raise RuntimeErrorSafe("managed SNMP plans require explicit --enable-snmp at each execution stage")
+    artifact = (state.get("artifacts") or {}).get("credential_plan") or {}
+    refs = state.get("source_refs") or {}
+    for ref, key in (("snmp_requests", "snmp_requests_sha256"),
+                     ("assessment_manifest", "assessment_manifest_sha256"),
+                     ("credential_profiles", "credential_profiles_sha256")):
+        value, expected = refs.get(ref), artifact.get(key)
+        if not value or not expected:
+            raise RuntimeErrorSafe("managed SNMP plan source binding is incomplete; create a new reviewed plan")
+        path = Path(str(value)).expanduser().resolve()
+        if not path.is_file() or digest_file(path) != expected:
+            raise RuntimeErrorSafe("managed SNMP source inputs changed or are missing; access is blocked")
+    for snapshot in previous:
+        if snapshot.get("snmp_execution_enabled") is not True:
+            raise RuntimeErrorSafe("previous managed stage did not explicitly enable SNMP; access is blocked")
+    return True
+
+
+def _snmp_output_path(workspace: Path, stage: str) -> Path:
+    parent = workspace / "evidence" / ("credential_plan" if stage == "plan" else "credentialed_execution")
+    parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    # The qualified writer reserves this fresh child before any live dispatch.
+    return parent / ("SNMP-" + stage + "-" + uuid.uuid4().hex)
+
+
+def _full_action_collected(action: Mapping[str, Any]) -> bool:
+    return (action.get("collection_status") == "collected" or
+            (action.get("action") or {}).get("protocol") == "snmp" and
+            action.get("authentication_success") is True and
+            action.get("collection_status") == "collected_with_field_failures")
+
+
 @locked_workspace
 def run_credential_plan(
     workspace: Path,
     *,
     max_candidates: int = 2,
     force_replan: bool = False,
+    snmp_requests: Optional[Path] = None,
 ) -> Dict[str, Any]:
     workspace = workspace.expanduser().resolve()
     state = _load_state(workspace)
@@ -787,8 +831,14 @@ def run_credential_plan(
     state.setdefault("security", {})["credential_planning_managed_in_this_version"] = True
     step = state["steps"]["credential_plan"]
 
+    requests_path = snmp_requests.expanduser().resolve() if snmp_requests is not None else None
+    if requests_path is not None and not requests_path.is_file():
+        raise RuntimeErrorSafe("SNMP requests file is missing")
+
     if step.get("status") == "completed" and not force_replan:
         existing = state.get("artifacts", {}).get("credential_plan", {})
+        if requests_path is not None and digest_file(requests_path) != existing.get("snmp_requests_sha256"):
+            raise RuntimeErrorSafe("SNMP requests differ from the completed plan; an explicit new plan is required")
         path_value = existing.get("path")
         if path_value:
             path = _workspace_owned_path(workspace, str(path_value))
@@ -817,6 +867,11 @@ def run_credential_plan(
         )
 
     if force_replan:
+        if (requests_path is not None or
+            ((state.get("artifacts") or {}).get("credential_plan") or {}).get("snmp_requests_sha256")) and any(
+                key in (state.get("artifacts") or {}) for key in
+                ("credentialed_execution_preview", "credentialed_execution_auth", "credentialed_execution_full")):
+            raise RuntimeErrorSafe("SNMP execution evidence already exists; preserve it and use a new workspace for a new plan")
         downstream = ("credentialed_execution", "asset_resolver", "evidence_bundle", "upload")
         completed = [
             name
@@ -860,8 +915,9 @@ def run_credential_plan(
         "p01_runtime_credential_planner",
     )
 
-    output_dir = workspace / "evidence" / "credential_plan"
-    output_dir.mkdir(parents=True, exist_ok=True)
+    output_dir = _snmp_output_path(workspace, "plan") if requests_path else workspace / "evidence" / "credential_plan"
+    if requests_path is None:
+        output_dir.mkdir(parents=True, exist_ok=True)
     run_label = f"{safe_label(state['run_id'], 'run_id')}-PLAN"
 
     step.clear()
@@ -882,6 +938,8 @@ def run_credential_plan(
     _write_state(workspace, state)
 
     try:
+        requests_hash = digest_file(requests_path) if requests_path else None
+        requests_doc = planner.snmp_helper().load_requests(requests_path) if requests_path else None
         discovery = planner.load_json(network_path)
         profiles = planner.load_profiles(profiles_path)
         manifest = planner.load_manifest(manifest_path)
@@ -895,18 +953,24 @@ def run_credential_plan(
             realm_map=None,
             max_candidates=int(max_candidates),
             manifest=manifest,
+            **({"snmp_requests": requests_doc} if requests_path else {}),
         )
         payload.setdefault("metadata", {})["assessment_manifest_sha256"] = digest_file(
             manifest_path
         )
         assert_no_secret_material(payload)
         plan_json, plan_sha = planner.write_output(output_dir, run_label, payload)
+        if requests_path and digest_file(requests_path) != requests_hash:
+            raise RuntimeErrorSafe("SNMP requests changed while planning; create a new reviewed plan")
     except Exception as exc:
+        error = "managed SNMP planning failed; inspect source contracts" if requests_path else str(exc)
         step["status"] = "failed"
         step["failed_at_utc"] = utc_now_iso()
-        step["last_error"] = str(exc)[:1200]
-        _append_event(state, "credential_plan", "failed", {"error": str(exc)[:500]})
+        step["last_error"] = error[:1200]
+        _append_event(state, "credential_plan", "failed", {"error": error[:500]})
         _write_state(workspace, state)
+        if requests_path:
+            raise RuntimeErrorSafe(error) from None
         if isinstance(exc, RuntimeErrorSafe):
             raise
         raise RuntimeErrorSafe(str(exc)) from exc
@@ -938,6 +1002,11 @@ def run_credential_plan(
         "adapter_candidates": adapter_candidates,
         "max_candidates": int(max_candidates),
     }
+    if requests_path:
+        state["source_refs"]["snmp_requests"] = str(requests_path)
+        state["artifacts"]["credential_plan"]["snmp_requests_sha256"] = requests_hash
+    else:
+        state["source_refs"].pop("snmp_requests", None)
 
     step.clear()
     step.update({
@@ -977,6 +1046,7 @@ def run_credentialed_execution_dry_run(
     workspace: Path,
     *,
     max_actions: int = 25,
+    enable_snmp: bool = False,
 ) -> Dict[str, Any]:
     workspace = workspace.expanduser().resolve()
     state = _load_state(workspace)
@@ -1041,12 +1111,13 @@ def run_credentialed_execution_dry_run(
     if not profiles_path.is_file():
         raise RuntimeErrorSafe(f"credential profiles file not found: {profiles_path}")
 
+    snmp_enabled = _snmp_stage_options(state, load_json(plan_path), enable_snmp)
     executor = _load_component(
         "orchestrator/P01_Credentialed_Discovery_Executor.py",
         "p01_runtime_credentialed_executor",
     )
-    output_dir = workspace / "evidence" / "credentialed_execution"
-    output_dir.mkdir(parents=True, exist_ok=True)
+    output_dir = _snmp_output_path(workspace, "preview") if snmp_enabled else workspace / "evidence" / "credentialed_execution"
+    output_dir.mkdir(mode=0o700 if snmp_enabled else 0o777, parents=True, exist_ok=not snmp_enabled)
     run_label = f"{safe_label(state['run_id'], 'run_id')}-EXEC-DRY"
 
     step.clear()
@@ -1082,24 +1153,31 @@ def run_credentialed_execution_dry_run(
             int(max_actions),
             None,
             "strict",
+            **({"enable_snmp": True} if snmp_enabled else {}),
         )
         assert_no_secret_material(payload)
         timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
         out = output_dir / (
             f"P01-Credentialed-Job_{timestamp}_{safe_label(run_label, 'run_label')}.json"
         )
-        job_json, job_sha, job_hash = executor.write(out, payload)
+        if snmp_enabled:
+            job_json, job_sha, job_hash = executor.snmp_helper().write_private(out, payload)
+        else:
+            job_json, job_sha, job_hash = executor.write(out, payload)
     except Exception as exc:
+        error = "managed SNMP execution failed; preserve and review stage evidence" if snmp_enabled else str(exc)
         step["status"] = "failed"
         step["failed_at_utc"] = utc_now_iso()
-        step["last_error"] = str(exc)[:1200]
+        step["last_error"] = error[:1200]
         _append_event(
             state,
             "credentialed_execution",
             "failed",
-            {"mode": "dry_run", "error": str(exc)[:500]},
+            {"mode": "dry_run", "error": error[:500]},
         )
         _write_state(workspace, state)
+        if snmp_enabled:
+            raise RuntimeErrorSafe(error) from None
         if isinstance(exc, RuntimeErrorSafe):
             raise
         raise RuntimeErrorSafe(str(exc)) from exc
@@ -1137,6 +1215,9 @@ def run_credentialed_execution_dry_run(
         "actions_ready": actions_ready,
         "mode": "dry_run",
     }
+    if snmp_enabled:
+        state["artifacts"]["credentialed_execution_preview"]["snmp_execution_enabled"] = True
+
 
     step.clear()
     step.update({
@@ -1181,6 +1262,7 @@ def run_credentialed_execution_auth_only(
     ssh_known_hosts: Optional[Path] = None,
     ssh_host_key_policy: str = "strict",
     force_auth_retry: bool = False,
+    enable_snmp: bool = False,
 ) -> Dict[str, Any]:
     workspace = workspace.expanduser().resolve()
     state = _load_state(workspace)
@@ -1281,12 +1363,21 @@ def run_credentialed_execution_auth_only(
             "Credential Profiles changed after dry-run preview; regenerate the plan/preview before authentication"
         )
 
+    snmp_enabled = _snmp_stage_options(state, load_json(plan_path), enable_snmp, preview)
+    if snmp_enabled:
+        reviewed = load_json(preview_path)
+        counts = reviewed.get("summary") or {}
+        if not ((reviewed.get("metadata") or {}).get("snmp_execution_enabled") is True and
+                int(counts.get("actions_total") or 0) > 0 and
+                counts.get("actions_ready") == counts.get("actions_total")):
+            raise RuntimeErrorSafe("SNMP preview contains blocked or missing actions; access is blocked")
     executor = _load_component(
         "orchestrator/P01_Credentialed_Discovery_Executor.py",
         "p01_runtime_credentialed_executor_auth",
     )
-    output_dir = workspace / "evidence" / "credentialed_execution"
-    output_dir.mkdir(parents=True, exist_ok=True)
+    output_dir = _snmp_output_path(workspace, "auth") if snmp_enabled else workspace / "evidence" / "credentialed_execution"
+    if not snmp_enabled:
+        output_dir.mkdir(parents=True, exist_ok=True)
     known_hosts = (
         ssh_known_hosts.expanduser().resolve()
         if ssh_known_hosts is not None
@@ -1330,26 +1421,33 @@ def run_credentialed_execution_auth_only(
             int(max_actions),
             known_hosts,
             ssh_host_key_policy,
+            **({"enable_snmp": True} if snmp_enabled else {}),
         )
         assert_no_secret_material(payload)
         timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
         out = output_dir / (
             f"P01-Credentialed-Job_{timestamp}_{safe_label(run_label, 'run_label')}.json"
         )
-        job_json, job_sha, job_hash = executor.write(out, payload)
+        if snmp_enabled:
+            job_json, job_sha, job_hash = executor.snmp_helper().write_private(out, payload)
+        else:
+            job_json, job_sha, job_hash = executor.write(out, payload)
     except Exception as exc:
+        error = "managed SNMP execution failed; preserve and review stage evidence" if snmp_enabled else str(exc)
         step["status"] = "failed"
         step["failed_at_utc"] = utc_now_iso()
-        step["last_error"] = str(exc)[:1200]
+        step["last_error"] = error[:1200]
         step["mode"] = "auth_only"
         step["authorization_acknowledged"] = True
         _append_event(
             state,
             "credentialed_execution",
             "failed",
-            {"mode": "auth_only", "error": str(exc)[:500]},
+            {"mode": "auth_only", "error": error[:500]},
         )
         _write_state(workspace, state)
+        if snmp_enabled:
+            raise RuntimeErrorSafe(error) from None
         if isinstance(exc, RuntimeErrorSafe):
             raise
         raise RuntimeErrorSafe(str(exc)) from exc
@@ -1418,6 +1516,9 @@ def run_credentialed_execution_auth_only(
         "target_evidence_count": len(target_files),
         "mode": "auth_only",
     }
+    if snmp_enabled:
+        state["artifacts"]["credentialed_execution_auth"]["snmp_execution_enabled"] = True
+
 
     auth_success = (
         actions_total > 0
@@ -1521,6 +1622,7 @@ def run_credentialed_execution_full(
     ssh_known_hosts: Optional[Path] = None,
     ssh_host_key_policy: str = "strict",
     force_full_retry: bool = False,
+    enable_snmp: bool = False,
 ) -> Dict[str, Any]:
     workspace = workspace.expanduser().resolve()
     state = _load_state(workspace)
@@ -1645,12 +1747,14 @@ def run_credentialed_execution_full(
                 "credentialed-execution flow before FULL enrichment"
             )
 
+    snmp_enabled = _snmp_stage_options(state, load_json(plan_path), enable_snmp, preview, auth)
     executor = _load_component(
         "orchestrator/P01_Credentialed_Discovery_Executor.py",
         "p01_runtime_credentialed_executor_full",
     )
-    output_dir = workspace / "evidence" / "credentialed_execution"
-    output_dir.mkdir(parents=True, exist_ok=True)
+    output_dir = _snmp_output_path(workspace, "full") if snmp_enabled else workspace / "evidence" / "credentialed_execution"
+    if not snmp_enabled:
+        output_dir.mkdir(parents=True, exist_ok=True)
     known_hosts = (
         ssh_known_hosts.expanduser().resolve()
         if ssh_known_hosts is not None
@@ -1695,26 +1799,33 @@ def run_credentialed_execution_full(
             int(max_actions),
             known_hosts,
             ssh_host_key_policy,
+            **({"enable_snmp": True} if snmp_enabled else {}),
         )
         assert_no_secret_material(payload)
         timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
         out = output_dir / (
             f"P01-Credentialed-Job_{timestamp}_{safe_label(run_label, 'run_label')}.json"
         )
-        job_json, job_sha, job_hash = executor.write(out, payload)
+        if snmp_enabled:
+            job_json, job_sha, job_hash = executor.snmp_helper().write_private(out, payload)
+        else:
+            job_json, job_sha, job_hash = executor.write(out, payload)
     except Exception as exc:
+        error = "managed SNMP execution failed; preserve and review stage evidence" if snmp_enabled else str(exc)
         step["status"] = "failed"
         step["failed_at_utc"] = utc_now_iso()
-        step["last_error"] = str(exc)[:1200]
+        step["last_error"] = error[:1200]
         step["mode"] = "full"
         step["authorization_acknowledged"] = True
         _append_event(
             state,
             "credentialed_execution",
             "failed",
-            {"mode": "full", "error": str(exc)[:500]},
+            {"mode": "full", "error": error[:500]},
         )
         _write_state(workspace, state)
+        if snmp_enabled:
+            raise RuntimeErrorSafe(error) from None
         if isinstance(exc, RuntimeErrorSafe):
             raise
         raise RuntimeErrorSafe(str(exc)) from exc
@@ -1745,11 +1856,10 @@ def run_credentialed_execution_full(
 
     target_files: List[Path] = []
     collected = 0
+    snmp_partial_targets = 0
     for action in job_doc.get("actions") or []:
         if not isinstance(action, Mapping):
             continue
-        if action.get("collection_status") == "collected":
-            collected += 1
         value = action.get("target_result_file")
         if not value:
             continue
@@ -1758,7 +1868,19 @@ def run_credentialed_execution_full(
             raise RuntimeErrorSafe(
                 f"FULL target evidence missing or failed SHA256 verification: {target_path}"
             )
-        assert_no_secret_material(load_json(target_path))
+        target_doc = load_json(target_path)
+        assert_no_secret_material(target_doc)
+        if (action.get("action") or {}).get("protocol") == "snmp":
+            reader = _load_component("credentialed_enrichment/P01_SNMP_Evidence.py", "p01_runtime_snmp_evidence")
+            try:
+                evidence = reader.parse(target_doc)
+            except ValueError:
+                raise RuntimeErrorSafe("SNMP FULL target evidence failed contract validation") from None
+            if evidence["inventory_eligible"]:
+                collected += 1
+                snmp_partial_targets += evidence["status"] == "collected_with_field_failures"
+        elif action.get("collection_status") == "collected":
+            collected += 1
         target_files.append(target_path)
 
     actions_total = int(summary.get("actions_total") or 0)
@@ -1788,6 +1910,10 @@ def run_credentialed_execution_full(
         "target_evidence_count": len(target_files),
         "mode": "full",
     }
+    if snmp_enabled:
+        state["artifacts"]["credentialed_execution_full"]["snmp_execution_enabled"] = True
+        state["artifacts"]["credentialed_execution_full"]["snmp_partial_targets"] = snmp_partial_targets
+
 
     full_success = (
         actions_total > 0
@@ -1981,7 +2107,7 @@ def run_asset_resolver(
             continue
         if action.get("execution_status") != "completed":
             continue
-        if action.get("collection_status") != "collected":
+        if not _full_action_collected(action):
             continue
         value = action.get("target_result_file")
         if not value:
@@ -2237,7 +2363,7 @@ def _workspace_bundle_inputs(
             continue
         if action.get("execution_status") != "completed":
             continue
-        if action.get("collection_status") != "collected":
+        if not _full_action_collected(action):
             continue
         value = action.get("target_result_file")
         if not value:
@@ -2863,6 +2989,8 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
     run_p.add_argument("--force-rescan", action="store_true")
     run_p.add_argument("--max-candidates", type=int, default=2)
     run_p.add_argument("--force-replan", action="store_true")
+    run_p.add_argument("--snmp-requests", help="Explicit endpoint request JSON for the planning stage")
+    run_p.add_argument("--enable-snmp", action="store_true", help="Explicit SNMP opt-in for preview/AUTH/FULL; default off")
     run_p.add_argument("--max-actions", type=int, default=25)
     run_p.add_argument("--execute", action="store_true")
     run_p.add_argument("--auth-only", action="store_true")
@@ -2993,6 +3121,7 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
                     workspace=workspace,
                     max_candidates=args.max_candidates,
                     force_replan=args.force_replan,
+                    snmp_requests=Path(args.snmp_requests) if args.snmp_requests else None,
                 )
                 print(f"{DISPLAY_NAME} v{VERSION}")
                 print(f"Credential Planner status: {result.get('status')}")
@@ -3004,6 +3133,9 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
                 print("Secret resolution performed: false")
                 print("Authentication attempts performed: false")
                 return 0
+
+            if args.snmp_requests:
+                run_credential_plan(workspace, snmp_requests=Path(args.snmp_requests))
 
             if (args.auth_only or args.full_enrichment) and not args.execute:
                 raise RuntimeErrorSafe(
@@ -3032,6 +3164,7 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
                     ssh_known_hosts=Path(args.ssh_known_hosts),
                     ssh_host_key_policy=args.ssh_host_key_policy,
                     force_auth_retry=args.force_auth_retry,
+                    enable_snmp=args.enable_snmp,
                 )
                 print(f"{DISPLAY_NAME} v{VERSION}")
                 print(f"Credentialed Executor status: {result.get('status')}")
@@ -3069,6 +3202,7 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
                     ssh_known_hosts=Path(args.ssh_known_hosts),
                     ssh_host_key_policy=args.ssh_host_key_policy,
                     force_full_retry=args.force_full_retry,
+                    enable_snmp=args.enable_snmp,
                 )
                 print(f"{DISPLAY_NAME} v{VERSION}")
                 print(f"Credentialed Executor status: {result.get('status')}")
@@ -3121,6 +3255,7 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
             result = run_credentialed_execution_dry_run(
                 workspace=workspace,
                 max_actions=args.max_actions,
+                enable_snmp=args.enable_snmp,
             )
             print(f"{DISPLAY_NAME} v{VERSION}")
             print(f"Credentialed Executor status: {result.get('status')}")
@@ -3203,4 +3338,3 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(cli())
-

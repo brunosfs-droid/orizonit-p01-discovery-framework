@@ -7,7 +7,8 @@ O planner passa a produzir ações SNMP revisáveis; o executor pode executá-la
 com habilitação explícita. O adapter [v0.4b.7](../credentialed_enrichment/README-SNMP.md)
 é reutilizado sem alteração. Collector portable continua sem login Cancã.
 Credenciais de alvos, autenticação Web e identidade mTLS do node têm finalidades
-separadas. A integração managed do portable permanece para incremento próprio.
+separadas. A integração managed do portable e de evidências segue na
+[extensão v0.4b.9](SNMP_EVIDENCE_PORTABLE_v0.4b.9.md).
 
 ## Endpoints declarados
 
@@ -142,10 +143,10 @@ partial, shared-credential stop, continuidade independente, autorização, drift
 defaults, SHA256 e privacidade/exclusividade dos arquivos.
 
 SHA256 detecta drift, não autoria, inventário verdadeiro ou autorização externa.
-Não qualifica vendors/views/NAT reais nem ACLs NTFS. Resolver/bundle/ingestão,
-findings e controles managed do portable ainda não consomem SNMP de forma
-qualificada. Não há tabelas de interfaces/rotas, LLDP/CDP, mapper, AD login,
-SET ou execução remota arbitrária. A cadeia SNMP end-to-end continua pendente.
+Não qualifica vendors/views/NAT reais nem ACLs NTFS. Integração
+resolver/bundle/ingestão e controles managed do portable têm contrato/qualificação
+próprios em [v0.4b.9](SNMP_EVIDENCE_PORTABLE_v0.4b.9.md); findings permanecem posteriores. Não há tabelas de interfaces/rotas, LLDP/CDP, mapper, AD login,
+SET ou execução remota arbitrária. A cadeia SNMP end-to-end pertence ao incremento v0.4b.9.
 [ADR 0034](ADR_0034_Planned_SNMP_Execution_v0.4b.8.md).
 [Qualificação sintética da fonte](validation/SNMP_PLANNED_EXECUTION_CI_v0.4b.8.md):
 14 runs / 38 jobs, 28 casos novos e 26 do adapter sem skips em cada job SNMP.

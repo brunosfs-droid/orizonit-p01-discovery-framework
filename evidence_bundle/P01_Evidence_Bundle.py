@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Orizon IT P01 Evidence Bundle v0.5a.0.
+"""Orizon IT P01 Evidence Bundle v0.5a.1.
 
 Creates and validates portable .p01bundle files for both:
 - connected upload to a future P01 Ingestion API; and
@@ -28,13 +28,17 @@ import json
 import os
 import re
 import socket
+import sys
 import zipfile
 from pathlib import Path, PurePosixPath
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
 NAME = "P01-Evidence-Bundle"
-VERSION = "0.5a.0"
+VERSION = "0.5a.1"
 FORMAT_VERSION = "0.5a"
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "credentialed_enrichment"))
+from P01_SNMP_Evidence import is_snmp, parse as parse_snmp  # noqa: E402
 
 MAX_FILES_DEFAULT = 10000
 MAX_UNCOMPRESSED_BYTES_DEFAULT = 4 * 1024 * 1024 * 1024
@@ -175,6 +179,8 @@ def _validate_input_file(path: Path, role: str) -> Tuple[bytes, Dict[str, Any]]:
     raw = path.read_bytes()
     doc = load_json_bytes(raw, str(path))
     assert_no_secret_material(doc, str(path))
+    if is_snmp(doc):
+        parse_snmp(doc)
     return raw, doc
 
 
@@ -421,7 +427,10 @@ def validate_bundle(
             if expected_size != len(raw):
                 raise ValueError(f"size mismatch: {path}")
             if path.endswith(".json"):
-                assert_no_secret_material(load_json_bytes(raw, path), path)
+                doc = load_json_bytes(raw, path)
+                assert_no_secret_material(doc, path)
+                if is_snmp(doc):
+                    parse_snmp(doc)
             verified_entries += 1
 
         artifacts = manifest.get("artifacts")

@@ -224,7 +224,7 @@ def run_job(plan,profiles,plan_hash,outdir,run_label,execute=False,auth_only=Fal
     if snmp_enabled:
         result["metadata"].update(snmp_extension_version="0.4b.8",snmp_execution_enabled=True)
         result["summary"]["snmp_unconfirmed_credential_circuits"]=sum(bool(x.get("snmp_access_unconfirmed")) for x in state.values())
-        result["limitations"].append("SNMP resolver/bundle/managed integration not qualified")
+        result["limitations"].append("SNMP sysObjectID is not a unique asset identity; AUTH-only is not inventory")
     return result
 def cli(argv=None):
     p=argparse.ArgumentParser(description=f"{NAME} {VERSION}")

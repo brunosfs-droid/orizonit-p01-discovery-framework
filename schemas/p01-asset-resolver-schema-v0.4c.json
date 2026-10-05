@@ -51,7 +51,28 @@
       "additionalProperties": true
     },
     "inputs": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "snmp_evidence": {
+          "description": "Optional v0.4b.9 diagnostics. Only validated FULL observations are inventory eligible.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["source", "observation_id", "target_ip", "port", "mode", "status", "inventory_eligible", "fields", "summary"],
+            "properties": {
+              "source": {"type": "object", "required": ["source_id", "sha256", "source_kind"]},
+              "observation_id": {"type": "string"},
+              "target_ip": {"type": "string", "format": "ipv4"},
+              "port": {"type": "integer", "minimum": 1, "maximum": 65535},
+              "mode": {"enum": ["dry_run", "auth_only", "full", "unknown"]},
+              "status": {"enum": ["not_attempted", "not_collected", "access_probe_only", "collected", "collected_with_field_failures"]},
+              "inventory_eligible": {"type": "boolean"},
+              "fields": {"type": "array", "maxItems": 8},
+              "summary": {"type": "object"}
+            }
+          }
+        }
+      }
     },
     "summary": {
       "type": "object",

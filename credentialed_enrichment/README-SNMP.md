@@ -117,6 +117,7 @@ Formato: [schema](../schemas/p01-snmp-enrichment-schema-v0.4b.7.json).
 Decisão: [ADR 0033](../docs/ADR_0033_Read_Only_SNMP_v0.4b.7.md).
 Planejamento e execução explícitos são acrescentados pela
 [extensão v0.4b.8](../docs/SNMP_PLANNED_EXECUTION_v0.4b.8.md), sem alterar este
-adapter ou seu contrato. SNMP continua default off; portable managed, resolver,
-bundle, ingestão e findings seguem para incremento posterior. Nenhuma conta,
+adapter ou seu contrato. A [integração v0.4b.9](../docs/SNMP_EVIDENCE_PORTABLE_v0.4b.9.md)
+acrescenta reader/resolver/bundle/replay e portable gerenciado com opt-in explícito.
+SNMP continua default off; findings ficam para incremento posterior. Nenhuma conta,
 serviço ou target real foi modificado.

@@ -28,6 +28,7 @@ jobs:
           python -m py_compile credentialed_enrichment/P01_SSH_Enricher.py
           python -m py_compile credentialed_enrichment/P01_WinRM_Enricher.py
           python -m py_compile credentialed_enrichment/P01_SNMP_Enricher.py tests/test_snmp_enricher.py
+          python -m py_compile credentialed_enrichment/P01_SNMP_Evidence.py tests/test_snmp_evidence_integration.py
           python -m py_compile orchestrator/P01_Credentialed_Discovery_Planner.py
           python -m py_compile orchestrator/P01_Credentialed_Discovery_Executor.py
           python -m py_compile orchestrator/P01_SNMP_Planning.py tests/test_snmp_planned_execution.py

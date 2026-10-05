@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Orizon IT P01 Asset Resolver v0.4c.0.
+"""Orizon IT P01 Asset Resolver v0.4c.1.
 
 Offline-only evidence correlation:
 - consumes Network Discovery plus credentialed target/full enrichment JSON;
@@ -20,12 +20,16 @@ import json
 import os
 import re
 import socket
+import sys
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
 NAME = "P01-Asset-Resolver"
-VERSION = "0.4c.0"
+VERSION = "0.4c.1"
 SCHEMA_VERSION = "0.4c"
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "credentialed_enrichment"))
+from P01_SNMP_Evidence import is_snmp, parse as parse_snmp, usable_name  # noqa: E402
 
 STRENGTH_RANK = {
     "declared": 10,
@@ -161,6 +165,8 @@ def source_descriptor(path: Path, doc: Mapping[str, Any], source_kind: str) -> D
 
 def source_kind(doc: Mapping[str, Any]) -> str:
     metadata = doc.get("metadata") if isinstance(doc.get("metadata"), Mapping) else {}
+    if is_snmp(doc):
+        return "snmp_enrichment"
     if metadata.get("scanner_name") == "P01-Network-Discovery-Scanner":
         return "network_discovery"
     if metadata.get("executor_name") == "P01-Credentialed-Discovery-Executor" and "action" in doc:
@@ -170,6 +176,27 @@ def source_kind(doc: Mapping[str, Any]) -> str:
     if metadata.get("enricher_name") == "P01-SSH-Credentialed-Enrichment":
         return "ssh_enrichment"
     raise ValueError("Unsupported P01 evidence document")
+
+
+def snmp_observation(path: Path, doc: Mapping[str, Any], evidence: Mapping[str, Any]) -> Dict[str, Any]:
+    src = source_descriptor(path, doc, "snmp_enrichment")
+    values = {row["field"]: row["value"] for row in evidence["fields"] if row["status"] == "collected"}
+    hostname = usable_name(values.get("sys_name"))
+    fqdn = hostname if hostname and "." in hostname else None
+    short = short_hostname(hostname)
+    claims = [field_claim("snmp." + row["field"], row["value"], src["source_id"],
+                          "observed", "snmp_get_oid:" + row["oid"])
+              for row in evidence["fields"] if row["status"] == "collected"]
+    if short:
+        claims.append(field_claim("hostname", short, src["source_id"], "observed", "snmp_sys_name"))
+    if fqdn:
+        claims.append(field_claim("fqdn", fqdn, src["source_id"], "observed", "snmp_sys_name"))
+    return {"observation_id": "obs-" + src["sha256"][:16], "source": src, "kind": "snmp_enrichment",
+            "target_ip": evidence["target_ip"], "hostnames": [hostname] if hostname else [],
+            "fqdn": fqdn, "short_hostname": short, "macs": [], "strong_ids": [], "claims": claims,
+            "addresses": [evidence["target_ip"]],
+            "services": [{"port": evidence["port"], "protocol": "udp", "service": "snmp"}],
+            "interfaces": [], "raw_confidence": "Medium"}
 
 
 def _service_list(open_ports: Any) -> List[Dict[str, Any]]:
@@ -281,6 +308,11 @@ def _interface_addresses(enrichment: Mapping[str, Any]) -> Tuple[List[str], List
 
 
 def credentialed_observation(path: Path, doc: Mapping[str, Any]) -> Dict[str, Any]:
+    if is_snmp(doc):
+        evidence = parse_snmp(doc)
+        if not evidence["inventory_eligible"]:
+            raise ValueError("snmp_inventory_not_eligible")
+        return snmp_observation(path, doc, evidence)
     kind = source_kind(doc)
     src = source_descriptor(path, doc, kind)
     action, enrichment, authentication, unwrapped_kind = _unwrap_credentialed(doc)
@@ -466,6 +498,8 @@ def corroborated_match(reasons: Sequence[str]) -> bool:
 
 
 def seed_anchor(obs: Mapping[str, Any]) -> str:
+    if obs.get("kind") == "snmp_enrichment":
+        return "snmp-observation:" + str(obs["observation_id"])
     if obs.get("fqdn"):
         return "fqdn:" + str(obs["fqdn"]).lower()
     if obs.get("short_hostname"):
@@ -487,6 +521,8 @@ def new_cluster(obs: Mapping[str, Any]) -> Dict[str, Any]:
         "strong_ids": [],
         "fqdns": [],
         "short_hostnames": [],
+        "realm_fqdns": [],
+        "realm_hostnames": [],
         "macs": [],
         "addresses": [],
         "services": [],
@@ -514,6 +550,11 @@ def merge_observation(cluster: Dict[str, Any], obs: Mapping[str, Any], score: Op
         cluster["fqdns"].append(obs["fqdn"])
     if obs.get("short_hostname") and obs["short_hostname"] not in cluster["short_hostnames"]:
         cluster["short_hostnames"].append(obs["short_hostname"])
+    if obs.get("kind") != "snmp_enrichment":
+        if obs.get("fqdn") and obs["fqdn"] not in cluster["realm_fqdns"]:
+            cluster["realm_fqdns"].append(obs["fqdn"])
+        if obs.get("short_hostname") and obs["short_hostname"] not in cluster["realm_hostnames"]:
+            cluster["realm_hostnames"].append(obs["short_hostname"])
     for mac in obs.get("macs", []) or []:
         if mac not in cluster["macs"]:
             cluster["macs"].append(mac)
@@ -535,6 +576,8 @@ def merge_observation(cluster: Dict[str, Any], obs: Mapping[str, Any], score: Op
 
 
 def claim_values_conflict(field: str, values: Sequence[Any]) -> bool:
+    if field == "snmp.sys_uptime_ticks":
+        return False
     normalized = {str(v).strip().lower() for v in values if v is not None}
     if len(normalized) <= 1:
         return False
@@ -650,18 +693,43 @@ def resolve(
     network_count = len(observations)
 
     enrichment_observations: List[Dict[str, Any]] = []
-    for path in sorted(set(Path(p) for p in evidence_paths), key=lambda x: x.name.lower()):
+    snmp_evidence: List[Dict[str, Any]] = []
+    snmp_seen = set()
+    for path in sorted(set(Path(p) for p in evidence_paths), key=lambda x: (x.name.lower(), str(x))):
         doc = load_json(path)
+        if is_snmp(doc):
+            evidence = parse_snmp(doc)
+            src = source_descriptor(path, doc, "snmp_enrichment")
+            if src["sha256"] in snmp_seen:
+                continue
+            snmp_seen.add(src["sha256"])
+            diagnostic = dict(evidence)
+            diagnostic["fields"] = [{k: row[k] for k in ("field", "oid", "status")} for row in evidence["fields"]]
+            diagnostic["source"] = src
+            diagnostic["observation_id"] = "obs-" + src["sha256"][:16]
+            snmp_evidence.append(diagnostic)
+            if evidence["inventory_eligible"]:
+                enrichment_observations.append(snmp_observation(path, doc, evidence))
+            continue
         enrichment_observations.append(credentialed_observation(path, doc))
 
     clusters = [new_cluster(obs) for obs in observations]
 
     unresolved: List[Dict[str, Any]] = []
+    for item in snmp_evidence:
+        if not item["inventory_eligible"]:
+            unresolved.append({"observation_id": item["observation_id"],
+                               "reason": "snmp_inventory_not_eligible", "mode": item["mode"],
+                               "collection_status": item["status"]})
     ambiguous: List[Dict[str, Any]] = []
 
     for obs in sorted(enrichment_observations, key=lambda x: (x.get("target_ip") or "", x.get("kind") or "", x.get("observation_id") or "")):
         candidates: List[Tuple[int, str, List[str], Dict[str, Any]]] = []
         for cluster in clusters:
+            if obs.get("kind") == "snmp_enrichment" and not any(
+                src.get("source_kind") == "network_discovery" for src in cluster["sources"]
+            ):
+                continue
             score, reasons = identity_match_score(obs, cluster)
             if corroborated_match(reasons):
                 candidates.append((score, cluster["asset_id"], reasons, cluster))
@@ -706,8 +774,8 @@ def resolve(
         for cluster in clusters:
             pseudo_obs = {
                 "target_ip": cluster["addresses"][0] if cluster["addresses"] else None,
-                "fqdn": cluster["fqdns"][0] if cluster["fqdns"] else None,
-                "hostnames": cluster["fqdns"] + cluster["short_hostnames"],
+                "fqdn": cluster["realm_fqdns"][0] if cluster["realm_fqdns"] else None,
+                "hostnames": cluster["realm_fqdns"] + cluster["realm_hostnames"],
             }
             claims = manifest_claims_for_observation(pseudo_obs, manifest, manifest_source["source_id"])
             if claims:
@@ -755,6 +823,17 @@ def resolve(
             "no network access, authentication, scope expansion, or secret resolution is performed",
         ],
     }
+    if snmp_evidence:
+        output["metadata"]["snmp_evidence_version"] = "0.4b.9"
+        output["inputs"]["snmp_evidence"] = sorted(snmp_evidence, key=lambda item: item["source"]["sha256"])
+        output["summary"].update(snmp_evidence_seen=len(snmp_evidence),
+                                 snmp_inventory_observations=sum(item["inventory_eligible"] for item in snmp_evidence),
+                                 snmp_diagnostic_observations=sum(not item["inventory_eligible"] for item in snmp_evidence))
+        output["limitations"].extend([
+            "SNMP sysObjectID describes a product/model and is never a strong identifier",
+            "SNMP sysName corroborates namespace only; it does not prove AD membership",
+            "SNMP coverage is preserved per field; AUTH-only and failed probes do not populate inventory",
+        ])
     assert_no_secret_material(output)
     return output
 

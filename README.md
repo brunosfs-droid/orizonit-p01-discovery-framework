@@ -11,6 +11,8 @@
 ## Product baseline
 
 SNMP planned execution v0.4b.8: [explicit endpoints and opt-in execution](docs/SNMP_PLANNED_EXECUTION_v0.4b.8.md)
+
+SNMP evidence/portable v0.4b.9: [resolver, bundle and offline replay](docs/SNMP_EVIDENCE_PORTABLE_v0.4b.9.md)
 (CANDIDATE). Reviewed profile/context/authorization bindings, fixed read-only GETs
 and suspension of shared credentials after unconfirmed access. Default off in
 portable; synthetic development/CI need no manual LAB action.
@@ -62,15 +64,15 @@ connected node mTLS retain their separate purposes. Optional AD integration foll
 - **SSH Credentialed Enrichment:** 0.4b.2.1 — LAB VALIDATED em Ubuntu e Rocky via P01-MGMT01; appliance SSH restrito também classificado corretamente.
 - **Context-aware Credential Resolver / Planner:** 0.4b.3.2 + extensão SNMP 0.4b.8 — v0.4b.3.1 LAB VALIDATED; candidate consome Assessment Manifest, distingue realm declarado/observado e planeja endpoints SNMP explicitamente declarados.
 - **WinRM Credentialed Enrichment:** 0.4b.4.3 — LAB VALIDATED em P01-MGMT01 (local realm), P01-DC01 (domain controller/domain realm) e P01-W11-01 (domain workstation); failure semantics transport/auth também validados em runtime.
-- **SNMP Credentialed Enrichment:** 0.4b.7 — CANDIDATE, adapter de alvo único preservado; SNMPv3 authPriv SHA-256/AES-128 e SNMPv2c explícito, GETs fixos limitados, JSON/SHA256 e cobertura por campo. [Adapter](credentialed_enrichment/README-SNMP.md) e [planejamento/execução v0.4b.8](docs/SNMP_PLANNED_EXECUTION_v0.4b.8.md). Resolver/bundle/managed permanecem pendentes; nenhum novo teste de LAB solicitado.
+- **SNMP Credentialed Enrichment:** 0.4b.7 — CANDIDATE, adapter de alvo único preservado; SNMPv3 authPriv SHA-256/AES-128 e SNMPv2c explícito, GETs fixos limitados, JSON/SHA256 e cobertura por campo. [Adapter](credentialed_enrichment/README-SNMP.md) e [planejamento/execução v0.4b.8](docs/SNMP_PLANNED_EXECUTION_v0.4b.8.md). Integração resolver/bundle/replay e portable opt-in na [extensão v0.4b.9](docs/SNMP_EVIDENCE_PORTABLE_v0.4b.9.md); nenhum novo teste de LAB solicitado.
 - **Multi-target Credentialed Executor:** 0.4b.8 — extensão SNMP CANDIDATE, default off, bindings antes de secrets e suspensão por leitura não confirmada. Rota SSH/WinRM preservada por regressão; qualificação de LAB anterior v0.4b.5 em dry-run, AUTH-only e FULL nos cinco ativos P01LAB.
 - **Assessment Context & Credential Intake:** 0.4b.6 — LAB VALIDATED; manifest não secreto, intake estruturado, declared/observed realm gating e high-privilege guardrails.
-- **Asset Resolver:** 0.4c.0 — LAB VALIDATED; 5 Network Discovery + 5 FULL observations -> 5 logical assets, 0 unresolved, 0 ambiguous, 0 conflicts.
-- **Evidence Bundle:** 0.5a.0 — LAB VALIDATED; `.p01bundle` único para connected/offline transport, 8-artifact P01LAB bundle, SHA256 inventory e secret-material guard.
-- **Offline Import:** 0.5b.0 — LAB VALIDATED; import idempotente, raw evidence preservation, receipt JSON/SHA256 e server-side Asset Resolver replay com semantic_match=true.
+- **Asset Resolver:** 0.4c.1 — extensão SNMP CANDIDATE com proveniência/cobertura e correlação conservadora; baseline 0.4c.0 LAB VALIDATED; 5 Network Discovery + 5 FULL observations -> 5 logical assets, 0 unresolved, 0 ambiguous, 0 conflicts.
+- **Evidence Bundle:** 0.5a.1 — valida contratos SNMP; formato 0.5a preservado, baseline LAB VALIDATED; `.p01bundle` único para connected/offline transport, 8-artifact P01LAB bundle, SHA256 inventory e secret-material guard.
+- **Offline Import:** 0.5b.1 — replay compara proveniência/cobertura SNMP; receipt preservado, baseline 0.5b.0 LAB VALIDATED; import idempotente e raw evidence preservation.
 - **Central Ingestion API:** 0.5c.1 — LAB VALIDATED; localhost ingestion, idempotência, status lookup, semantic equivalence, negative gates e connection hygiene.
 - **Connected Discovery Node Upload:** 0.5d.0 — LAB VALIDATED; HTTPS/mTLS, identidade do node ligada ao certificado e ao bundle, upload outbound, idempotência e transporte cross-host Windows→Linux validados.
-- **Portable Discovery Node Runtime:** 0.5e.6 — LAB VALIDATED; fluxo end-to-end completo no P01LAB, incluindo Evidence Bundle workspace-driven, Connected Upload mTLS e zero-input resume sem segunda conexão.
+- **Portable Discovery Node Runtime:** 0.5e.7 — SNMP opt-in em etapas, sem login; extensão CANDIDATE, baseline 0.5e.6 LAB VALIDATED; fluxo end-to-end completo no P01LAB, incluindo Evidence Bundle workspace-driven, Connected Upload mTLS e zero-input resume sem segunda conexão.
 - **Central Persistence / Asset Registry:** 0.6.3 — CANDIDATE para LAB; índice PostgreSQL, API opt-in v0.6.1, lifecycle v0.6.2 e identidade persistente por assessment com proveniência e revisão de ambiguidades. [Assets](docs/ASSET_REGISTRY_v0.6.3.md), [lifecycle](docs/ASSESSMENT_LIFECYCLE_v0.6.2.md), [integração](docs/INGESTION_INDEX_v0.6.1.md) e [próximos passos](docs/NEXT_STEPS_v0.6.0.md).
 - **Optional Service Scheduler:** 0.5f.3 — LAB VALIDATED para R1 curto e soak estendido offline de 10 ticks em Windows/Rocky; default off, revisão após interrupção e zero replay. Multi-day e etapas live pendentes. [Status](docs/STATUS_SCHEDULER_v0.5f.3.md).
 - **Reporting Engine:** relatório técnico/exportação v0.6.9 LAB VALIDATED no R1 sintético; download Web v0.6.13 e resumo executivo v0.6.14 CANDIDATE, com gates operacionais independentes.
@@ -291,7 +293,7 @@ Mais detalhes: [docs/ROADMAP.md](docs/ROADMAP.md).
 Agent foundation and manual Windows/Linux services passed LAB. Scheduler v0.5f.3
 passed the short offline R1 on both hosts; extended soak remains pending. See the
 [agent guide](agent/README.md) and [next steps](docs/NEXT_STEPS_v0.6.0.md).
-The canonical portable runtime remains v0.5e.6 and is supported independently.
+The canonical portable runtime is v0.5e.7 and is supported independently. Its SNMP extension is explicit opt-in and does not enable SNMP in the optional agent.
 
 ### Findings v0.6.4 CANDIDATE
 
