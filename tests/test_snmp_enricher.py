@@ -2,6 +2,7 @@
 import asyncio
 import hashlib
 import importlib.util
+import ipaddress
 import json
 import os
 from pathlib import Path
@@ -237,7 +238,11 @@ class ResponseTests(unittest.TestCase):
 class LoopbackAgent:
     """Actual UDP/SNMP server with synthetic data, no device or host collection."""
     def __init__(self, missing=None, denied=False, secret_text=False, community=COMMUNITY,
-                 auth_key=AUTH, priv_key=PRIV, username="synthetic-reader"):
+                 auth_key=AUTH, priv_key=PRIV, username="synthetic-reader", host="127.0.0.1"):
+        address = ipaddress.ip_address(host)
+        if address.version != 4 or not address.is_loopback:
+            raise ValueError("synthetic agent requires IPv4 loopback")
+        self.host = str(address)
         self.ready = threading.Event(); self.error = None; self.requests = []; self.messages = []
         self.missing, self.denied, self.secret_text = missing, denied, secret_text
         self.community, self.auth_key, self.priv_key, self.username = community, auth_key, priv_key, username
@@ -266,7 +271,7 @@ class LoopbackAgent:
             from pysnmp.hlapi.v3arch import asyncio as snmp
             self.loop = asyncio.get_running_loop(); self.stop = self.loop.create_future()
             self.engine = engine.SnmpEngine()
-            transport = udp.UdpTransport().open_server_mode(("127.0.0.1", 0))
+            transport = udp.UdpTransport().open_server_mode((self.host, 0))
             config.add_transport(self.engine, udp.DOMAIN_NAME, transport)
             config.add_v1_system(self.engine, "synthetic-v2", self.community.encode("utf-8"))
             config.add_v3_user(self.engine, self.username.encode("utf-8"), snmp.USM_AUTH_HMAC192_SHA256,

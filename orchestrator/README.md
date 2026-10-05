@@ -2,6 +2,16 @@
 
 The orchestrator is the central execution/planning layer of the P01 Discovery Framework.
 
+## SNMP extension v0.4b.8
+
+Explicit UDP endpoints from existing discovery seeds can be planned with
+`--snmp-requests`. Executor v0.4b.8 requires `--enable-snmp` in addition to its
+execute acknowledgement and reviewed plan SHA256. Profile/context/authorization
+bindings precede secrets; unconfirmed reads suspend shared SNMP credentials.
+Default portable behavior stays unchanged and needs no Cancã login.
+See the [contract and CLI guide](../docs/SNMP_PLANNED_EXECUTION_v0.4b.8.md).
+Resolver/bundle/managed SNMP integration remains pending; no manual LAB action.
+
 ## v0.4b.3 — Credentialed Discovery Planner
 
 The first implemented orchestration component is:

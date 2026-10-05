@@ -115,6 +115,8 @@ de campos; exit 0 isolado não prova coleta completa.
 
 Formato: [schema](../schemas/p01-snmp-enrichment-schema-v0.4b.7.json).
 Decisão: [ADR 0033](../docs/ADR_0033_Read_Only_SNMP_v0.4b.7.md).
-Integração com planner/executor/portable, resolver, bundle, ingestão e findings
-segue para incremento posterior; formatos e fontes previamente qualificados
-permanecem inalterados. Nenhuma conta, serviço ou target real foi modificado.
+Planejamento e execução explícitos são acrescentados pela
+[extensão v0.4b.8](../docs/SNMP_PLANNED_EXECUTION_v0.4b.8.md), sem alterar este
+adapter ou seu contrato. SNMP continua default off; portable managed, resolver,
+bundle, ingestão e findings seguem para incremento posterior. Nenhuma conta,
+serviço ou target real foi modificado.

@@ -1,14 +1,22 @@
 # P01 — Próximos passos da Product Alpha
 
-Atualizado em 04/10/2026 (-03), com desenvolvimento independente do LAB.
+Atualizado em 05/10/2026 (-03), com desenvolvimento independente do LAB.
 
 ## Preciso testar alguma coisa agora?
+
+v0.4b.8 integra [planejamento e execução SNMP explícitos](SNMP_PLANNED_EXECUTION_v0.4b.8.md):
+até 25 endpoints em seeds existentes, perfil escolhido, autorização de manifest,
+bindings de perfil/contexto/endpoint e suspensão das referências compartilhadas
+após leitura não confirmada. SNMP exige opt-in próprio; portable continua sem
+login Cancã e mantém default off. Resolver/bundle/ingestão e managed seguem como
+próximo incremento. Nenhuma validação manual é solicitada agora.
 
 v0.4b.7 acrescenta [enriquecimento SNMP de alvo único](../credentialed_enrichment/README-SNMP.md)
 como pendência independente do MVP: v3 authPriv SHA-256/AES-128 e v2c explícito,
 GETs fixos limitados, profiles/scopes/contextos e JSON/SHA256 com cobertura.
 Agentes sintéticos loopback no CI não dependem do LAB. Integração automática
-com portable/executor/bundle terá incremento próprio. Nenhuma nova validação
+com portable managed/resolver/bundle terá incremento próprio; planner/executor
+recebem agora a extensão v0.4b.8. Nenhuma nova validação
 manual ou alteração de credencial, target, conta ou serviço solicitada hoje.
 Fonte `c3402e544c60303eb1d227c0e3828b883c2414d6` qualificada em treze runs / 37 jobs:
 26 casos SNMP sem skips na matriz Linux/Windows × Python 3.10/3.12/3.13, incluindo

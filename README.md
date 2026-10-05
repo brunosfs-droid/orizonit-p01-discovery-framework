@@ -10,6 +10,10 @@
 
 ## Product baseline
 
+SNMP planned execution v0.4b.8: [explicit endpoints and opt-in execution](docs/SNMP_PLANNED_EXECUTION_v0.4b.8.md)
+(CANDIDATE). Reviewed profile/context/authorization bindings, fixed read-only GETs
+and suspension of shared credentials after unconfirmed access. Default off in
+portable; synthetic development/CI need no manual LAB action.
 Operator audit review v0.6.20: [private offline structural review](docs/OPERATOR_AUDIT_CHECK_v0.6.20.md)
 (CANDIDATE). Read-only closed/open/partial diagnosis with fixed aggregate counts,
 no private IDs in output and no repair of incomplete records. No manual LAB action.
@@ -56,10 +60,10 @@ connected node mTLS retain their separate purposes. Optional AD integration foll
 - **Network Discovery Scanner:** 0.4.1 — LAB VALIDATED para o core não autenticado no cenário atual; produção/cobertura corporativa ainda em expansão, sem credenciais, criado para descoberta por múltiplos ranges antes do deep discovery.
 - **Credential Manager:** 0.4b.6 — mantém Secret Provider e matching compatível com v0.4b, acrescentando taxonomy de realm/target/privilege/purpose, evidence gates e lint de placeholders.
 - **SSH Credentialed Enrichment:** 0.4b.2.1 — LAB VALIDATED em Ubuntu e Rocky via P01-MGMT01; appliance SSH restrito também classificado corretamente.
-- **Context-aware Credential Resolver / Planner:** 0.4b.3.2 — v0.4b.3.1 LAB VALIDATED; candidate passa a consumir Assessment Manifest, distinguir realm declarado/observado e bloquear conflito de contexto.
+- **Context-aware Credential Resolver / Planner:** 0.4b.3.2 + extensão SNMP 0.4b.8 — v0.4b.3.1 LAB VALIDATED; candidate consome Assessment Manifest, distingue realm declarado/observado e planeja endpoints SNMP explicitamente declarados.
 - **WinRM Credentialed Enrichment:** 0.4b.4.3 — LAB VALIDATED em P01-MGMT01 (local realm), P01-DC01 (domain controller/domain realm) e P01-W11-01 (domain workstation); failure semantics transport/auth também validados em runtime.
-- **SNMP Credentialed Enrichment:** 0.4b.7 — CANDIDATE, adapter independente de alvo único; SNMPv3 authPriv SHA-256/AES-128 e SNMPv2c explícito, GETs fixos limitados, dry-run sem secrets/rede, JSON/SHA256 e cobertura por campo. [Guia](credentialed_enrichment/README-SNMP.md). Integração automática segue para incremento próprio; nenhum novo teste de LAB solicitado.
-- **Multi-target Credentialed Executor:** 0.4b.5 — LAB VALIDATED em dry-run, AUTH-only e FULL nos cinco ativos P01LAB; SHA256 binding, profile-drift guard e shared-credential circuit breaker.
+- **SNMP Credentialed Enrichment:** 0.4b.7 — CANDIDATE, adapter de alvo único preservado; SNMPv3 authPriv SHA-256/AES-128 e SNMPv2c explícito, GETs fixos limitados, JSON/SHA256 e cobertura por campo. [Adapter](credentialed_enrichment/README-SNMP.md) e [planejamento/execução v0.4b.8](docs/SNMP_PLANNED_EXECUTION_v0.4b.8.md). Resolver/bundle/managed permanecem pendentes; nenhum novo teste de LAB solicitado.
+- **Multi-target Credentialed Executor:** 0.4b.8 — extensão SNMP CANDIDATE, default off, bindings antes de secrets e suspensão por leitura não confirmada. Rota SSH/WinRM preservada por regressão; qualificação de LAB anterior v0.4b.5 em dry-run, AUTH-only e FULL nos cinco ativos P01LAB.
 - **Assessment Context & Credential Intake:** 0.4b.6 — LAB VALIDATED; manifest não secreto, intake estruturado, declared/observed realm gating e high-privilege guardrails.
 - **Asset Resolver:** 0.4c.0 — LAB VALIDATED; 5 Network Discovery + 5 FULL observations -> 5 logical assets, 0 unresolved, 0 ambiguous, 0 conflicts.
 - **Evidence Bundle:** 0.5a.0 — LAB VALIDATED; `.p01bundle` único para connected/offline transport, 8-artifact P01LAB bundle, SHA256 inventory e secret-material guard.

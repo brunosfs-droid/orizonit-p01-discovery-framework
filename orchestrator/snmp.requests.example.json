@@ -1,0 +1,6 @@
+{
+  "schema_version": "0.4b.8",
+  "endpoints": [
+    {"target_ip": "192.0.2.10", "port": 161, "profile_id": "network-snmpv3-read"}
+  ]
+}
