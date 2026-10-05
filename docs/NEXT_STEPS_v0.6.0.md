@@ -10,6 +10,9 @@ bindings de perfil/contexto/endpoint e suspensão das referências compartilhada
 após leitura não confirmada. SNMP exige opt-in próprio; portable continua sem
 login Cancã e mantém default off. Resolver/bundle/ingestão e managed seguem como
 próximo incremento. Nenhuma validação manual é solicitada agora.
+Fonte `b99806a1cc9623feb0fac660753ff2e8900f9c1d` qualificada em 14 runs / 38 jobs /
+186 etapas críticas. Cada job SNMP executou 26 casos do adapter e 28 da extensão,
+zero skips; suíte geral 609 casos / 134 skips. [Evidências e limites](validation/SNMP_PLANNED_EXECUTION_CI_v0.4b.8.md).
 
 v0.4b.7 acrescenta [enriquecimento SNMP de alvo único](../credentialed_enrichment/README-SNMP.md)
 como pendência independente do MVP: v3 authPriv SHA-256/AES-128 e v2c explícito,

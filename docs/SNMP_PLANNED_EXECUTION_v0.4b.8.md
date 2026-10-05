@@ -147,3 +147,5 @@ findings e controles managed do portable ainda não consomem SNMP de forma
 qualificada. Não há tabelas de interfaces/rotas, LLDP/CDP, mapper, AD login,
 SET ou execução remota arbitrária. A cadeia SNMP end-to-end continua pendente.
 [ADR 0034](ADR_0034_Planned_SNMP_Execution_v0.4b.8.md).
+[Qualificação sintética da fonte](validation/SNMP_PLANNED_EXECUTION_CI_v0.4b.8.md):
+14 runs / 38 jobs, 28 casos novos e 26 do adapter sem skips em cada job SNMP.
