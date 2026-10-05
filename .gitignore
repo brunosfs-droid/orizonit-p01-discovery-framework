@@ -26,6 +26,28 @@ excludes.local.*
 inventory/hosts.csv
 orchestrator/inventory/hosts.csv
 
+# Cloud / Infrastructure as Code
+.aws/
+aws_credentials*
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+!*.tfvars.json.example
+*.tfplan
+tfplan*
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
 # PowerShell / Windows
 *.clixml
 *.ps1xml
