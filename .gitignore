@@ -30,7 +30,6 @@ orchestrator/inventory/hosts.csv
 .aws/
 aws_credentials*
 .terraform/
-.terraform.lock.hcl
 *.tfstate
 *.tfstate.*
 *.tfvars
