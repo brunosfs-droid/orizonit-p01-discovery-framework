@@ -37,6 +37,14 @@ from P01_Assessment_Context import load_manifest, manifest_context_for_asset  # 
 PLANNER_NAME = "P01-Credentialed-Discovery-Planner"
 PLANNER_VERSION = "0.4b.3.2"
 
+
+def snmp_helper():
+    directory = str(ROOT / "orchestrator")
+    if directory not in sys.path:
+        sys.path.insert(0, directory)
+    import P01_SNMP_Planning
+    return P01_SNMP_Planning
+
 SERVICE_TO_PROTOCOL = {
     "ssh": "ssh",
     "winrm-http": "winrm",
@@ -74,9 +82,11 @@ def build_plan(
     realm_map: Optional[Mapping[str, str]] = None,
     max_candidates: int = 2,
     manifest: Optional[Mapping[str, Any]] = None,
+    snmp_requests: Optional[Mapping[str, Any]] = None,
 ) -> Dict[str, Any]:
     realm_map = realm_map or {}
     assets_out: List[Dict[str, Any]] = []
+    snmp_by_ip = snmp_helper().requests_by_ip(snmp_requests, discovery, manifest) if snmp_requests is not None else {}
 
     for asset in discovery.get("assets", []) or []:
         if not isinstance(asset, Mapping):
@@ -150,6 +160,13 @@ def build_plan(
                 "action": "adapter_candidate" if matches else "no_eligible_profile",
             })
 
+        if ip in snmp_by_ip:
+            snmp_context = {key: context.get(key) for key in snmp_helper().CONTEXT_FIELDS}
+            snmp_context["target_classes"] = context.get("target_classes", [])
+            snmp_context["services"] = ["snmp"]
+            protocol_plans.append(snmp_helper().plan_endpoint(
+                snmp_by_ip[ip], profiles, snmp_context, bool(context_conflicts)))
+
         has_candidate = any(p["action"] == "adapter_candidate" for p in protocol_plans)
         if has_candidate:
             action_status = "adapter_candidate"
@@ -157,12 +174,13 @@ def build_plan(
         elif context_conflicts:
             action_status = "not_planned"
             skip_reasons = ["context_conflict"]
-        elif not protocols:
+        elif not protocols and ip not in snmp_by_ip:
             action_status = "not_planned"
             skip_reasons = ["no_supported_management_protocol_detected"]
         else:
             action_status = "not_planned"
-            skip_reasons = ["no_eligible_profile_for_detected_protocols"]
+            skip_reasons = (["no_eligible_profile_for_requested_snmp_endpoint"] if not protocols
+                            else ["no_eligible_profile_for_detected_protocols"])
 
         assets_out.append({
             "ip": ip,
@@ -182,8 +200,10 @@ def build_plan(
             "credentialed_action_status": action_status,
             "skip_reasons": skip_reasons,
         })
+        if ip in snmp_by_ip:
+            assets_out[-1]["vendor"] = asset.get("vendor")
 
-    return {
+    result = {
         "metadata": {
             "planner_name": PLANNER_NAME,
             "planner_version": PLANNER_VERSION,
@@ -236,12 +256,26 @@ def build_plan(
         },
         "assets": assets_out,
     }
+    if snmp_requests is not None:
+        result["metadata"].update(snmp_extension_version="0.4b.8",
+                                  snmp_requests_sha256=snmp_helper().binding(snmp_requests))
+        result["summary"].update(snmp_endpoints_declared=len(snmp_by_ip),
+                                 snmp_adapter_candidates=sum(p["protocol"] == "snmp" and p["action"] == "adapter_candidate"
+                                                             for a in assets_out for p in a["protocol_plans"]))
+    return result
 
 def write_output(output_dir: Path, run_label: str, payload: Mapping[str, Any]) -> tuple[Path, Path]:
-    output_dir.mkdir(parents=True, exist_ok=True)
+    private = payload.get("metadata", {}).get("snmp_extension_version") == "0.4b.8"
+    if private:
+        snmp_helper().reserve_output(output_dir)
+    else:
+        output_dir.mkdir(parents=True, exist_ok=True)
     timestamp = dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     safe = "".join(ch if ch.isalnum() or ch in "._-" else "-" for ch in run_label).strip("-") or "plan"
     path = output_dir / f"P01-Credential-Plan_{timestamp}_{safe}.json"
+    if private:
+        path, sha, _ = snmp_helper().write_private(path, payload)
+        return path, sha
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     digest = hashlib.sha256(path.read_bytes()).hexdigest()
     sha = path.with_suffix(path.suffix + ".sha256")
@@ -255,6 +289,7 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
     p.add_argument("--profiles", required=True, help="Credential Profiles JSON")
     p.add_argument("--realm-map", help="Optional JSON object mapping IP -> realm")
     p.add_argument("--manifest", help="Optional v0.4b.6 Assessment Manifest")
+    p.add_argument("--snmp-requests", help="Explicit v0.4b.8 UDP endpoints/profile IDs; never inferred from TCP")
     p.add_argument("--max-candidates", type=int, default=2)
     p.add_argument("--run-label", default="credential-plan")
     p.add_argument("--output-dir", default="./output")
@@ -284,6 +319,7 @@ def cli(argv: Optional[Sequence[str]] = None) -> int:
         realm_map=realm_map,
         max_candidates=args.max_candidates,
         manifest=manifest,
+        snmp_requests=snmp_helper().load_requests(Path(args.snmp_requests)) if args.snmp_requests else None,
     )
     if manifest_hash:
         payload["metadata"]["assessment_manifest_sha256"] = manifest_hash

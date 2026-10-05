@@ -115,10 +115,18 @@ See [MVP.md](MVP.md) and [PROJECT_GOVERNANCE.md](PROJECT_GOVERNANCE.md).
 - GETs numéricos fixos, até oito operações, retries zero, timeout/prazo global; JSON/SHA256 com cobertura por campo e falhas parciais.
 - CI loopback com UDP/USM/criptografia reais em Linux/Windows e Python 3.10/3.12/3.13; vendors e operação real permanecem CANDIDATE.
 - [Guia](../credentialed_enrichment/README-SNMP.md) · [ADR 0033](ADR_0033_Read_Only_SNMP_v0.4b.7.md).
-- Integração planner/executor/portable, resolver e bundle seguirá em incremento próprio, sem mudar a cadeia aprovada hoje.
+- Planner/executor recebem extensão explícita v0.4b.8; portable managed, resolver e bundle continuam pendentes.
 
-### v0.4b.8+ — próximos adapters e integrações
-- integração SNMP na cadeia de evidência;
+### v0.4b.8 — planejamento e execução SNMP explícitos
+- Até 25 endpoints UDP em seeds existentes, profile ID escolhido, scopes/protocolo autorizado no manifest; serviço declarado não vira UDP observado.
+- Binding de profile completo, referências, contexto, endpoint e autorização; revalidação antes de secrets e no dispatch.
+- Executor opt-in `--enable-snmp`, default off no portable; AUTH/FULL reutilizam adapter v0.4b.7 sem alterar os GETs.
+- Leitura não confirmada suspende referências compartilhadas, sem declarar falha de senha; perfis independentes continuam.
+- JSON/SHA256 exclusivos e privados; agentes loopback reais em matriz Linux/Windows/Python, sem novo teste de LAB.
+- [Contrato](SNMP_PLANNED_EXECUTION_v0.4b.8.md) · [ADR 0034](ADR_0034_Planned_SNMP_Execution_v0.4b.8.md). Operação/vendores permanecem CANDIDATE.
+
+### v0.4b.9+ — próximos adapters e integrações
+- integração SNMP no resolver/bundle/ingestão e controles managed do portable;
 - Kerberos/HTTPS/certificate para WinRM;
 - WMI/DCOM fallback quando necessário;
 - auditoria de autenticação multi-protocolo.

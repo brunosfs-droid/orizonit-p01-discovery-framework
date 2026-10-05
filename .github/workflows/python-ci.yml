@@ -30,6 +30,7 @@ jobs:
           python -m py_compile credentialed_enrichment/P01_SNMP_Enricher.py tests/test_snmp_enricher.py
           python -m py_compile orchestrator/P01_Credentialed_Discovery_Planner.py
           python -m py_compile orchestrator/P01_Credentialed_Discovery_Executor.py
+          python -m py_compile orchestrator/P01_SNMP_Planning.py tests/test_snmp_planned_execution.py
           python -m py_compile asset_resolver/P01_Asset_Resolver.py
           python -m py_compile evidence_bundle/P01_Evidence_Bundle.py
           python -m py_compile ingestion/P01_Offline_Import.py
@@ -65,6 +66,8 @@ jobs:
           python -m json.tool schemas/p01-winrm-enrichment-schema-v0.4b.json > /dev/null
           python -m json.tool schemas/p01-snmp-enrichment-schema-v0.4b.7.json > /dev/null
           python -m json.tool credential_manager/credentials.snmp.example.json > /dev/null
+          python -m json.tool schemas/p01-snmp-requests-schema-v0.4b.8.json > /dev/null
+          python -m json.tool orchestrator/snmp.requests.example.json > /dev/null
           python -m json.tool schemas/p01-credentialed-job-schema-v0.4b.json > /dev/null
           python -m json.tool schemas/p01-asset-resolver-schema-v0.4c.json > /dev/null
           python -m json.tool schemas/p01-evidence-bundle-manifest-schema-v0.5a.json > /dev/null
