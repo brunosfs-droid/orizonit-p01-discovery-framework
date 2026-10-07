@@ -78,7 +78,8 @@ Store particionado usa paths derivados de IDs validados, não nomes do usuário.
 Legado permanece read-only com mapping explícito; sem traversal/symlink/extractall.
 Canonical importer verifica hash/replay antes da projeção.
 
-Lease/generation da instalação impede duas bases ativas e cerca tasks/cache/cursor/
+Fundação programática: [coordenador v0.6.22](WORKSPACE_COORDINATOR_v0.6.22.md),
+opt-in, ainda sem Web/loader/jobs legados. Lease/generation da instalação impede duas bases ativas e cerca tasks/cache/cursor/
 respostas/downloads. Caches incluem workspace/revisão e são liberados no close.
 Troca bloqueia admissão, conclui/cancela tasks, reconcilia commit e fecha antes de
 abrir a próxima base. Lease não dá grant de leitura. Reinício não repete rede.

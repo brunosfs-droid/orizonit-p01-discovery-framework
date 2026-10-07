@@ -111,6 +111,9 @@ globais não ganham namespaces por este mapping: isso pertence à migração com
 Workflow Workspace Foundation CI usa containers dedicados PG16/17, 18 casos sem
 skips. CI legado mantém seu schema4/recovery e não ativa workspaces.
 
-v0.6.22 implementará coordenação de carga única, lease, generation e encerramento.
+[v0.6.22](WORKSPACE_COORDINATOR_v0.6.22.md) acrescenta coordenador lógico de carga
+única, lease/generation/drain/cache em schema6 opt-in separado. A fundação pode
+ler 5/6 após checksum; seu migrator continua no prefixo 1–5 e rejeita 6.
+UI/API/inventário/jobs legados ainda não integrados.
 Depois seguem observações/identidade, relações, reconciliação/import e migração
 completa/API. LAB/restore5/produção não são qualificados por contratos sintéticos.

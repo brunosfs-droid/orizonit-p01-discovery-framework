@@ -1,6 +1,6 @@
 # P01 — Próximos passos da Product Alpha
 
-Atualizado em 07/10/2026 (-03). Workspace Foundation v0.6.21 CANDIDATE;
+Atualizado em 07/10/2026 (-03). Workspace Coordinator v0.6.22 CANDIDATE opt-in;
 contratos legados v0.6.20/SNMP v0.4b.9 preservados.
 
 ## Próxima execução após replanejamento
@@ -13,7 +13,10 @@ registry Workspace/Site/Environment, grants SQL/RLS e mapping administrativo.
 Opt-in em base isolada; não é migração completa de inventário nem upgrade da Web.
 Fonte qualificada: 15 runs PASS, incluindo 18 casos sem skips por PostgreSQL 16/17
 no workflow dedicado. [Evidência e limites](validation/WORKSPACE_FOUNDATION_CI_v0.6.21.md).
-Próximo: v0.6.22 carga única, depois observações/identidades, relações e reconciliação.
+Segundo incremento: [v0.6.22 CANDIDATE](WORKSPACE_COORDINATOR_v0.6.22.md),
+coordenador lógico de carga única/lease/generation/drain/cache. R02 parcial até
+integração Web/API/loader/jobs legados. Próximo: v0.6.23 observações/identidades,
+depois relações e reconciliação.
 Só então fechar Alpha e iniciar UI/Mapper v0.7. A Alpha permanece aberta.
 
 Nenhum teste dependente do mantenedor é solicitado agora. Gates antigos abaixo
