@@ -69,19 +69,18 @@ be relicensed merely by replacing this repository's LICENSE.
 Third-party dependencies retain their original licenses. Complete the actual
 release SBOM/license inventory before packaging or redistribution.
 
-## Approved development sequence
+## Current development sequence — 06/10/2026 (-03)
 
-Community 1.0 assessment/security/reporting first. After 1.0:
-1. Server inventory and import wizard.
-2. Manual infrastructure mapper.
-3. Qualified network interfaces/neighbors and topology enrichment.
-4. Aggregates, VLANs and redundancy modeling.
-5. VMware physical/virtual correlation.
-6. Service dependency editing and potential impact reports.
+The previous post-1.0 inventory/mapper/dependency sequence is superseded by
+[ADR 0036](ADR_0036_Workspace_First_1.0.md). The 1.0 target now includes isolated
+workspaces, single-workspace loading, inventory/import reconciliation, Mapper,
+network/virtualization intelligence, service dependency editing and action plans.
+See [specification](PRODUCT_SPEC_1.0.md) and [roadmap](ROADMAP.md).
 
-These increments share entities/provenance in the server; collectors acquire
-authorized evidence. Detailed designs, estimates, release dates and edition
-allocation require the respective increments' specification.
+The central workspace/Mapper/assessment workflow must remain useful in Community.
+Detailed module/depth allocation and official quotas are still undecided and must
+be disclosed before Beta. This scope change does not relicense code or implement
+quotas, entitlements, activation or billing.
 
 ## References
 

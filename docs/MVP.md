@@ -1,122 +1,60 @@
-# Cancã MVP 1.0
+# Cancã MVP 1.0 — workspace e inteligência de infraestrutura
 
-## Goal
+Rebaseline 06/10/2026 (-03). [Especificação completa](PRODUCT_SPEC_1.0.md).
+Substitui a classificação anterior post-1.0 de inventário/Mapper/dependências.
 
-Prove that Cancã can transform an authorized infrastructure environment into a traceable, reproducible and secure technical/executive assessment.
+## Valor obrigatório
 
-Required value flow:
+Autorizar → coletar → verificar → reconciliar por workspace → modelar objetos/
+relações → avaliar → explicar → Mapper/serviços/reports → planejar ações.
+Recomendações e candidatos a mudança; sem remediação automática.
 
-    AUTHORIZE
-      -> DISCOVER
-      -> ENRICH
-      -> RESOLVE
-      -> INGEST
-      -> ASSESS
-      -> FIND
-      -> REPORT
+## Dentro da 1.0
 
-The MVP ends at **recommendation**. General-purpose automation and remediation are post-MVP.
+- Vários workspaces isolados armazenados, um aberto por instalação; sites internos
+  e ambientes lógicos opcionais, grants, carga/close/recovery e caches limitados.
+- Standalone/Node e scans via servidor com autorização, SSH/WinRM/SNMP read-only,
+  Secret Provider, evidência/bundle, offline import e outbound mTLS preservados.
+- CollectionRun/Observation/Declaration/AssetIdentity/Relationship e migração.
+- Wizard com prévia/diff/categorias/revisão/idempotência, histórico e estado atual.
+- UI orientada a workspace/páginas de objetos, Mapper central/submapas/zoom/camadas,
+  objetos manuais/passivos e desenho de serviços/dependências/impacto potencial.
+- Redes/AD/Windows/Linux/virtualização/M365, findings explicáveis e catálogos/MIBs/
+  ícones/firmware/patch conforme matriz e qualificações da especificação.
+- Dashboards/reports técnicos/executivos/customizados, ações/horizontes e mudança.
+- Administração separada, backup servidor/workspace, restore/upgrade/instalação/docs.
 
-## In scope
+## Fora da 1.0
 
-- authorized IPv4 network discovery;
-- distributed Discovery Node;
-- secure credential profiles and Secret Provider abstraction;
-- SSH and WinRM enrichment;
-- essential SNMP/network-device read-only enrichment before Community Beta; [SNMP v0.4b.7 adapter](../credentialed_enrichment/README-SNMP.md), [explicit planning/execution v0.4b.8](SNMP_PLANNED_EXECUTION_v0.4b.8.md) and [resolver/bundle/portable integration v0.4b.9](SNMP_EVIDENCE_PORTABLE_v0.4b.9.md) are CANDIDATE with Linux/Windows synthetic CI; real vendors/LAB remain pending;
-- Assessment Manifest;
-- logical Asset Resolver;
-- Evidence Bundle;
-- offline import;
-- outbound connected upload using HTTPS/mTLS;
-- central persistence;
-- deterministic rule engine;
-- findings with evidence/provenance;
-- technical report;
-- executive report;
-- minimal web interface;
-- API;
-- operational logging, receipts and troubleshooting;
-- install/upgrade/backup documentation before GA.
+NMS contínuo, simulação de pacotes, exploração, patch deployment/remediação,
+CMDB/IPAM enterprise completos, dependência totalmente automática, autoridade AI,
+SaaS público multi-tenant, billing/marketplace e comandos remotos arbitrários.
 
-## Out of scope for 1.0
+## Gates de qualidade
 
-- full NMS/metric monitoring;
-- patch deployment;
-- automatic remediation;
-- vulnerability exploitation;
-- full enterprise CMDB;
-- full IPAM;
-- full automatic dependency mapping;
-- general AI decision authority;
-- public multi-tenant SaaS;
-- billing;
-- marketplace;
-- arbitrary server-initiated command execution on Discovery Nodes.
+Isolamento SQL/API/store/jobs/exports; sem secrets em evidência; sem spraying/
+merge por IP; proveniência/cobertura/unknown/conflitos; integridade/replay offline
+connected; Node mTLS; migração/grants/recovery qualificados; consultas limitadas;
+instalação reproduzível, SBOM/licenças/matriz pública e limitações antes da Beta.
 
-## Non-negotiable gates
+## Estado real
 
-- no secret material in evidence/logs/bundles;
-- no credential spraying;
-- no silent asset merge on IP alone;
-- no customer data in Git;
-- deterministic and traceable findings;
-- bundle integrity verification;
-- connected/offline semantic equivalence;
-- mTLS identity binding in remote connected mode;
-- reproducible installation before Community Beta;
-- dependency/license review and SBOM for public releases.
+v0.6.20 CANDIDATE e SNMP v0.4b.9 CANDIDATE continuam a baseline executável.
+Distributed mTLS R2 e R1 sintéticos PostgreSQL/recovery/lifecycle/CLI export/API/Web
+já têm aceite nos escopos registrados. Download Web v0.6.13+ e incrementos
+posteriores, vendors reais e roles/TLS/produção mantêm seus gates pendentes.
+Scheduler R1/soak curto aceitos; multi-day/live é distinto. Não repetir gates
+aceitos sem mudança relevante; nenhuma validação humana solicitada neste turno.
 
-## Current gate
+A Alpha não está encerrada: implementar/qualificar os fundamentos R01–R06 antes
+v0.7. [Roadmap](ROADMAP.md), [plano](IMPLEMENTATION_PLAN_1.0.md),
+[testes](TEST_PLAN_1.0.md), [estado verificado](STATUS_REBASELINE_1.0_2026-10-06.md).
 
-Distributed mTLS R2 passed on separate hosts, including certificate/hostname
-trust, node binding, semantic equivalence and cross-host idempotency.
+## Community e maturidade
 
-Product Alpha v0.6.x includes PostgreSQL indexing, lifecycle, asset identity,
-historical findings and fenced technical/executive reporting. Synthetic Rocky R1
-for basic PostgreSQL, recovery, lifecycle and CLI technical export passed, as did
-local operator API and the initial Web R1. New Web downloads/selection/executive
-preview, offline account revisions, opt-in private operator audit and read-only
-audit review remain operational CANDIDATE, with manual
-tests deferred by the maintainer on 03/10/2026. SNMP v0.4b.9 now carries
-validated synthetic evidence through resolver, bundle, offline replay and the
-managed portable flow without changing the default-off/LAB boundary. The filesystem store and ingestion
-API retain their independent boundaries; full production roles/TLS/recovery are
-separate gates.
-
-The scheduler v0.5f.3 short offline R1 and ten-tick/60-second extended soak passed
-on Windows/Rocky. Multi-day and live AUTH/FULL/POST qualification remain separate;
-accepted R1/soak gates should not be repeated for subsequent synthetic development.
-See [status](STATUS_PERSISTENCE_v0.6.0.md) and [next steps](NEXT_STEPS_v0.6.0.md).
-
-## Community Beta exit criteria
-
-Before Community Beta the project must have:
-
-- Apache License 2.0 (Apache-2.0), LICENSE/NOTICE and release-specific dependency obligations;
-- finalized Orizon IT CLA and operational contribution/provenance process;
-- CONTRIBUTING;
-- SECURITY;
-- Code of Conduct;
-- issue/PR templates;
-- release process;
-- support matrix;
-- SBOM;
-- third-party license inventory;
-- installation guide;
-- architecture documentation;
-- documented known limitations;
-- basic backup/restore procedure.
-
-
-## Release edition
-
-The first stable launch is **Cancã Community**, under Apache-2.0. A paid edition
-follows qualification of specific modules; paid licensing/billing infrastructure
-is not a prerequisite for Community 1.0. Official Community feature/item limits
-must be specified and disclosed before release; no values or runtime quotas are
-introduced here. Stable means the same release-quality and security gates above.
-
-Server inventory/manual mapping and later network/VMware/service dependency work
-are approved post-1.0 increments. Their Community/commercial allocation is open.
-See [licensing and editions](LICENSING_AND_EDITIONS.md).
+Apache-2.0, Community estável primeiro. Fluxo central de workspace/Mapper/assessment
+útil na Community; cotas/profundidade comercial exatas ainda não definidas.
+Nenhum enforcement/licensing server introduzido nesta revisão.
+Beta exige instalação/security/contribuição/CLA/code of conduct/release process,
+SBOM/licenças/matriz/known limitations e backup básico. RC congela features e
+qualifica upgrade/restore; GA fecha bloqueadores e publica suporte real.

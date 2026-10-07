@@ -1,6 +1,20 @@
 # P01 — Próximos passos da Product Alpha
 
-Atualizado em 05/10/2026 (-03), com desenvolvimento independente do LAB.
+Atualizado em 06/10/2026 (-03). Baseline v0.6.20/SNMP v0.4b.9 CANDIDATE.
+
+## Próxima execução após replanejamento
+
+[Especificação 1.0](PRODUCT_SPEC_1.0.md), [arquitetura](ARCHITECTURE.md),
+[backlog](BACKLOG_1.0.md), [migração](IMPLEMENTATION_PLAN_1.0.md) e
+[testes/EVE-NG](TEST_PLAN_1.0.md) passam a orientar o desenvolvimento.
+Primeiro: R01/v0.6.21 alvo, Workspace/Site/Environment + ownership/grants/migração.
+Depois: carga única, observações/identidades, relações e reconciliação. Só então
+fechar Alpha e iniciar UI/Mapper v0.7. Funcionalidades novas ainda planejadas.
+
+Nenhum teste dependente do mantenedor é solicitado agora. Gates antigos abaixo
+mantêm seus limites; testes novos serão propostos sobre a versão qualificada.
+
+## Histórico de entregas e gates preservados
 
 ## Preciso testar alguma coisa agora?
 
@@ -39,4 +53,4 @@ fixado na revisão qualificada em CI. [Novo gate R1](LAB_OPERATOR_WEB_EXPORT_R1_
 pacote isolado, uma consulta/download, FILE PASS e STOP PASS. Oito runs/16 jobs
 passaram no código 9cb8442e4a9ff84384b6b4f42bf5c8db0a65d871;
 [qualificação e limites](validation/OPERATOR_WEB_EXPORT_CI_v0.6.13.md).
-Mapa/topologia permanecem após 1.0.
+Mapa/topologia passam a integrar a 1.0 conforme ADR 0036; não estão implementados neste incremento histórico.

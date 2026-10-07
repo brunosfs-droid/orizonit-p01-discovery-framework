@@ -8,6 +8,17 @@
 
 **Cancã** é o nome oficial do produto. O identificador **P01** permanece temporariamente em nomes de arquivos, schemas, headers e artefatos internos durante a fase Technical Alpha para preservar compatibilidade e rastreabilidade dos testes. A migração dos identificadores internos será feita de forma controlada, sem quebrar contratos já validados.
 
+## Especificação 1.0 — revisão 06/10/2026
+
+Workspaces isolados, sites internos, uma base aberta por instalação e Mapper como
+experiência central. Visão geral do workspace separada da Administração do servidor.
+Scans/imports explícitos, histórico, relações, serviços, findings e planos de ação.
+Esta revisão é planejamento; versão executável permanece v0.6.20 CANDIDATE.
+
+[Especificação](docs/PRODUCT_SPEC_1.0.md) · [Arquitetura](docs/ARCHITECTURE.md) ·
+[Backlog](docs/BACKLOG_1.0.md) · [Migração](docs/IMPLEMENTATION_PLAN_1.0.md) ·
+[Testes/EVE-NG](docs/TEST_PLAN_1.0.md) · [Estado](docs/STATUS_REBASELINE_1.0_2026-10-06.md).
+
 ## Product baseline
 
 SNMP planned execution v0.4b.8: [explicit endpoints and opt-in execution](docs/SNMP_PLANNED_EXECUTION_v0.4b.8.md)
@@ -274,11 +285,12 @@ O repositório preserva histórico por **commits, branches, tags e releases**. O
 
 ## Próximas fases
 
-1. v0.6.x — Product Alpha: PostgreSQL, lifecycle, identidade persistente, API/UI mínima e reporting. Fundação v0.6.0 e integração v0.6.1 CANDIDATE.
-2. Em paralelo: soak estendido do scheduler v0.5f.3; R1 curto Windows/Rocky já aprovado.
-3. v0.7.x — Design Partner Alpha em ambientes externos controlados.
-4. v0.8.x — Community Beta; v0.9.x — Release Candidate; v1.0 — GA.
-5. Adapters adicionais, CVE correlation, Patch Compliance e topologia conforme classificação MVP/post-MVP.
+1. v0.6.x — estender Alpha com workspaces/grants/carga única, observações/relações,
+   reconciliação e migração; primeiro incremento alvo v0.6.21. Alpha ainda aberta.
+2. v0.7 — UI orientada a objetos, wizard, Mapper/submaps/zoom e serviços básicos.
+3. v0.8/v0.8.x — redes/AD/Compute/virtualização, Graph/M365/catálogos e perfis.
+4. v0.9 — dashboards/custom reports/actions, backup/restore/hardening e RC.
+5. v1.0 — GA Community após qualificação de matriz, upgrade, instalação e UX.
 
 Mais detalhes: [docs/ROADMAP.md](docs/ROADMAP.md).
 
