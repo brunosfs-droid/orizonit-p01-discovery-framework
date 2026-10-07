@@ -47,3 +47,10 @@ R20 completo depende do restante somente para GA, evitando dependência circular
 
 O mantenedor autorizou iniciar desenvolvimento em 07/10/2026. Preparação concluída
 na PR #132; implementação passa por qualificação própria e não encerra a Alpha.
+
+## Recuperação v0.6.27
+
+[Contrato](WORKSPACE_RECOVERY_v0.6.27.md): schema8 opt-in, lease vinculado ao banco,
+reset de contexto/marker após restore e gate automático do par banco/store.
+Qualificação em CI; não encerra migração/backfill, audit, restore cross-cluster ou
+Alpha. R06/T13/R20 permanecem parciais. Nenhuma operação no LAB.

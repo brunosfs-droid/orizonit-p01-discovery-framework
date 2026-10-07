@@ -24,6 +24,7 @@ MIGRATIONS = (SQL_PATH, SQL_PATH.with_name('0002_assessment_lifecycle.sql'),
 WORKSPACE_MIGRATIONS = MIGRATIONS + (SQL_PATH.with_name('0005_workspace_foundation.sql'),)
 RUNTIME_MIGRATIONS = WORKSPACE_MIGRATIONS + (SQL_PATH.with_name('0006_workspace_runtime.sql'),)
 MODEL_MIGRATIONS = RUNTIME_MIGRATIONS + (SQL_PATH.with_name('0007_workspace_model.sql'),)
+RECOVERY_MIGRATIONS = MODEL_MIGRATIONS + (SQL_PATH.with_name('0008_workspace_recovery_fence.sql'),)
 IDENTITY = ('assessment_id', 'run_id', 'node_id')
 ROLES = {'network_discovery', 'credentialed_evidence', 'assessment_manifest', 'asset_resolver'}
 ERRORS = {'input_invalid', 'receipt_integrity_failed', 'bundle_integrity_failed', 'identity_mismatch',
@@ -197,24 +198,24 @@ def timeout(conn):
     conn.execute("SET LOCAL statement_timeout = '30s'")
 
 
-def migration_prefix(rows, *, workspace=False, runtime=False, model=False):
-    migrations = MODEL_MIGRATIONS if model else RUNTIME_MIGRATIONS if runtime else WORKSPACE_MIGRATIONS if workspace else MIGRATIONS
+def migration_prefix(rows, *, workspace=False, runtime=False, model=False, recovery=False):
+    migrations = RECOVERY_MIGRATIONS if recovery else MODEL_MIGRATIONS if model else RUNTIME_MIGRATIONS if runtime else WORKSPACE_MIGRATIONS if workspace else MIGRATIONS
     expected = [(i, digest(path.read_bytes())) for i, path in enumerate(migrations, 1)]
     require(len(rows) <= len(expected) and rows == expected[:len(rows)], 'schema_mismatch')
     return expected
 
 
-def schema_check(conn, minimum=1, *, workspace=False, runtime=False, model=False):
+def schema_check(conn, minimum=1, *, workspace=False, runtime=False, model=False, recovery=False):
     row = conn.execute("SELECT to_regclass('canca.schema_migrations')").fetchone()
     require(row and row[0] is not None, 'schema_required')
     rows = conn.execute('SELECT version, sha256 FROM canca.schema_migrations ORDER BY version').fetchall()
-    migration_prefix(rows, workspace=workspace, runtime=runtime, model=model)
+    migration_prefix(rows, workspace=workspace, runtime=runtime, model=model, recovery=recovery)
     require(len(rows) >= minimum, 'schema_required')
 
 
-def migrate(conn, *, workspace=False, runtime=False, model=False):
+def migrate(conn, *, workspace=False, runtime=False, model=False, recovery=False):
     guard_connection(conn)
-    migrations = MODEL_MIGRATIONS if model else RUNTIME_MIGRATIONS if runtime else WORKSPACE_MIGRATIONS if workspace else MIGRATIONS
+    migrations = RECOVERY_MIGRATIONS if recovery else MODEL_MIGRATIONS if model else RUNTIME_MIGRATIONS if runtime else WORKSPACE_MIGRATIONS if workspace else MIGRATIONS
     with conn.transaction():
         conn.execute('SET TRANSACTION ISOLATION LEVEL READ COMMITTED')
         timeout(conn)
@@ -222,7 +223,7 @@ def migrate(conn, *, workspace=False, runtime=False, model=False):
         conn.execute('CREATE SCHEMA IF NOT EXISTS canca')
         conn.execute('CREATE TABLE IF NOT EXISTS canca.schema_migrations (version integer PRIMARY KEY, sha256 text NOT NULL)')
         rows = conn.execute('SELECT version, sha256 FROM canca.schema_migrations ORDER BY version').fetchall()
-        expected = migration_prefix(rows, workspace=workspace, runtime=runtime, model=model)
+        expected = migration_prefix(rows, workspace=workspace, runtime=runtime, model=model, recovery=recovery)
         for version, sha in expected[len(rows):]:
             conn.execute(migrations[version - 1].read_text())
             conn.execute('INSERT INTO canca.schema_migrations VALUES (%s, %s)', (version, sha))

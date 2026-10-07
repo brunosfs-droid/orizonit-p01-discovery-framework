@@ -100,3 +100,10 @@ final de latência/RAM depende da medição, não é capacidade comercial garant
 
 Autorização do mantenedor: continuar os desenvolvimentos sem consultas rotineiras.
 Dependências externas são registradas e não impedem desenvolvimento sintético.
+
+## Recuperação v0.6.27
+
+[Contrato](WORKSPACE_RECOVERY_v0.6.27.md): schema8 opt-in, lease vinculado ao banco,
+reset de contexto/marker após restore e gate automático do par banco/store.
+Qualificação em CI; não encerra migração/backfill, audit, restore cross-cluster ou
+Alpha. R06/T13/R20 permanecem parciais. Nenhuma operação no LAB.
