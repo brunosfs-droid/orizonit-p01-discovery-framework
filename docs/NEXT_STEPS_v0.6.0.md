@@ -15,7 +15,10 @@ Fonte qualificada: 15 runs PASS, incluindo 18 casos sem skips por PostgreSQL 16/
 no workflow dedicado. [Evidência e limites](validation/WORKSPACE_FOUNDATION_CI_v0.6.21.md).
 Segundo incremento: [v0.6.22 CANDIDATE](WORKSPACE_COORDINATOR_v0.6.22.md),
 coordenador lógico de carga única/lease/generation/drain/cache. R02 parcial até
-integração Web/API/loader/jobs legados. Próximo: v0.6.23 observações/identidades,
+integração Web/API/loader/jobs legados. Fonte qualificada: 15 runs PASS, 44 casos
+sem skips por PG16/17 e 687 casos locais/163 skips esperados.
+[Evidência e limites](validation/WORKSPACE_COORDINATOR_CI_v0.6.22.md).
+Próximo: v0.6.23 observações/identidades,
 depois relações e reconciliação.
 Só então fechar Alpha e iniciar UI/Mapper v0.7. A Alpha permanece aberta.
 

@@ -2,7 +2,8 @@
 
 **CANDIDATE opt-in, base isolada de desenvolvimento.** Fundação programática de
 carga única; ainda sem UI/API, inventário carregado ou alteração do LAB operacional.
-[Decisão](ADR_0038_Workspace_Coordinator_v0.6.22.md) · [Plano](IMPLEMENTATION_PLAN_1.0.md).
+[Decisão](ADR_0038_Workspace_Coordinator_v0.6.22.md) · [Plano](IMPLEMENTATION_PLAN_1.0.md) ·
+[Qualificação CI](validation/WORKSPACE_COORDINATOR_CI_v0.6.22.md).
 
 ## Contrato
 
