@@ -1,3 +1,15 @@
+## Unreleased — workspace-first 1.0 specification rebaseline (06/10/2026)
+
+- Bring inventory, Mapper, infrastructure/service relationships and action planning
+  into 1.0; preserve Apache-2.0 and Community-first strategy.
+- Specify isolated workspaces, workspace-owned sites, one open workspace per
+  installation and separate server administration/workspace overview.
+- Define observations/declarations/current state, revision-fenced reconciliation,
+  migration/grants, implementation backlog and EVE-NG/CI/LAB acceptance gates.
+- Align current roadmap/MVP/architecture/governance/edition/next-step documents.
+- Documentation only: no executable, SQL/schema, adapter, quota, release/tag or
+  LAB qualification change. Product Alpha remains v0.6.20 CANDIDATE and open.
+
 ## v0.6.13 — Complete operator Web report download (CANDIDATE)
 
 - Export all evaluations as an authenticated in-memory ZIP with JSON, Markdown and hash manifest; reuse the v0.6.9 renderer/collector and canonical SELECT-only report.

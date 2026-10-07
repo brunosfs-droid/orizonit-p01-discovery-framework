@@ -2,18 +2,35 @@
 
 > Cancã is Orizon IT Product 01 (P01). Existing P01 identifiers remain valid during Technical Alpha for compatibility.
 
-## Product maturity path
+## Roadmap vigente — rebaseline 06/10/2026 (-03)
 
-1. **Technical Alpha — validated baseline:** core discovery, credentialed enrichment, Asset Resolver, Evidence Bundle, offline/connected ingestion and mTLS contracts.
-2. **Distributed Technical Alpha — R2 LAB VALIDATED:** Discovery Node and Cancã Server on separate hosts with outbound-only mTLS.
-3. **Product Alpha — v0.6.x, started:** PostgreSQL persistence, assessment lifecycle, minimal Web/API surface and end-to-end reporting.
-4. **Design Partner Alpha:** controlled external environments and support-matrix expansion.
-5. **Community Beta:** Apache-2.0 open-source readiness, installation, finalized CLA process, SECURITY/CONTRIBUTING, SBOM, third-party license inventory and disclosed official edition limits.
-6. **Release Candidate:** feature freeze, hardening, upgrade/rollback, backup/restore and blocker closure.
-7. **1.0 GA — Community first:** supportable end-to-end Assessment & Intelligence product under Apache-2.0.
+[Especificação 1.0](PRODUCT_SPEC_1.0.md) · [ADR 0036](ADR_0036_Workspace_First_1.0.md) ·
+[Backlog](BACKLOG_1.0.md) · [Implementação/migração](IMPLEMENTATION_PLAN_1.0.md) ·
+[Testes/EVE-NG](TEST_PLAN_1.0.md).
 
-See [MVP.md](MVP.md) and [PROJECT_GOVERNANCE.md](PROJECT_GOVERNANCE.md).
+Baseline: v0.6.20 CANDIDATE, SNMP v0.4b.9 CANDIDATE. Alpha aberta.
+Inventário/Mapper/serviços/dependências passam a integrar a 1.0. Histórico abaixo
+preserva entregas e limites anteriores; não é autorização para repetir testes.
 
+| Fase | Prioridade/entrega | Gate |
+|---|---|---|
+| v0.6.x — Alpha Closure estendida | R01–R06: Workspace/Site/Environment, carga única, observações/identidade/relações/reconciliação/migração | Isolamento, replay, crash, grants e recovery PG16/17/LAB isolado. |
+| v0.7 — Environment Experience | R07–R09/R18 base: UI/objetos/wizard/Mapper manual/zoom/submaps/passivos/serviços | UX/ownership/subgrafos/capacidade, feedback controlado. |
+| v0.8 — Infrastructure Intelligence | Rede/AD/Compute/virtualização/regras/impacto e fundação catálogo | Vendors/contraprovas/coverage, inferência explícita. |
+| v0.8.x — Extensions / Community Beta | Graph/M365/catálogos/MIBs/ícones/firmware/equipamentos selecionados | Suporte qualificado, instalação/CLA/security/SBOM/limites Community. |
+| v0.9 — Reporting / GA Candidate | Dashboard/custom reports/actions/changes, backup/restore/hardening | Feature freeze, upgrade/recovery, feedback Design Partners e zero blockers RC. |
+| v1.0 GA — Community primeiro | Instalação/compatibilidade/UX/documentação/matriz oficial | Gates afetados aprovados e limitações publicadas. |
+
+Design Partner Alpha é maturidade/feedback controlado sobre entregas v0.7/v0.8,
+não substitui requisitos. Community Beta e RC dependem de gates; número da versão
+não declara maturidade. Banco de grafos/NMS/remediação não são pré-requisitos.
+
+Primeiro incremento alvo v0.6.21: contratos/ownership/grants e migração aditiva,
+antes de UI/Graph. Versões seguintes são alvos de planejamento, não releases.
+Estimativas anteriores são hipóteses; reestimar após primeiro incremento/adapters.
+Datas não serão prometidas com base somente nesta revisão.
+
+## Histórico de engenharia e componentes
 
 ## v0.4a — Network Discovery MVP
 
@@ -504,23 +521,13 @@ Follow-up: v0.5f Optional Installed Service/Agent e gates de product alpha/persi
 - Próxima fronteira: autenticação/autorização de operadores na API/Web.
 - [Guia](NODE_AUTHORIZATION_v0.6.10.md) · [ADR 0022](ADR_0022_Node_Assessment_Authorization_v0.6.10.md).
 
-## Approved product evolution — 02/10/2026 (-03)
+## Evolução de produto e substituição de escopo
 
-- First publish a stable Community; develop and qualify commercial modules later.
-- Official Community feature/item quotas: policy to define, not implemented.
-- Commercial edition: specific modules and no commercial item quota; technical
-  capacity and safety budgets remain. Pricing and module allocation are open.
-- Post-1.0 server sequence: inventory/import wizard -> manual mapper ->
-  network interfaces/neighbors -> aggregates/redundancy -> VMware correlation ->
-  service dependencies and potential impact. Dates and version numbers are open.
-- Preserve manual declarations, observations, provenance and unknown/conflicting
-  states; password availability alone is not a topology guarantee.
-- Community/commercial boundaries require an ADR before entitlement code. Open
-  Apache-2.0 source may be used, modified and redistributed commercially.
-- Core assessment/security/reporting work remains the Community 1.0 priority.
-  Continuous NMS monitoring and packet simulation are separate scope decisions.
-
-See [edition policy](LICENSING_AND_EDITIONS.md) and [ADR 0021](ADR_0021_Apache_2_0_and_Editions.md).
+A decisão de 02/10/2026 mantém Apache-2.0, Community primeiro e comercial posterior.
+A sequência então post-1.0 de inventário/Mapper/rede/VMware/serviços foi substituída
+em 06/10/2026: integra a 1.0 conforme roadmap vigente/ADR 0036. Cotas e alocação
+comercial seguem abertas, sem mudança executável. NMS contínuo/simulação permanecem
+fora do escopo. [Edições](LICENSING_AND_EDITIONS.md).
 
 ## v0.6.11 — operadores locais e API de relatório (R1 LAB VALIDATED)
 

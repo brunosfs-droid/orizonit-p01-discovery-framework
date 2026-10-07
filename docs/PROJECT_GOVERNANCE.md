@@ -28,14 +28,14 @@ Cancã is the open-source product identity of Orizon IT Product 01 (P01).
 
 Every new proposal is classified as:
 
-- **A — MVP:** necessary to prove the Cancã 1.0 assessment workflow.
+- **A — MVP:** necessary for the workspace/Mapper/intelligence/action-planning 1.0 specification.
 - **B — Post-MVP:** valuable, but not required for 1.0.
 - **C — Experiment:** research or prototype.
 - **D — Out of product scope.**
 
 The control question is:
 
-> Is this required to prove Cancã Assessment 1.0, or does it belong to the future platform?
+> Is this required by PRODUCT_SPEC_1.0.md and its acceptance gates, or is it a later extension?
 
 ## Release maturity
 
@@ -84,9 +84,21 @@ rewrite immutable evidence or weaken core security. See
 [licensing and editions](LICENSING_AND_EDITIONS.md) and
 [ADR 0021](ADR_0021_Apache_2_0_and_Editions.md).
 
-The server-side inventory, manual mapper, subsequent network/VMware enrichment
-and service dependency sequence was approved on 02/10/2026 (-03). It remains
-post-1.0 work, with technical details and edition allocation to be specified.
+The 06/10/2026 (-03) rebaseline brings server inventory, Mapper, network/virtualization
+intelligence and service dependencies into 1.0. Workspaces are isolated, sites
+exist inside them, one workspace is open per installation, and server administration
+is separate from the workspace overview. See [specification](PRODUCT_SPEC_1.0.md),
+[ADR 0036](ADR_0036_Workspace_First_1.0.md) and [backlog](BACKLOG_1.0.md).
+Edition allocation/quotas remain open. Product Alpha is not closed until the
+extended architectural foundation is implemented and qualified.
+
+## Release planning and truth
+
+The specification is the current product scope; ADRs describe decisions, backlog
+links requirements to tests, and roadmap orders deliveries. Historical evidence
+remains pinned. A planning document is not an implementation or LAB acceptance.
+No cross-workspace correlation is permitted. No continuous NMS is required.
+Scope reductions require an explicit product decision and updated traceability.
 
 ## Architecture governance
 

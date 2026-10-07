@@ -1,5 +1,9 @@
 # ADR 0021 — Apache 2.0 and Community/commercial editions
 
+> Scope update 06/10/2026: the post-1.0 inventory/Mapper/dependency sequence below
+> is superseded by [ADR 0036](ADR_0036_Workspace_First_1.0.md). Apache-2.0 and
+> edition decisions remain valid. Historical decision text is preserved.
+
 Date: 02/10/2026 (-03). Status: accepted product/license decision.
 
 ## Context
