@@ -195,6 +195,7 @@ class WorkspaceHandler(http.OperatorHandler):
                         action='apply_import';fields=self._fields(doc,('generation','plan_id','request_id'))
                     else:raise authn.AccessError('route_not_found',404)
                 else:raise authn.AccessError('route_not_found',404)
+            self._validate(action,fields)
             result=self.server.service.execute(bearer,action,workspace_id,**fields)
             self._send(200,result)
         except authn.AccessError as exc:self._send(exc.status,dict(status='failed',error_code=str(exc)))
@@ -203,6 +204,21 @@ class WorkspaceHandler(http.OperatorHandler):
             status=403 if code=='workspace_access_denied' else 400 if code in ('model_input_invalid','workspace_input_invalid') else 404 if code in ('model_object_not_found','model_plan_not_found') else 409 if code in ('model_revision_stale','workspace_generation_stale','workspace_runtime_busy','workspace_close_pending','model_request_conflict','model_review_required','model_import_conflict','model_relationship_conflict') else 503
             self._send(status,dict(status='failed',error_code=code))
         except Exception:self._send(503,dict(status='failed',error_code='workspace_request_failed'))
+    @staticmethod
+    def _validate(action,fields):
+        for key in ('generation','expected_revision'):
+            if key in fields:runtime.require_generation(fields[key])
+        if action in ('registry','objects'):ws.page_args(fields.get('after',''),fields.get('limit',100))
+        if action=='close':runtime.Coordinator._deadline(fields.get('timeout',5))
+        if action=='graph':
+            for key,low,high in (('depth',0,4),('node_limit',1,100),('edge_limit',1,200)):
+                value=fields.get(key,{'depth':2,'node_limit':100,'edge_limit':200}[key])
+                model.require(type(value) is int and low<=value<=high)
+        if action=='preview_import':
+            model.require(fields.get('mode','merge') in ('merge','evidence_only'))
+            model.require(type(fields.get('categories',['identity'])) is list and fields.get('categories',['identity'])==['identity'])
+            ws.identifier(fields['assessment_id'])
+            model.require(isinstance(fields['bundle_id'],str) and backend.BUNDLE.fullmatch(fields['bundle_id']))
     @staticmethod
     def _query(raw,allowed):
         try:

@@ -68,6 +68,13 @@ class BindingTests(unittest.TestCase):
              patch.object(api.runtime,'Coordinator') as coordinator,patch.object(api,'WorkspaceServer') as server:
             with self.assertRaisesRegex(api.pg.PersistenceError,'schema_required'):api.create_server('accounts','bindings',port=0)
             coordinator.assert_not_called();server.assert_not_called();control.close.assert_called_once()
+    def test_unbound_session_is_denied_before_sql_connection(self):
+        doc=fixture.document();doc['accounts'].append(dict(doc['accounts'][0],operator_id='OP-02',username='other'))
+        accounts=fixture.policy(doc);config=api.BindingPolicy(json.dumps(bindings()).encode(),accounts)
+        auth=api.authn.LocalAuth(accounts);bearer=auth.login('other',fixture.PASSWORD)['access_token']
+        connect=Mock();service=api.HumanWorkspaceService(auth,api.RoleConnections(config,connect),Mock(spec=api.backend.WorkspaceService))
+        with self.assertRaisesRegex(api.authn.AccessError,'workspace_access_denied'):service.execute(bearer,'registry')
+        connect.assert_not_called()
     def test_session_logout_during_work_suppresses_delivery_and_closes_connection(self):
         auth=api.authn.LocalAuth(fixture.policy());bearer=auth.login('reader',fixture.PASSWORD)['access_token']
         conn=Mock();connections=api.RoleConnections(policy(),connect=lambda:conn)
@@ -143,6 +150,15 @@ class HTTPTests(unittest.TestCase):
             self.assertEqual(self.request('POST',api.BASE+'/A/objects',dict(payload,**{field:'PRIVATE'}),headers)[0],400)
         self.assertEqual(self.request('POST',api.BASE+'/A/declarations',dict(common,object_id='x',name='description',value=None),headers)[0],200)
         self.assertEqual(self.request('POST',api.BASE+'/A/relationships',dict(common,relationship_id='edge',source_id='x',target_id='y',kind='depends_on'),headers)[0],200)
+    def test_invalid_context_bounds_and_selection_rejected_before_service(self):
+        headers=self.login()
+        for path,payload in ((api.BASE+'/A/open',{'generation':True}),
+                             (api.BASE+'/A/close',{'generation':1,'timeout':31}),
+                             (api.BASE+'/A/imports/preview',{'generation':1,'assessment_id':'LAB-001','bundle_id':'bnd-'+'a'*20,'categories':None})):
+            self.assertEqual(self.request('POST',path,payload,headers)[0],400)
+        for path in (api.BASE+'?limit=101',api.BASE+'/A/graph/x?generation=1&depth=5'):
+            self.assertEqual(self.request('GET',path,headers=headers)[0],400)
+        self.service.execute.assert_not_called()
     def test_import_handles_and_decision_ordinals_are_strict(self):
         headers=self.login();payload=dict(generation=2,assessment_id='LAB-001',bundle_id='bnd-'+'a'*20,decisions={'0':{'action':'create','reason':'LAB'}})
         self.assertEqual(self.request('POST',api.BASE+'/A/imports/preview',payload,headers)[0],200)
