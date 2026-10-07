@@ -248,7 +248,7 @@ def create_server(accounts_path,bindings_path,host='127.0.0.1',port=8879,*,tls_c
         context=ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER);context.minimum_version=ssl.TLSVersion.TLSv1_2;context.load_cert_chain(tls_cert,tls_key)
     accounts=authn.load_policy(accounts_path);bindings=load_bindings(bindings_path,accounts)
     connections=RoleConnections(bindings);control=connections.open(bindings.coordinator_role)
-    try:pg.schema_check(control,minimum=7,model=True)
+    try:pg.schema_check(control,minimum=8,recovery=True)
     except BaseException:control.close();raise
     coordinator=runtime.Coordinator(runtime.SessionLease(control));server=None
     try:
