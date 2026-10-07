@@ -1,6 +1,6 @@
 # ADR 0041 — recuperação de workspace e fence por banco
 
-Data: 07/10/2026. CANDIDATE opt-in em schema8; qualificação em andamento.
+Data: 07/10/2026. CANDIDATE opt-in em schema8; qualificado em CI; [registro](validation/WORKSPACE_RECOVERY_CI_v0.6.27.md).
 
 ## Decisão
 

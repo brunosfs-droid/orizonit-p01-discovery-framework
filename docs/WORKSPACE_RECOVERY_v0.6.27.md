@@ -1,6 +1,7 @@
 # Cancã — Workspace Recovery v0.6.27
 
 CANDIDATE opt-in em banco isolado, schema8. [ADR0041](ADR_0041_Workspace_Recovery_v0.6.27.md).
+[Qualificação CI](validation/WORKSPACE_RECOVERY_CI_v0.6.27.md): PG16/17,118 casos e restore por job, PASS.
 Esta versão do listener workspace exige8; a v0.6.26 qualificada continua pinada em7.
 
 ## Contratos

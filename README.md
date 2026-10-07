@@ -23,7 +23,7 @@ UI/Mapper e migração completa de inventário seguem nos próximos incrementos.
 ## Product baseline
 
 Workspace Recovery v0.6.27: [fence por banco e recuperação isolada](docs/WORKSPACE_RECOVERY_v0.6.27.md)
-(CANDIDATE, opt-in schema8; CI em qualificação). Novo listener exige8; schema7
+(CANDIDATE, opt-in schema8; qualificado em CI PG16/17). Novo listener exige8; schema7
 v0.6.26 permanece pinado. Sem upgrade ou restore operacional no LAB.
 
 Workspace API v0.6.26: [listener humano com roles e contexto explícitos](docs/WORKSPACE_API_v0.6.26.md)
