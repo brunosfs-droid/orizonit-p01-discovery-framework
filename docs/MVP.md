@@ -62,3 +62,14 @@ Nenhum enforcement/licensing server introduzido nesta revisão.
 Beta exige instalação/security/contribuição/CLA/code of conduct/release process,
 SBOM/licenças/matriz/known limitations e backup básico. RC congela features e
 qualifica upgrade/restore; GA fecha bloqueadores e publica suporte real.
+
+## Incremento backend23–25 (07/10/2026)
+
+[Workspace Model](WORKSPACE_MODEL_v0.6.25.md) e
+[ADR0039](ADR_0039_Workspace_Model_v0.6.25.md) fixam histórico append-only,
+observado/declarado, grafo manual limitado, revisão transacional e preview/apply
+idempotente. O adapter registra operações como jobs e revalida respostas.
+Categoria observada identity; sem backfill completo, API humana, UI/Mapper ou
+ações em dispositivos. Gates adicionais: drift/replay, sessão perdida/rollback,
+close durante commit/preparação, autoria/RLS/FKs A/B e isolamento de sources.
+R03–R05 continuam parciais; R06 depende de migração/restore/API e regressão.

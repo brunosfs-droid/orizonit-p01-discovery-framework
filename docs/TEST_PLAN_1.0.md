@@ -76,3 +76,14 @@ T03/T14 têm fundação sintética de lease/generation/drain/cache com concorrê
 gates: UI/multiaba, commits de import, jobs legados, restore6 e RAM/latência de
 inventário/Mapper ainda dependem dos adapters e LAB.
 [Contrato e matriz](WORKSPACE_COORDINATOR_v0.6.22.md).
+
+## Incremento backend23–25 (07/10/2026)
+
+[Workspace Model](WORKSPACE_MODEL_v0.6.25.md) e
+[ADR0039](ADR_0039_Workspace_Model_v0.6.25.md) fixam histórico append-only,
+observado/declarado, grafo manual limitado, revisão transacional e preview/apply
+idempotente. O adapter registra operações como jobs e revalida respostas.
+Categoria observada identity; sem backfill completo, API humana, UI/Mapper ou
+ações em dispositivos. Gates adicionais: drift/replay, sessão perdida/rollback,
+close durante commit/preparação, autoria/RLS/FKs A/B e isolamento de sources.
+R03–R05 continuam parciais; R06 depende de migração/restore/API e regressão.

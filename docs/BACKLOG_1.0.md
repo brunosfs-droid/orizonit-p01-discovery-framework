@@ -6,6 +6,9 @@ sites/ambientes/grants SQL/RLS/mapping. Ownership de inventário/API ainda pende
 R01 completo e demais requisitos não são marcados como concluídos.
 R02 iniciou com [v0.6.22](WORKSPACE_COORDINATOR_v0.6.22.md): lease por instalação,
 generation/drain/jobs/cache limitados. Web/API/loader e jobs legados ainda pendentes.
+[v0.6.25](WORKSPACE_MODEL_v0.6.25.md) inicia R03–R05 com backend de histórico,
+objetos/relações manuais e reconciliação identity. Serviço registra jobs e cerca
+commits; migração/API/UI e cobertura adicional mantêm os requisitos parciais.
 P0: fundação/isolamento; P1: experiência central; P2: profundidade incremental.
 P2 pertence ao alvo 1.0; não significa exclusão automática. [Testes](TEST_PLAN_1.0.md).
 
@@ -34,9 +37,9 @@ P2 pertence ao alvo 1.0; não significa exclusão automática. [Testes](TEST_PLA
 
 ## Primeiro lote
 
-Começar R01: Workspace/Site/Environment, grants, constraints e plano de migração.
-Fixtures A/B com IDs/IPs iguais e acesso adversarial. Depois R02/R03. Não iniciar
-Mapper/Graph sobre ownership ausente. Teste base de recovery T13 precede R06;
+R01–R05 possuem agora fundamentos opt-in e fixtures adversariais A/B; próxima
+entrega é API humana autenticada e integração/backfill por revisão. Mapper usa
+o novo grafo limitado somente após a qualificação de seu contrato HTTP. Teste base de recovery T13 precede R06;
 R20 completo depende do restante somente para GA, evitando dependência circular.
 
 O mantenedor autorizou iniciar desenvolvimento em 07/10/2026. Preparação concluída

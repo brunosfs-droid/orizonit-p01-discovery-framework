@@ -5,6 +5,9 @@ Plano 06/10/2026; execução atualizada em 07/10/2026 (-03).
 e mapping opt-in; [v0.6.22](WORKSPACE_COORDINATOR_v0.6.22.md) acrescenta
 coordenador lógico/lease/generation/drain/cache. Inventário/API/jobs legados ainda
 não integrados; R01/R02 permanecem parciais.
+[v0.6.25](WORKSPACE_MODEL_v0.6.25.md) entrega o backend aditivo dos alvos23–25:
+histórico/identidade, grafo manual, preview/apply e fence de commit. R03–R05
+seguem parciais: categoria identity, sem backfill/API/observed adapters completos.
 [Backlog](BACKLOG_1.0.md) · [Gates](TEST_PLAN_1.0.md).
 
 ## Extensão Alpha
@@ -67,7 +70,8 @@ fora do snapshot anterior para reaplicação revisada.
 
 Rotas conceituais de administração listam/criam bases e solicitam open/close;
 `/workspaces/{id}/...` serve sites/objetos/grafo/import preview/apply/declarações/
-serviços/findings/ações/reports. Não estão disponíveis hoje. Cada PR fixa schema,
+serviços/findings/ações/reports. Ainda não há listener dessas rotas; o WorkspaceService fornece os contratos
+programáticos de inventário/grafo/declarações e import. Cada PR fixa schema,
 grants, tamanho/deadline, erros, idempotência e revision fence antes de codificar.
 Mutações exigem revisão esperada/autorização/auditoria redigida. Upload MIB/ícone
 usa parser restrito, sem executar plugin ou comando arbitrário.
@@ -81,3 +85,17 @@ Benchmark alvo: 100/1.000/10.000 objetos; visão agregada sem inventário comple
 submapa inicial até 500 nós/2.000 arestas e páginas default de teste de 100 objetos.
 Registrar hardware, p50/p95, RAM/cancelamento/concorrência e 20 trocas. Orçamento
 final de latência/RAM depende da medição, não é capacidade comercial garantida.
+
+## Sequência executável após o backend23–25
+
+1. v0.6.26: API humana opt-in com binding operador/role SQL explícito, contexto
+   workspace/generation, erros e limites; revalidação de sessão/grant e tests HTTP.
+2. Backfill revisado do legado, recibos/recovery e restore7; leitores de findings
+   e reports ligados a revisão/cobertura. Fechar R06 somente com esses gates.
+3. v0.7: seleção/abertura/fechamento, páginas de objetos e Mapper limitado; Visão
+   geral da base separada da Administração do servidor, sites internos.
+4. Adapters observados adicionais e fixtures EVE-NG versionadas, seguidos dos
+   gates de vendor/cobertura antes de alegar suporte de coleta real.
+
+Autorização do mantenedor: continuar os desenvolvimentos sem consultas rotineiras.
+Dependências externas são registradas e não impedem desenvolvimento sintético.

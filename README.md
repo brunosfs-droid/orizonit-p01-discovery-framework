@@ -13,7 +13,7 @@
 Workspaces isolados, sites internos, uma base aberta por instalação e Mapper como
 experiência central. Visão geral do workspace separada da Administração do servidor.
 Scans/imports explícitos, histórico, relações, serviços, findings e planos de ação.
-Especificação aprovada na PR #132; incrementos v0.6.21/22 CANDIDATE.
+Especificação aprovada na PR #132; incrementos v0.6.21–25 CANDIDATE.
 UI/Mapper e migração completa de inventário seguem nos próximos incrementos.
 
 [Especificação](docs/PRODUCT_SPEC_1.0.md) · [Arquitetura](docs/ARCHITECTURE.md) ·
@@ -21,6 +21,11 @@ UI/Mapper e migração completa de inventário seguem nos próximos incrementos.
 [Testes/EVE-NG](docs/TEST_PLAN_1.0.md) · [Estado](docs/STATUS_REBASELINE_1.0_2026-10-06.md).
 
 ## Product baseline
+
+Workspace Model v0.6.25: [histórico, grafo manual e reconciliação revisada](docs/WORKSPACE_MODEL_v0.6.25.md)
+(CANDIDATE, opt-in). Objetos e declarações isolados, import com prévia/revisão/recibo
+e commits protegidos pelo coordenador. API humana, UI/Mapper e migração completa
+ainda pendentes; nenhuma alteração operacional no LAB.
 
 Workspace Coordinator v0.6.22: [carga única, lease e encerramento seguro](docs/WORKSPACE_COORDINATOR_v0.6.22.md)
 (CANDIDATE, opt-in). Contexto lógico com generation, drain e cache limitado;
