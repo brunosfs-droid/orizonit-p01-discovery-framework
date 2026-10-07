@@ -8,7 +8,7 @@ import subprocess
 import sys
 import threading
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'server'))
 import P01_Workspace_Coordinator as runtime
@@ -20,6 +20,7 @@ pg, ws = runtime.pg, runtime.ws
 class MemoryLease:
     """Deterministic fault injection only; SQL semantics are tested separately."""
     def __init__(self):
+        self.target = ('test',5432,'test')
         self.lease_id = 'test-epoch'; self.generation = 0; self.lost = False; self.stopped = False
     def start(self): self.generation += 1; return self.generation
     def check(self, generation):
@@ -33,7 +34,7 @@ class CoordinatorTests(unittest.TestCase):
     def setUp(self):
         self.grants = {'reader': {('A','workspace:read')},
                        'writer': {(x,p) for x in ('A','B') for p in ws.PERMISSIONS}}
-        def authorize(actor, workspace_id, permission):
+        def authorize(actor, workspace_id, permission, target):
             pg.require((workspace_id,permission) in self.grants.get(actor,set()), 'workspace_access_denied')
         self.lease = MemoryLease()
         self.c = runtime.Coordinator(self.lease,authorizer=authorize,heartbeat_seconds=30,
@@ -189,6 +190,12 @@ class CoordinatorTests(unittest.TestCase):
         for timeout in (True,-1,31,float('nan')):
             with self.assertRaisesRegex(pg.PersistenceError,'workspace_input_invalid'):self.c.close('writer','A',a.generation,timeout=timeout)
         self.assertEqual(self.c.state,'open')
+
+    def test_actor_target_mismatch_is_denied_before_reading_grants(self):
+        conn=Mock();conn.info.host='other';conn.info.port=5432;conn.info.dbname='other'
+        with self.assertRaisesRegex(pg.PersistenceError,'workspace_connection_mismatch'):
+            runtime.authorize(conn,'A','workspace:read',('expected',5432,'expected'))
+        conn.execute.assert_not_called()
 
     def test_cli_redacts_database_errors_and_validates_before_connect(self):
         with patch.object(pg,'open_connection') as connect,redirect_stdout(io.StringIO()) as out:

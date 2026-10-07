@@ -45,6 +45,7 @@ transações SQL usam os limites existentes (lock 5s, statement 30s).
 | workspace_lease_lost | Contexto indisponível/recovery_required; cancelamento e nenhum novo open nesse objeto. |
 | workspace_jobs_full / workspace_cache_full | Limite atingido; não remover trabalho/valor existente. |
 | workspace_runtime_not_provisioned | Role/linha de serviço ainda não provisionada. |
+| workspace_connection_mismatch | Conexão do ator pertence a outro endpoint/banco; rejeitar antes dos grants. |
 | workspace_access_denied | Grant ausente ou revogado; sem fallback para workspace ativo. |
 
 Close exige workspace ID explícito. Uma aba atrasada não fecha o workspace que
@@ -98,12 +99,16 @@ coordinator.shutdown()
 ```
 
 Atores precisam das permissões da tabela acima; código de integração é confiável.
+Endereço libpq, porta e banco do ator devem coincidir com os da conexão do lease.
+Endpoint/configuração são confiáveis; aliases diferentes são rejeitados. Não usar
+proxy que roteie o mesmo endpoint para bancos/instalações independentes.
+
 O hook authorizer injetável destina-se a testes/adapters qualificados; a instância
 normal usa SQL-role/current_user + grants da fundação. Não expor esse hook ao usuário.
 
 ## Testes e próximos passos
 
-`test_workspace_coordinator.py`: 16 casos de ciclo/cache/concorrência e nove casos
+`test_workspace_coordinator.py`: 17 casos de ciclo/cache/concorrência e nove casos
 PostgreSQL opt-in. Workflow Workspace Foundation CI mantém os 18 casos de fundação
 em schema5 e acrescenta o coordenador em schema6 nos dois containers PG16/17.
 Inclui dois processos/sessões, os._exit, pg_terminate_backend, RLS, grants/revogação,

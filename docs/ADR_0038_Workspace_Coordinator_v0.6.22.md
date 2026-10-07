@@ -54,6 +54,10 @@ liberação depende de PostgreSQL detectar o fim da sessão; partição pode con
 busy até o timeout/keepalive do transporte. O serviço não reconecta ou retoma
 trabalho automaticamente.
 
+Conexões de atores devem usar o mesmo endpoint libpq/porta/banco da instalação;
+configuração de conexão é confiável, sem DSN externo, aliases diferentes ou
+proxies roteando o mesmo endpoint para bancos independentes.
+
 Jobs têm Token(workspace ID, generation, lease ID) e autorização revalidada em
 cada check/acesso ao cache. Cache aceita bytes imutáveis e tem limites de entradas,
 bytes e tamanho por entrada. É um cache interno do workspace, não uma API de

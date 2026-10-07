@@ -19,14 +19,22 @@ VERSION = '0.6.22'
 LOCK_KEY = pg.lock_key('server-workspace-coordinator')
 ERRORS = ws.ERRORS | {'workspace_runtime_busy', 'workspace_runtime_not_provisioned',
     'workspace_lease_lost', 'workspace_generation_stale', 'workspace_cache_full',
-    'workspace_jobs_full', 'workspace_close_pending'}
+    'workspace_jobs_full', 'workspace_close_pending', 'workspace_connection_mismatch'}
 
 
 def require_generation(value):
     pg.require(type(value) is int and 0 <= value < 2**63, 'workspace_input_invalid')
 
 
-def authorize(conn, workspace_id, permission):
+def connection_target(conn):
+    return conn.info.host, conn.info.port, conn.info.dbname
+
+
+def authorize(conn, workspace_id, permission, target):
+    # Actor grants must come from the same configured installation endpoint.
+    # These are trusted libpq connections, never user-submitted DSNs or proxies
+    # routing one endpoint to independent databases. Aliases fail closed.
+    pg.require(connection_target(conn) == target, 'workspace_connection_mismatch')
     with ws.scope(conn, workspace_id, permission):
         pass
 
@@ -52,6 +60,7 @@ class SessionLease:
     """Own a dedicated, unpooled SQL session until shutdown. Calls are serialized."""
     def __init__(self, conn):
         self.conn = conn
+        self.target = connection_target(conn)
         self.lease_id = secrets.token_hex(16)
         self.held = False
 
@@ -211,7 +220,7 @@ class Coordinator:
 
     def open(self, actor, workspace_id, expected_generation):
         ws.identifier(workspace_id); require_generation(expected_generation)
-        self.authorizer(actor, workspace_id, 'workspace:read')
+        self.authorizer(actor, workspace_id, 'workspace:read', self.lease.target)
         with self._condition:
             self._live()
             pg.require(expected_generation == self.generation, 'workspace_generation_stale')
@@ -229,7 +238,7 @@ class Coordinator:
     @contextmanager
     def borrow(self, actor, token, permission='workspace:read'):
         pg.require(type(token) is Token and permission in ws.PERMISSIONS, 'workspace_input_invalid')
-        self.authorizer(actor, token.workspace_id, permission)
+        self.authorizer(actor, token.workspace_id, permission, self.lease.target)
         with self._condition:
             self._live(); self._token(token)
             pg.require(len(self._jobs) < self.max_jobs, 'workspace_jobs_full')
@@ -243,7 +252,7 @@ class Coordinator:
 
     @contextmanager
     def _operation(self, operation):
-        self.authorizer(operation.actor, operation.token.workspace_id, operation.permission)
+        self.authorizer(operation.actor, operation.token.workspace_id, operation.permission, self.lease.target)
         with self._condition:
             self._live(); self._token(operation.token)
             pg.require(operation.active and operation in self._jobs and not operation.cancel.is_set(), 'workspace_generation_stale')
@@ -253,7 +262,7 @@ class Coordinator:
         with self._condition:
             self._live()
             if self.workspace_id is not None:
-                self.authorizer(actor, self.workspace_id, 'workspace:read')
+                self.authorizer(actor, self.workspace_id, 'workspace:read', self.lease.target)
             return {'state': self.state, 'generation': self.generation, 'workspace_id': self.workspace_id,
                     'jobs': len(self._jobs), 'cache_entries': len(self._cache), 'cache_bytes': self._bytes}
 
@@ -279,7 +288,7 @@ class Coordinator:
 
     def close(self, actor, workspace_id, expected_generation, *, timeout=5):
         ws.identifier(workspace_id); require_generation(expected_generation); deadline = self._deadline(timeout)
-        self.authorizer(actor, workspace_id, 'workspace:write')
+        self.authorizer(actor, workspace_id, 'workspace:write', self.lease.target)
         with self._condition:
             self._live()
             pg.require(expected_generation == self.generation, 'workspace_generation_stale')
