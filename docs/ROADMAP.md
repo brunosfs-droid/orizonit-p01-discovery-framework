@@ -8,7 +8,8 @@
 [Backlog](BACKLOG_1.0.md) · [Implementação/migração](IMPLEMENTATION_PLAN_1.0.md) ·
 [Testes/EVE-NG](TEST_PLAN_1.0.md).
 
-Baseline: v0.6.20 CANDIDATE, SNMP v0.4b.9 CANDIDATE. Alpha aberta.
+Baseline atual: v0.6.22 CANDIDATE opt-in, contratos Web v0.6.20 e
+SNMP v0.4b.9 CANDIDATE. Alpha aberta.
 Inventário/Mapper/serviços/dependências passam a integrar a 1.0. Histórico abaixo
 preserva entregas e limites anteriores; não é autorização para repetir testes.
 
@@ -27,7 +28,9 @@ não declara maturidade. Banco de grafos/NMS/remediação não são pré-requisi
 
 Primeiro incremento [v0.6.21 CANDIDATE](WORKSPACE_FOUNDATION_v0.6.21.md): registry,
 sites/ambientes/grants SQL/RLS/mapping aditivo opt-in. Migração completa de inventário
-e API ainda pendentes. Próximo: carga única v0.6.22, antes de UI/Graph.
+e API ainda pendentes. [v0.6.22](WORKSPACE_COORDINATOR_v0.6.22.md) implementa o
+coordenador lógico de carga única; ligações Web/loader/jobs ainda pendentes.
+Próximo: observações/identidade v0.6.23, antes de UI/Graph.
 Versões seguintes são alvos de planejamento, não releases.
 Estimativas anteriores são hipóteses; reestimar após primeiro incremento/adapters.
 Datas não serão prometidas com base somente nesta revisão.

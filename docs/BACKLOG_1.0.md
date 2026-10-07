@@ -4,6 +4,8 @@ Rebaseline 06/10/2026; execução atualizada em 07/10/2026 (-03).
 R01 iniciou com [v0.6.21 CANDIDATE](WORKSPACE_FOUNDATION_v0.6.21.md): registry,
 sites/ambientes/grants SQL/RLS/mapping. Ownership de inventário/API ainda pendente;
 R01 completo e demais requisitos não são marcados como concluídos.
+R02 iniciou com [v0.6.22](WORKSPACE_COORDINATOR_v0.6.22.md): lease por instalação,
+generation/drain/jobs/cache limitados. Web/API/loader e jobs legados ainda pendentes.
 P0: fundação/isolamento; P1: experiência central; P2: profundidade incremental.
 P2 pertence ao alvo 1.0; não significa exclusão automática. [Testes](TEST_PLAN_1.0.md).
 

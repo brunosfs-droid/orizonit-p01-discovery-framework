@@ -48,7 +48,7 @@ def page_args(after, limit):
 
 
 def schema(conn):
-    pg.schema_check(conn, minimum=5, workspace=True)
+    pg.schema_check(conn, minimum=5, runtime=True)
 
 
 def admin(conn):

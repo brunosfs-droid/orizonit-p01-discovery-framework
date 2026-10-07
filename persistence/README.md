@@ -5,6 +5,9 @@ Workspace Foundation v0.6.21 é uma extensão **opt-in em base isolada**:
 continua no schema4; somente `P01_Workspace.py migrate` aplica 0005. Readers
 legados recusam schema5 até sua adaptação, sem fallback para workspace ativo.
 
+Runtime v0.6.22 acrescenta 0006 por CLI separada; [contrato e limites](../docs/WORKSPACE_COORDINATOR_v0.6.22.md).
+A fundação lê schema5/6; os migrators antigos preservam seus prefixos e recusam 6.
+
 **CANDIDATE para LAB.** Primeiro incremento da Product Alpha (issue #63).
 O core portátil permanece v0.5e.6 e o scheduler v0.5f.3 continua independente.
 

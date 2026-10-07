@@ -1,3 +1,15 @@
+## v0.6.22 — Opt-in single-workspace coordinator (CANDIDATE)
+
+- Add separate migration 0006 and trusted SQL service role with forced RLS;
+  retain schema4/schema5 default migrators and unchanged migration bytes.
+- Hold one dedicated session lease per server database, with monotonic generation,
+  explicit open/close, fresh actor grants and bounded jobs/cache.
+- Drain cooperatively before switching; timeout keeps closing and retains lease.
+  Fence stale results, detect lease loss and recover closed without live replay.
+- Add lifecycle/thread/process-exit/session-termination tests on PostgreSQL 16/17.
+- Programmatic foundation only: no Web/API/inventory loader or legacy job adapter,
+  operational LAB upgrade, graph benchmark or complete R02 qualification.
+
 ## v0.6.21 — Opt-in workspace foundation (CANDIDATE)
 
 - Add explicit migration 0005 for workspaces, SQL-role grants, workspace-owned

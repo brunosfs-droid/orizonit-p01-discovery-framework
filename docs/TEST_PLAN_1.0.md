@@ -68,3 +68,11 @@ UPS/câmera/storage começam em perfil genérico/fixture, com teste real para cl
 Secret Provider mantém credenciais. Outputs reais/capturas ficam em OneDrive;
 Git guarda fixtures sanitizadas e qualificação técnica. “Ações” do LAB são planos
 e recomendações, não comandos automáticos de remediação.
+
+## Execução incremental v0.6.22
+
+T03/T14 têm fundação sintética de lease/generation/drain/cache com concorrência,
+20 trocas, process exit e sessão terminada no PostgreSQL. Isso não encerra esses
+gates: UI/multiaba, commits de import, jobs legados, restore6 e RAM/latência de
+inventário/Mapper ainda dependem dos adapters e LAB.
+[Contrato e matriz](WORKSPACE_COORDINATOR_v0.6.22.md).

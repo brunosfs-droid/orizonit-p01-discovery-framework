@@ -2,7 +2,9 @@
 
 Plano 06/10/2026; execução atualizada em 07/10/2026 (-03).
 [v0.6.21](WORKSPACE_FOUNDATION_v0.6.21.md) implementa registry/sites/ambientes/grants
-e mapping opt-in; inventário/API/carga única ainda não migrados.
+e mapping opt-in; [v0.6.22](WORKSPACE_COORDINATOR_v0.6.22.md) acrescenta
+coordenador lógico/lease/generation/drain/cache. Inventário/API/jobs legados ainda
+não integrados; R01/R02 permanecem parciais.
 [Backlog](BACKLOG_1.0.md) · [Gates](TEST_PLAN_1.0.md).
 
 ## Extensão Alpha

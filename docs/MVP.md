@@ -41,7 +41,8 @@ instalação reproduzível, SBOM/licenças/matriz pública e limitações antes 
 
 Primeiro incremento workspace [v0.6.21 CANDIDATE](WORKSPACE_FOUNDATION_v0.6.21.md):
 registry/grants/sites/ambientes e mapping opt-in em base isolada. Migração completa,
-carga única/API/Mapper ainda pendentes. Contratos legados v0.6.20/SNMP v0.4b.9
+[v0.6.22](WORKSPACE_COORDINATOR_v0.6.22.md) adiciona coordenador lógico de carga
+única; API/Mapper/loader/jobs legados ainda pendentes. Contratos legados v0.6.20/SNMP v0.4b.9
 preservados.
 Distributed mTLS R2 e R1 sintéticos PostgreSQL/recovery/lifecycle/CLI export/API/Web
 já têm aceite nos escopos registrados. Download Web v0.6.13+ e incrementos
