@@ -176,6 +176,12 @@ class CoordinatorTests(unittest.TestCase):
             previous=self.c.close('writer',workspace_id,token.generation,timeout=0)
             snapshot=self.c.snapshot('writer');self.assertEqual(snapshot['cache_bytes'],0);self.assertEqual(snapshot['jobs'],0)
 
+    def test_shutdown_discovers_session_loss_and_still_releases_its_resources(self):
+        self.opened();self.lease.lost=True
+        self.c.shutdown(timeout=0)
+        self.assertTrue(self.c._terminated);self.assertTrue(self.lease.stopped)
+        self.assertTrue(self.c._cancel.is_set());self.assertEqual(self.c.state,'recovery_required')
+
     def test_invalid_limits_and_generations_are_rejected(self):
         for kwargs in ({'max_jobs':True},{'max_jobs':0},{'max_cache_bytes':-1},{'heartbeat_seconds':float('nan')}):
             with self.assertRaisesRegex(pg.PersistenceError,'workspace_input_invalid'):runtime.Coordinator(MemoryLease(),**kwargs)

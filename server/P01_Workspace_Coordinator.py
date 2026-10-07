@@ -306,10 +306,14 @@ class Coordinator:
             if self._terminated: return
             pg.require(self._started, 'workspace_lease_lost')
             if self.state != 'recovery_required':
-                self._live()
-                if self.state != 'closed': self._drain(deadline)
-            else:
+                try:
+                    self._live()
+                except pg.PersistenceError:
+                    if self.state != 'recovery_required': raise
+            if self.state == 'recovery_required':
                 pg.require(not self._jobs, 'workspace_close_pending')
+            elif self.state != 'closed':
+                self._drain(deadline)
             self._stop.set(); self._terminated = True
             try: self.lease.stop(self.generation)
             except Exception:
