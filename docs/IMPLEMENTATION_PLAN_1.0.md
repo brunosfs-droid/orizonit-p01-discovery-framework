@@ -1,7 +1,9 @@
 # Cancã — implementação e migração para 1.0
 
-Revisão 06/10/2026 (-03). Plano pronto para execução; nenhum schema/API/SQL novo
-implantado nesta revisão. [Backlog](BACKLOG_1.0.md) · [Gates](TEST_PLAN_1.0.md).
+Plano 06/10/2026; execução atualizada em 07/10/2026 (-03).
+[v0.6.21](WORKSPACE_FOUNDATION_v0.6.21.md) implementa registry/sites/ambientes/grants
+e mapping opt-in; inventário/API/carga única ainda não migrados.
+[Backlog](BACKLOG_1.0.md) · [Gates](TEST_PLAN_1.0.md).
 
 ## Extensão Alpha
 

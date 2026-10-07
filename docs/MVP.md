@@ -39,7 +39,10 @@ instalação reproduzível, SBOM/licenças/matriz pública e limitações antes 
 
 ## Estado real
 
-v0.6.20 CANDIDATE e SNMP v0.4b.9 CANDIDATE continuam a baseline executável.
+Primeiro incremento workspace [v0.6.21 CANDIDATE](WORKSPACE_FOUNDATION_v0.6.21.md):
+registry/grants/sites/ambientes e mapping opt-in em base isolada. Migração completa,
+carga única/API/Mapper ainda pendentes. Contratos legados v0.6.20/SNMP v0.4b.9
+preservados.
 Distributed mTLS R2 e R1 sintéticos PostgreSQL/recovery/lifecycle/CLI export/API/Web
 já têm aceite nos escopos registrados. Download Web v0.6.13+ e incrementos
 posteriores, vendors reais e roles/TLS/produção mantêm seus gates pendentes.

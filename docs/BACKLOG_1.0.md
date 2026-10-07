@@ -1,6 +1,9 @@
 # Cancã — backlog rastreável 1.0
 
-Rebaseline 06/10/2026 (-03). Todos estes itens estão **planejados**.
+Rebaseline 06/10/2026; execução atualizada em 07/10/2026 (-03).
+R01 iniciou com [v0.6.21 CANDIDATE](WORKSPACE_FOUNDATION_v0.6.21.md): registry,
+sites/ambientes/grants SQL/RLS/mapping. Ownership de inventário/API ainda pendente;
+R01 completo e demais requisitos não são marcados como concluídos.
 P0: fundação/isolamento; P1: experiência central; P2: profundidade incremental.
 P2 pertence ao alvo 1.0; não significa exclusão automática. [Testes](TEST_PLAN_1.0.md).
 
@@ -34,5 +37,5 @@ Fixtures A/B com IDs/IPs iguais e acesso adversarial. Depois R02/R03. Não inici
 Mapper/Graph sobre ownership ausente. Teste base de recovery T13 precede R06;
 R20 completo depende do restante somente para GA, evitando dependência circular.
 
-O usuário solicitou concluir a preparação e avisar antes da nova execução.
-Documentação pronta não marca implementações como concluídas.
+O mantenedor autorizou iniciar desenvolvimento em 07/10/2026. Preparação concluída
+na PR #132; implementação passa por qualificação própria e não encerra a Alpha.
