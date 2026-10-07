@@ -25,8 +25,10 @@ Design Partner Alpha é maturidade/feedback controlado sobre entregas v0.7/v0.8,
 não substitui requisitos. Community Beta e RC dependem de gates; número da versão
 não declara maturidade. Banco de grafos/NMS/remediação não são pré-requisitos.
 
-Primeiro incremento alvo v0.6.21: contratos/ownership/grants e migração aditiva,
-antes de UI/Graph. Versões seguintes são alvos de planejamento, não releases.
+Primeiro incremento [v0.6.21 CANDIDATE](WORKSPACE_FOUNDATION_v0.6.21.md): registry,
+sites/ambientes/grants SQL/RLS/mapping aditivo opt-in. Migração completa de inventário
+e API ainda pendentes. Próximo: carga única v0.6.22, antes de UI/Graph.
+Versões seguintes são alvos de planejamento, não releases.
 Estimativas anteriores são hipóteses; reestimar após primeiro incremento/adapters.
 Datas não serão prometidas com base somente nesta revisão.
 

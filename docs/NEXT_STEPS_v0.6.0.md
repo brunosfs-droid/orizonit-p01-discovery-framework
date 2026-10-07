@@ -1,15 +1,20 @@
 # P01 — Próximos passos da Product Alpha
 
-Atualizado em 06/10/2026 (-03). Baseline v0.6.20/SNMP v0.4b.9 CANDIDATE.
+Atualizado em 07/10/2026 (-03). Workspace Foundation v0.6.21 CANDIDATE;
+contratos legados v0.6.20/SNMP v0.4b.9 preservados.
 
 ## Próxima execução após replanejamento
 
 [Especificação 1.0](PRODUCT_SPEC_1.0.md), [arquitetura](ARCHITECTURE.md),
 [backlog](BACKLOG_1.0.md), [migração](IMPLEMENTATION_PLAN_1.0.md) e
 [testes/EVE-NG](TEST_PLAN_1.0.md) passam a orientar o desenvolvimento.
-Primeiro: R01/v0.6.21 alvo, Workspace/Site/Environment + ownership/grants/migração.
-Depois: carga única, observações/identidades, relações e reconciliação. Só então
-fechar Alpha e iniciar UI/Mapper v0.7. Funcionalidades novas ainda planejadas.
+Primeiro incremento implementado: [v0.6.21 CANDIDATE](WORKSPACE_FOUNDATION_v0.6.21.md),
+registry Workspace/Site/Environment, grants SQL/RLS e mapping administrativo.
+Opt-in em base isolada; não é migração completa de inventário nem upgrade da Web.
+Fonte qualificada: 15 runs PASS, incluindo 18 casos sem skips por PostgreSQL 16/17
+no workflow dedicado. [Evidência e limites](validation/WORKSPACE_FOUNDATION_CI_v0.6.21.md).
+Próximo: v0.6.22 carga única, depois observações/identidades, relações e reconciliação.
+Só então fechar Alpha e iniciar UI/Mapper v0.7. A Alpha permanece aberta.
 
 Nenhum teste dependente do mantenedor é solicitado agora. Gates antigos abaixo
 mantêm seus limites; testes novos serão propostos sobre a versão qualificada.

@@ -1,6 +1,6 @@
 """Executive HTTP delivery, shared resource boundary and downloaded file integrity."""
 from copy import deepcopy
-from contextlib import redirect_stdout
+from contextlib import redirect_stdout, contextmanager
 import importlib.util
 import io
 import json
@@ -8,6 +8,7 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import threading
 import unittest
 from unittest.mock import patch
 import zipfile
@@ -114,13 +115,26 @@ class OperatorWebExecutiveTests(unittest.TestCase):
 
     def test_technical_and_executive_exports_share_one_slot_until_delivery_finishes(self):
         token=self.login()
+        delivered=threading.Event(); original=self.server.report_exports.build
+        @contextmanager
+        def tracked_delivery(*args, **kwargs):
+            entered=False
+            try:
+                with original(*args, **kwargs) as payload:
+                    entered=True
+                    yield payload
+            finally:
+                if entered: delivered.set()  # After the original context releases its slot.
         for held, requested in (('technical','executive'),('executive','technical')):
             with patch.object(export.pg,'open_connection'), patch.object(export.report,'show_assessment',side_effect=canonical_page):
-                with self.server.report_exports.build(token,'LAB-001','d'*64,1,kind=held):
+                with original(token,'LAB-001','d'*64,1,kind=held):
                     with patch.object(export.pg,'open_connection') as blocked:
                         code,_,raw=self.request('GET',self.target(kind=requested),headers={'Authorization':'Bearer '+token})
                     self.assertEqual(code,429); self.assertEqual(json.loads(raw)['error_code'],'export_busy'); blocked.assert_not_called()
-                self.assertEqual(self.request('GET',self.target(kind=requested),headers={'Authorization':'Bearer '+token})[0],200)
+                delivered.clear()
+                with patch.object(self.server.report_exports,'build',side_effect=tracked_delivery):
+                    self.assertEqual(self.request('GET',self.target(kind=requested),headers={'Authorization':'Bearer '+token})[0],200)
+                    self.assertTrue(delivered.wait(timeout=5), 'HTTP handler did not finish delivery')
         with patch.object(export.pg,'open_connection') as connect:
             with self.assertRaises(web.api.AccessError):
                 with self.server.report_exports.build(token,'LAB-001','d'*64,kind='unknown'): pass

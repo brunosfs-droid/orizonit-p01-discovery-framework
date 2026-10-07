@@ -13,13 +13,19 @@
 Workspaces isolados, sites internos, uma base aberta por instalação e Mapper como
 experiência central. Visão geral do workspace separada da Administração do servidor.
 Scans/imports explícitos, histórico, relações, serviços, findings e planos de ação.
-Esta revisão é planejamento; versão executável permanece v0.6.20 CANDIDATE.
+Especificação aprovada na PR #132; primeiro incremento v0.6.21 CANDIDATE.
+UI/Mapper e migração completa de inventário seguem nos próximos incrementos.
 
 [Especificação](docs/PRODUCT_SPEC_1.0.md) · [Arquitetura](docs/ARCHITECTURE.md) ·
 [Backlog](docs/BACKLOG_1.0.md) · [Migração](docs/IMPLEMENTATION_PLAN_1.0.md) ·
 [Testes/EVE-NG](docs/TEST_PLAN_1.0.md) · [Estado](docs/STATUS_REBASELINE_1.0_2026-10-06.md).
 
 ## Product baseline
+
+Workspace Foundation v0.6.21: [registro, sites/ambientes e grants SQL](docs/WORKSPACE_FOUNDATION_v0.6.21.md)
+(CANDIDATE, opt-in). Migração 0005 explícita em base isolada, RLS em tabelas novas e
+mapping administrativo sem reescrever evidência. Carga única/API/Mapper e migração
+completa de inventário seguem nos próximos incrementos; nenhuma ação no LAB agora.
 
 SNMP planned execution v0.4b.8: [explicit endpoints and opt-in execution](docs/SNMP_PLANNED_EXECUTION_v0.4b.8.md)
 

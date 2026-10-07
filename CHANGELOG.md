@@ -1,3 +1,17 @@
+## v0.6.21 — Opt-in workspace foundation (CANDIDATE)
+
+- Add explicit migration 0005 for workspaces, SQL-role grants, workspace-owned
+  sites/environments and immutable administrative legacy assessment mappings.
+- Force RLS on new tables, require current-user grants and transaction-local
+  workspace context, and reject cross-workspace parents/direct multirow cycles.
+- Add a separate bounded CLI with registration/replay/conflict handling, grant
+  revocation and no automatic inventory backfill, filesystem change or live scan.
+- Preserve default migrations 1–4; opting into schema5 makes legacy readers reject
+  it until their workspace adapters are implemented. No operational LAB upgrade.
+- Qualify source and dedicated PostgreSQL 16/17 adversarial transactions separately.
+- Fix a pre-existing HTTP export test race by awaiting handler context completion;
+  production export concurrency/slot semantics remain unchanged.
+
 ## Unreleased — workspace-first 1.0 specification rebaseline (06/10/2026)
 
 - Bring inventory, Mapper, infrastructure/service relationships and action planning

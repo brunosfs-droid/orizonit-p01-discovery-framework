@@ -1,5 +1,10 @@
 # PostgreSQL metadata foundation — v0.6.3
 
+Workspace Foundation v0.6.21 é uma extensão **opt-in em base isolada**:
+[contrato](../docs/WORKSPACE_FOUNDATION_v0.6.21.md). `P01_PostgreSQL.py migrate`
+continua no schema4; somente `P01_Workspace.py migrate` aplica 0005. Readers
+legados recusam schema5 até sua adaptação, sem fallback para workspace ativo.
+
 **CANDIDATE para LAB.** Primeiro incremento da Product Alpha (issue #63).
 O core portátil permanece v0.5e.6 e o scheduler v0.5f.3 continua independente.
 
