@@ -11,6 +11,8 @@ contratos legados v0.6.20/SNMP v0.4b.9 preservados.
 Primeiro incremento implementado: [v0.6.21 CANDIDATE](WORKSPACE_FOUNDATION_v0.6.21.md),
 registry Workspace/Site/Environment, grants SQL/RLS e mapping administrativo.
 Opt-in em base isolada; não é migração completa de inventário nem upgrade da Web.
+Fonte qualificada: 15 runs PASS, incluindo 18 casos sem skips por PostgreSQL 16/17
+no workflow dedicado. [Evidência e limites](validation/WORKSPACE_FOUNDATION_CI_v0.6.21.md).
 Próximo: v0.6.22 carga única, depois observações/identidades, relações e reconciliação.
 Só então fechar Alpha e iniciar UI/Mapper v0.7. A Alpha permanece aberta.
 

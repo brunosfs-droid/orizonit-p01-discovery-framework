@@ -3,7 +3,8 @@
 **CANDIDATE, opt-in, para base isolada de desenvolvimento.** A fundação implementa
 registry, grants por SQL-role, sites, ambientes opcionais e mapping explícito de
 assessment. Ainda não apresenta UI/Mapper ou carrega inventário de workspace.
-[ADR 0037](ADR_0037_Workspace_Foundation_v0.6.21.md) · [Plano](IMPLEMENTATION_PLAN_1.0.md).
+[ADR 0037](ADR_0037_Workspace_Foundation_v0.6.21.md) · [Plano](IMPLEMENTATION_PLAN_1.0.md) ·
+[Qualificação CI](validation/WORKSPACE_FOUNDATION_CI_v0.6.21.md).
 
 ## Modelo
 
