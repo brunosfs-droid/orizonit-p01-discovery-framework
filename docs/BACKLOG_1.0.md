@@ -9,6 +9,9 @@ generation/drain/jobs/cache limitados. Web/API/loader e jobs legados ainda pende
 [v0.6.25](WORKSPACE_MODEL_v0.6.25.md) inicia R03–R05 com backend de histórico,
 objetos/relações manuais e reconciliação identity. Serviço registra jobs e cerca
 commits; migração/API/UI e cobertura adicional mantêm os requisitos parciais.
+[v0.6.26](WORKSPACE_API_v0.6.26.md) entrega listener humano separado para os
+contratos backend, com binding/grants SQL; R06 segue parcial por migração,
+restore, audit workspace e readers/reports legados.
 P0: fundação/isolamento; P1: experiência central; P2: profundidade incremental.
 P2 pertence ao alvo 1.0; não significa exclusão automática. [Testes](TEST_PLAN_1.0.md).
 
