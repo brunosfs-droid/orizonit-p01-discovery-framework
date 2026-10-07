@@ -88,8 +88,9 @@ final de latência/RAM depende da medição, não é capacidade comercial garant
 
 ## Sequência executável após o backend23–25
 
-1. v0.6.26: API humana opt-in com binding operador/role SQL explícito, contexto
-   workspace/generation, erros e limites; revalidação de sessão/grant e tests HTTP.
+1. [v0.6.26](WORKSPACE_API_v0.6.26.md): API humana opt-in implementada, com
+   binding operador/role SQL explícito, workspace/generation, limites/erros e
+   revalidação de sessão/grant. Não encerra integração/migração/audit de R06.
 2. Backfill revisado do legado, recibos/recovery e restore7; leitores de findings
    e reports ligados a revisão/cobertura. Fechar R06 somente com esses gates.
 3. v0.7: seleção/abertura/fechamento, páginas de objetos e Mapper limitado; Visão

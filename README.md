@@ -22,6 +22,11 @@ UI/Mapper e migração completa de inventário seguem nos próximos incrementos.
 
 ## Product baseline
 
+Workspace API v0.6.26: [listener humano com roles e contexto explícitos](docs/WORKSPACE_API_v0.6.26.md)
+(CANDIDATE, opt-in). Login, registry/open/close, objetos/grafo/declarações e
+preview/apply; separado do operador legado. Sem UI/Mapper, backfill completo ou
+upgrade no LAB.
+
 Workspace Model v0.6.25: [histórico, grafo manual e reconciliação revisada](docs/WORKSPACE_MODEL_v0.6.25.md)
 (CANDIDATE, opt-in). Objetos e declarações isolados, import com prévia/revisão/recibo
 e commits protegidos pelo coordenador. API humana, UI/Mapper e migração completa

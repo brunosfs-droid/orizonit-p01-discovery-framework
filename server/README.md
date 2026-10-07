@@ -176,3 +176,10 @@ Do not repeat either accepted R1; see the evidence record for the remaining wide
 
 [ADR 0023](../docs/ADR_0023_Local_Operator_API_v0.6.11.md) ·
 [ADR 0024](../docs/ADR_0024_Local_Operator_Web_v0.6.12.md).
+
+## Workspace API v0.6.26 opt-in
+
+[Contrato](../docs/WORKSPACE_API_v0.6.26.md): listener separado em schema7,
+LocalAuth + binding operador/role SQL privado e conexão por request. Operações
+exigem workspace/generation; grants atuais no banco. Não substituir listener
+legado/schema4; CLI e limites no contrato. Migração/UI/Mapper ainda pendentes.
