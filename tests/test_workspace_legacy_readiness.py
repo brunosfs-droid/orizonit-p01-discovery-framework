@@ -72,6 +72,7 @@ class ReadinessInputTests(unittest.TestCase):
                      'workspace SQL opt-in required')
 class ReadinessPostgreSQLTests(unittest.TestCase):
     setUp=legacy_tests.LegacyPostgreSQLTests.setUp
+    seed_legacy=legacy_tests.LegacyPostgreSQLTests.seed_legacy
     legacy_rows=legacy_tests.LegacyPostgreSQLTests.legacy_rows
     role=legacy_tests.LegacyPostgreSQLTests.role
     human=legacy_tests.LegacyPostgreSQLTests.human
