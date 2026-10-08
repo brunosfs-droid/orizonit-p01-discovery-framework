@@ -12,13 +12,15 @@ objetos/relações manuais e reconciliação identity. Serviço registra jobs e 
 commits; backfill/UI e cobertura adicional mantêm os requisitos parciais.
 [v0.6.26](WORKSPACE_API_v0.6.26.md) entrega listener humano separado para os
 contratos backend, com binding/grants SQL; R06 segue parcial por migração,
-recovery operacional, audit workspace e readers/reports legados. Recovery isolado
+recovery operacional e readers adicionais. Recovery isolado
 e lease por banco foram qualificados em [v0.6.27](WORKSPACE_RECOVERY_v0.6.27.md).
 [v0.6.28](WORKSPACE_LEGACY_v0.6.28.md) adiciona backfill identity revisado e
-relatórios históricos por bundle/revisão. Os gates de migração completa e audit
-HTTP workspace permanecem abertos.
+relatórios históricos por bundle/revisão. O gate de migração completa permanece aberto.
 [Qualificação v0.6.28](validation/WORKSPACE_LEGACY_CI_v0.6.28.md):141 casos sem
 skips por PG16/17 e restores schema8/9, preservando tarefas1–3 e marcos anteriores.
+[v0.6.29](WORKSPACE_AUDIT_v0.6.29.md) qualifica auditoria HTTP própria, privada e
+fail-closed sem schema novo. [Evidência](validation/WORKSPACE_AUDIT_CI_v0.6.29.md):
+9 casos audit por PG16/17 e regressão geral 793 PASS/217 skips esperados.
 P0: fundação/isolamento; P1: experiência central; P2: profundidade incremental.
 P2 pertence ao alvo 1.0; não significa exclusão automática. [Testes](TEST_PLAN_1.0.md).
 
@@ -48,8 +50,9 @@ P2 pertence ao alvo 1.0; não significa exclusão automática. [Testes](TEST_PLA
 ## Primeiro lote
 
 R01–R05 possuem fundamentos opt-in e fixtures adversariais A/B, com serviço/API
-workspace qualificados e ponte revisada de legado/relatório por bundle na v0.6.28.
-Próximas entregas: audit HTTP workspace, migração/categorias/readers adicionais.
+workspace qualificados, ponte revisada de legado/relatório por bundle na v0.6.28
+e auditoria HTTP própria qualificada na v0.6.29.
+Próximas entregas: migração/categorias/readers adicionais e recovery operacional.
 Mapper usa o grafo limitado após os
 gates de fechamento Alpha. Recovery isolado T13 tem qualificação CI na v0.6.27;
 R20 completo depende do restante somente para GA, evitando dependência circular.
@@ -78,7 +81,7 @@ marcos após verificar a baseline v0.6.27 e seu CI.
 | R03 | Histórico, observações/declarações, identidade e backfill revisado | Demais categorias observadas e migração completa. |
 | R04 | Objetos/relações manuais e grafo limitado | Adapters observados de interfaces/redes/componentes e serviços. |
 | R05 | Preview/apply identity e legado, revisão/recibos | Reconciliação das demais categorias e fluxo completo de import. |
-| R06 | API autenticada, ponte/relatório histórico e recovery isolado schema8/9 PG16/17 | Migração/readers completos, audit e qualificação operacional. |
+| R06 | API autenticada, ponte/relatório histórico, audit HTTP e recovery isolado schema8/9 PG16/17 | Migração/readers completos e qualificação operacional. |
 
 Nenhum R01–R06 é declarado integralmente concluído. T13/R20 continuam parciais:
 restore same-cluster/roles existentes não qualifica recuperação cross-cluster.

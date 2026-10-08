@@ -1,3 +1,20 @@
+## v0.6.29 — Private workspace HTTP audit (CANDIDATE)
+
+- Add opt-in exclusive JSONL audit to the schema9 workspace listener without a
+  schema/store/grant change.
+- Classify login/lifecycle/read/manual/import/backfill/historical-report requests
+  with fixed operation labels and trusted operator/workspace IDs only.
+- Never persist submitted username/password, bearer/token, body/query, bundle,
+  assessment, object, plan, scope hash, report or raw backend errors.
+- Fail closed before authentication/SQL/service when audit admission is
+  unavailable; preserve completion capacity for already admitted requests.
+- Reject file reuse, symlink/reparse/hardlink and live file/directory drift; latch
+  fsync/capacity/metadata failures until controlled restart.
+- Qualify 9 audit cases without skips on each PostgreSQL16/17, preserve schema8/9
+  restore gates, and pass the 793-test general regression (217 expected skips).
+- R06/Alpha remain open for migration/readers additional coverage and operational
+  recovery; UI/Mapper remains a later gate.
+
 ## v0.6.28 — Reviewed legacy bridge and historical workspace reports (CANDIDATE)
 
 - Add explicit schema9 with mapped, bounded legacy snapshots and immutable plans/

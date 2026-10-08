@@ -18,8 +18,9 @@ import P01_Operator_API as http
 import P01_Operator_Auth as authn
 import P01_Operator_Web as web
 import P01_Workspace_Service as backend
+import P01_Workspace_Audit as workspace_audit
 pg,ws,runtime,model=backend.pg,backend.ws,backend.runtime,backend.model
-VERSION='0.6.28'
+VERSION='0.6.29'
 MAX_BODY=128*1024
 BASE='/api/v1/workspaces'
 ROUTE=re.compile(BASE+r'/([A-Za-z0-9][A-Za-z0-9._-]{0,127})/(open|close|objects|objects/([A-Za-z0-9][A-Za-z0-9._-]{0,127})|graph/([A-Za-z0-9][A-Za-z0-9._-]{0,127})|declarations|relationships|imports/preview|imports/apply|legacy/preview|legacy/apply|legacy/(bnd-[0-9a-f]{20})/report)')
@@ -156,7 +157,9 @@ class WorkspaceHandler(http.OperatorHandler):
                 if path.query:raise authn.AccessError('http_request_invalid',400)
                 if method=='POST':
                     doc=self._fields(self._json(),('username','password'))
-                    self._send(201,self.server.service.auth.login(**doc))
+                    result=self.server.service.auth.login(**doc)
+                    if getattr(self,'_audit_request',None) is not None:self._audit_operator=result['operator_id']
+                    self._send(201,result)
                 else:
                     self._empty_body();self.server.service.auth.logout(self._bearer());self._send(200,dict(status='logged_out'))
                 return
@@ -213,6 +216,8 @@ class WorkspaceHandler(http.OperatorHandler):
                 else:raise authn.AccessError('route_not_found',404)
             self._validate(action,fields)
             result=self.server.service.execute(bearer,action,workspace_id,**fields)
+            if getattr(self,'_audit_request',None) is not None and workspace_id is not None:
+                self._audit_workspace=workspace_id
             self._send(200,result)
         except authn.AccessError as exc:self._send(exc.status,dict(status='failed',error_code=str(exc)))
         except pg.PersistenceError as exc:
@@ -222,6 +227,29 @@ class WorkspaceHandler(http.OperatorHandler):
             if code in ('legacy_source_conflict','legacy_scope_conflict'):status=409
             self._send(status,dict(status='failed',error_code=code))
         except Exception:self._send(503,dict(status='failed',error_code='workspace_request_failed'))
+    def _serve(self,method):
+        sink=self.server.audit
+        if sink is None:
+            self._dispatch(method);return
+        self._audit_request=None;self._audit_operator=None;self._audit_workspace=None
+        self._audit_http_status=None;self._audit_delivery_failed=False
+        try:self._audit_request=sink.begin(workspace_audit.operation(method,self.path))
+        except workspace_audit.AuditError:
+            self._send(503,dict(status='failed',error_code='workspace_audit_unavailable'));return
+        outcome='response_written'
+        try:
+            self._dispatch(method)
+            if self._audit_delivery_failed:outcome='delivery_failed'
+            elif self._audit_http_status is None:outcome='handler_failed'
+        except (BrokenPipeError,ConnectionResetError,TimeoutError):
+            outcome='delivery_failed';self.close_connection=True
+        except Exception:
+            outcome='handler_failed';self.close_connection=True
+        finally:
+            try:sink.finish(self._audit_request,http_status=self._audit_http_status,outcome=outcome,
+                            operator_id=self._audit_operator,workspace_id=self._audit_workspace)
+            except workspace_audit.AuditError:self.close_connection=True
+
     @staticmethod
     def _validate(action,fields):
         for key in ('generation','expected_revision'):
@@ -258,7 +286,7 @@ class WorkspaceServer(http.OperatorServer):
         finally:
             if self._owns_coordinator:self.service.workspace.coordinator.shutdown(timeout=30)
 
-def create_server(accounts_path,bindings_path,host='127.0.0.1',port=8879,*,tls_cert=None,tls_key=None):
+def create_server(accounts_path,bindings_path,host='127.0.0.1',port=8879,*,tls_cert=None,tls_key=None,audit_path=None):
     if type(port) is not int or not 0<=port<=65535:raise ValueError('invalid workspace port')
     address=ipaddress.ip_address(host);tls=bool(tls_cert and tls_key)
     if address.version!=4 or bool(tls_cert)!=bool(tls_key) or (not tls and str(address)!='127.0.0.1'):raise ValueError('remote workspace API requires TLS')
@@ -274,6 +302,7 @@ def create_server(accounts_path,bindings_path,host='127.0.0.1',port=8879,*,tls_c
         coordinator.start()
         service=HumanWorkspaceService(authn.LocalAuth(accounts),connections,backend.WorkspaceService(coordinator,bindings.sources,bindings.legacy_sources))
         server=WorkspaceServer((str(address),port),service);server._owns_coordinator=True
+        if audit_path is not None:server.audit=workspace_audit.FileAudit(audit_path)
         if context:server.tls_context=context
         return server
     except BaseException:
@@ -286,18 +315,20 @@ def cli(argv=None):
     parser=argparse.ArgumentParser(description='Cancã opt-in workspace API '+VERSION)
     parser.add_argument('--accounts',required=True);parser.add_argument('--bindings',required=True)
     parser.add_argument('--host',default='127.0.0.1');parser.add_argument('--port',type=int,default=8879)
-    parser.add_argument('--tls-cert');parser.add_argument('--tls-key');args=parser.parse_args(argv)
+    parser.add_argument('--tls-cert');parser.add_argument('--tls-key');parser.add_argument('--audit-file');args=parser.parse_args(argv)
     server=None
     try:
-        server=create_server(args.accounts,args.bindings,args.host,args.port,tls_cert=args.tls_cert,tls_key=args.tls_key)
+        server=create_server(args.accounts,args.bindings,args.host,args.port,tls_cert=args.tls_cert,tls_key=args.tls_key,audit_path=args.audit_file)
         print(json.dumps(dict(status='listening',version=VERSION)),flush=True);server.serve_forever();return 0
     except KeyboardInterrupt:return 0
+    except workspace_audit.AuditError:
+        print(json.dumps(dict(status='failed',error_code='workspace_audit_unavailable')));return 2
     except Exception:
         print(json.dumps(dict(status='failed',error_code='workspace_startup_failed')));return 2
     finally:
         if server is not None:
             try:server.server_close()
-            except pg.PersistenceError:
+            except (pg.PersistenceError,workspace_audit.AuditError):
                 print(json.dumps(dict(status='failed',error_code='workspace_shutdown_failed')));return 2
 
 

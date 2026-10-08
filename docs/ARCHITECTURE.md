@@ -136,4 +136,13 @@ como job do coordenador. SQL resolve ownership explícito antes de preparar byte
 no store original; apply confirma revisão/snapshot e publica identidade/história/
 recibos atomicamente. O relatório consulta a cópia histórica limitada por bundle,
 revisão e hash de escopo, sem executar findings atuais. SQL1–8 e tarefas anteriores
-permanecem preservados; audit e migração completa são os próximos gates.
+permanecem preservados; migração completa continua um gate aberto.
+
+## Auditoria HTTP workspace v0.6.29
+
+[Contrato](WORKSPACE_AUDIT_v0.6.29.md): auditoria separada do listener legado,
+opt-in e sem schema novo. A admissão é fail-closed; o registro usa rótulos de
+operação fixos e somente operator/workspace IDs derivados de contexto confiável.
+Payload, query, token, IDs de objeto/bundle/plan e conteúdo nunca entram no log.
+A falha pós-resposta não inventa rollback. Recovery operacional e migração/readers
+adicionais permanecem gates independentes.
