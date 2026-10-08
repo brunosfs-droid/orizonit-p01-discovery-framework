@@ -165,6 +165,17 @@ class HTTPTests(unittest.TestCase):
             self.assertEqual(self.request('GET',api.BASE+'/A/categories/network?generation=2&'+bad,headers=headers)[0],400)
         self.service.execute.assert_not_called()
 
+    def test_category_coverage_route_is_read_only_and_strict(self):
+        headers=self.login()
+        uri=api.BASE+'/A/categories/network/coverage?generation=2&max_pages=1'
+        self.assertEqual(self.request('GET',uri,headers=headers)[0],200)
+        self.assertEqual(self.service.execute.call_args.args[1],'category_coverage')
+        self.assertEqual(self.service.execute.call_args.kwargs['category'],'network')
+        self.service.execute.reset_mock()
+        self.assertEqual(self.request('GET',api.BASE+'/A/categories/network/coverage',headers=headers)[0],400)
+        self.assertEqual(self.request('GET',uri+'&secret=x',headers=headers)[0],400)
+        self.service.execute.assert_not_called()
+
     def test_missing_forged_query_token_and_node_identity_denied(self):
         for path,headers in ((api.BASE,None),(api.BASE,{'Authorization':'Bearer '+'x'*43}),
                              (api.BASE,{'X-P01-Node-ID':'OP-01'}),(api.BASE+'?access_token=PRIVATE',None)):

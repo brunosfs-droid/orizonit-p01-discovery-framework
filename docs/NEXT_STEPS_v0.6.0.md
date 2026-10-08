@@ -50,6 +50,12 @@ em branch de trabalho, pendente de resultado dos workflows no último HEAD; o CI
 anterior da PR estava aprovado. **Não** qualifica readers observados de scanner,
 migração completa ou recuperação operacional.
 
+## v0.6.31 — cobertura delimitada de objetos registrados
+
+A v0.6.31 candidata acrescenta resumo read-only por categoria/origem/tipo,
+com escopo de páginas e continuidade explícitos; não é aferição de cobertura de
+coleta, e não abre suporte a novo vendor nem completa migração.
+
 ## Próximos gates independentes
 
 1. Ampliar migração/categorias/readers conforme os contratos e recovery operacional do

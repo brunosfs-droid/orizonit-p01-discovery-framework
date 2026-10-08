@@ -13,7 +13,7 @@
 Workspaces isolados, sites internos, uma base aberta por instalação e Mapper como
 experiência central. Visão geral do workspace separada da Administração do servidor.
 Scans/imports explícitos, histórico, relações, serviços, findings e planos de ação.
-Especificação aprovada na PR #132; incrementos v0.6.21–30 CANDIDATE.
+Especificação aprovada na PR #132; incrementos v0.6.21–31 CANDIDATE.
 UI/Mapper e migração completa de inventário seguem nos próximos incrementos.
 
 [Especificação](docs/PRODUCT_SPEC_1.0.md) · [Arquitetura](docs/ARCHITECTURE.md) ·
