@@ -13,6 +13,7 @@ import P01_Workspace_Legacy as legacy
 import P01_Workspace_Category_Reader as category_reader
 import P01_Workspace_Observed_Signals as observed_signals
 import P01_Workspace_Signal_Summary as signal_summary
+import P01_Workspace_Signal_Quality as signal_quality
 
 runtime,ws,pg=model.runtime,model.ws,model.pg
 VERSION='0.6.25'
@@ -85,6 +86,8 @@ class WorkspaceService:
         return self._call(actor,token,'workspace:read',category_reader.inventory,**query)
     def category_coverage(self,actor,token,**query):
         return self._call(actor,token,'workspace:read',category_reader.coverage,**query)
+    def signal_quality(self,actor,token,object_id,**query):
+        return self._call(actor,token,'workspace:read',signal_quality.object_quality,object_id,**query)
     def signal_summary(self,actor,token,object_id,**query):
         return self._call(actor,token,'workspace:read',signal_summary.object_summary,object_id,**query)
     def observed_signals(self,actor,token,object_id,**query):
