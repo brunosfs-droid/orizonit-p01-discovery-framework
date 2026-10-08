@@ -20,7 +20,7 @@ MAX_ACTIVE = 8
 OPERATIONS = frozenset({
     'login', 'logout', 'health', 'workspace_directory', 'workspace_open',
     'workspace_close', 'object_list', 'object_read', 'graph_read',
-    'category_coverage', 'observed_signals', 'signal_summary', 'signal_quality', 'object_declare', 'declaration_write', 'relationship_write',
+    'category_coverage', 'observed_signals', 'signal_summary', 'signal_quality', 'observation_comparison', 'object_declare', 'declaration_write', 'relationship_write',
     'import_preview', 'import_apply', 'legacy_preview', 'legacy_apply',
     'historical_report', 'other',
 })
@@ -28,7 +28,7 @@ OUTCOMES = frozenset({'response_written', 'delivery_failed', 'handler_failed'})
 IDENTIFIER = re.compile(r'[A-Za-z0-9][A-Za-z0-9._-]{0,127}')
 RESOURCE = re.compile(
     r'/api/v1/workspaces/[A-Za-z0-9][A-Za-z0-9._-]{0,127}/'
-    r'(?P<route>open|close|categories/(?:compute|network|services|components)(?:/coverage)?|objects|objects/[A-Za-z0-9][A-Za-z0-9._-]{0,127}(?:/signals(?:/(?:summary|quality))?)?|'
+    r'(?P<route>open|close|categories/(?:compute|network|services|components)(?:/coverage)?|objects|objects/[A-Za-z0-9][A-Za-z0-9._-]{0,127}(?:/signals(?:/(?:summary|quality|comparison))?)?|'
     r'graph/[A-Za-z0-9][A-Za-z0-9._-]{0,127}|declarations|relationships|'
     r'imports/preview|imports/apply|legacy/preview|legacy/apply|'
     r'legacy/bnd-[0-9a-f]{20}/report)'
@@ -74,7 +74,7 @@ def operation(method, target):
         if item == 'objects':
             return {'GET': 'object_list', 'POST': 'object_declare'}.get(method, 'other')
         if item.startswith('objects/'):
-            return ('signal_quality' if item.endswith('/signals/quality') else 'signal_summary' if item.endswith('/signals/summary') else 'observed_signals' if item.endswith('/signals') else 'object_read') if method == 'GET' else 'other'
+            return ('observation_comparison' if item.endswith('/signals/comparison') else 'signal_quality' if item.endswith('/signals/quality') else 'signal_summary' if item.endswith('/signals/summary') else 'observed_signals' if item.endswith('/signals') else 'object_read') if method == 'GET' else 'other'
         if item.startswith('graph/'):
             return 'graph_read' if method == 'GET' else 'other'
         if item == 'declarations':

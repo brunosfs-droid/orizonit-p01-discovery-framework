@@ -1,6 +1,8 @@
 # Cancã — backlog rastreável 1.0
-[v0.6.33](WORKSPACE_SIGNAL_SUMMARY_v0.6.33.md) — candidata: síntese limitada de sinais efetivamente observados por objeto, conflitos explícitos e proveniência (sem inferências, sem promoção de declarações). Gate de CI, integração e EVE-NG independentes; R03/R05/R06 ainda parciais.
-[v0.6.32](WORKSPACE_OBSERVED_SIGNALS_v0.6.32.md) PR #143: leitor de observações persistidas com proveniência, sem promoção de declarações; ainda candidato, pendente de CI/merge e validação EVE-NG separada. [Gates](validation/WORKSPACE_OBSERVED_SIGNALS_GATES_v0.6.32.md).
+[v0.6.35](WORKSPACE_OBSERVATION_COMPARISON_v0.6.35.md) — candidata: comparação de dois lotes de recebimento por tipo de sinal com proveniência e sem inferência de drift; R03/R05 seguem parciais, EVE-NG/Product Alpha independentes.
+[v0.6.34](WORKSPACE_SIGNAL_QUALITY_v0.6.34.md) — CI aprovado e PR #145 integrado à main; diagnósticos de conflito/proveniência, sem validar cobertura real.
+[v0.6.33](WORKSPACE_SIGNAL_SUMMARY_v0.6.33.md) — integrada via PR #144: síntese limitada de sinais efetivamente observados por objeto, conflitos explícitos e proveniência (sem inferências, sem promoção de declarações). Gate de CI, integração e EVE-NG independentes; R03/R05/R06 ainda parciais.
+[v0.6.32](WORKSPACE_OBSERVED_SIGNALS_v0.6.32.md) PR #143 integrado: leitor de observações persistidas com proveniência, sem promoção de declarações; EVE-NG e Product Alpha ainda pendentes. [Gates](validation/WORKSPACE_OBSERVED_SIGNALS_GATES_v0.6.32.md).
 
 Rebaseline 06/10/2026; execução atualizada em 08/10/2026 (-03).
 R01 iniciou com [v0.6.21 CANDIDATE](WORKSPACE_FOUNDATION_v0.6.21.md): registry,

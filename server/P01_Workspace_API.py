@@ -21,10 +21,10 @@ import P01_Workspace_Service as backend
 import P01_Workspace_Audit as workspace_audit
 import P01_Workspace_Category_Reader as category_reader
 pg,ws,runtime,model=backend.pg,backend.ws,backend.runtime,backend.model
-VERSION='0.6.34'
+VERSION='0.6.35'
 MAX_BODY=128*1024
 BASE='/api/v1/workspaces'
-ROUTE=re.compile(BASE+r'/([A-Za-z0-9][A-Za-z0-9._-]{0,127})/(open|close|categories/(?:compute|network|services|components)(?:/coverage)?|objects|objects/([A-Za-z0-9][A-Za-z0-9._-]{0,127})(?:/signals(?:/(?:summary|quality))?)?|graph/([A-Za-z0-9][A-Za-z0-9._-]{0,127})|declarations|relationships|imports/preview|imports/apply|legacy/preview|legacy/apply|legacy/(bnd-[0-9a-f]{20})/report)')
+ROUTE=re.compile(BASE+r'/([A-Za-z0-9][A-Za-z0-9._-]{0,127})/(open|close|categories/(?:compute|network|services|components)(?:/coverage)?|objects|objects/([A-Za-z0-9][A-Za-z0-9._-]{0,127})(?:/signals(?:/(?:summary|quality|comparison))?)?|graph/([A-Za-z0-9][A-Za-z0-9._-]{0,127})|declarations|relationships|imports/preview|imports/apply|legacy/preview|legacy/apply|legacy/(bnd-[0-9a-f]{20})/report)')
 
 class BindingPolicy:
     """Immutable server configuration, never request-supplied role or path."""
@@ -120,7 +120,7 @@ class HumanWorkspaceService:
             else:
                 token=self.workspace.active_token(conn,workspace_id,fields.pop('generation'))
                 functions={'objects':self.workspace.objects,'object':self.workspace.object,
-                    'graph':self.workspace.graph,'categories':self.workspace.categories,'category_coverage':self.workspace.category_coverage,'observed_signals':self.workspace.observed_signals,'signal_summary':self.workspace.signal_summary,'signal_quality':self.workspace.signal_quality,'declare_object':self.workspace.declare_object,
+                    'graph':self.workspace.graph,'categories':self.workspace.categories,'category_coverage':self.workspace.category_coverage,'observed_signals':self.workspace.observed_signals,'signal_summary':self.workspace.signal_summary,'signal_quality':self.workspace.signal_quality,'observation_comparison':self.workspace.observation_comparison,'declare_object':self.workspace.declare_object,
                     'declare_attribute':self.workspace.declare_attribute,'relationship':self.workspace.relationship,
                     'preview_import':self.workspace.preview_import,'apply_import':self.workspace.apply_import}
                 functions.update(preview_legacy=self.workspace.preview_legacy,apply_legacy=self.workspace.apply_legacy,
@@ -182,9 +182,10 @@ class WorkspaceHandler(http.OperatorHandler):
                     action='category_coverage' if route.endswith('/coverage') else 'categories';fields=self._query(path.query,{'generation','expected_revision','max_pages','after','site_id','environment_id','kind','origin'})
                     if 'generation' not in fields:raise authn.AccessError('workspace_input_invalid',400)
                     fields['category']=route.split('/')[1]
-                elif method=='GET' and route in ('objects','objects/'+str(match[3]),'objects/'+str(match[3])+'/signals','objects/'+str(match[3])+'/signals/summary','objects/'+str(match[3])+'/signals/quality','graph/'+str(match[4])):
+                elif method=='GET' and route in ('objects','objects/'+str(match[3]),'objects/'+str(match[3])+'/signals','objects/'+str(match[3])+'/signals/summary','objects/'+str(match[3])+'/signals/quality','objects/'+str(match[3])+'/signals/comparison','graph/'+str(match[4])):
                     allowed={'generation','expected_revision'}
                     if route=='objects':allowed|={'after','limit'};action='objects'
+                    elif route.endswith('/signals/comparison'):action='observation_comparison'
                     elif route.endswith('/signals/quality'):action='signal_quality'
                     elif route.endswith('/signals/summary'):action='signal_summary'
                     elif route.endswith('/signals'):allowed|={'after','limit'};action='observed_signals'
@@ -195,7 +196,7 @@ class WorkspaceHandler(http.OperatorHandler):
                     if action=='observed_signals' and 'after' in fields:
                         if not re.fullmatch('0|[1-9][0-9]{0,2}',fields['after']):raise authn.AccessError('workspace_input_invalid',400)
                         fields['after']=int(fields['after'])
-                    if action in ('object','observed_signals','signal_summary','signal_quality'):fields['object_id']=match[3]
+                    if action in ('object','observed_signals','signal_summary','signal_quality','observation_comparison'):fields['object_id']=match[3]
                     if action=='graph':fields['root_id']=match[4]
                 elif method=='POST' and not path.query:
                     doc=self._json()

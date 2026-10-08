@@ -121,6 +121,18 @@ class HTTPTests(unittest.TestCase):
             self.assertEqual(self.service.execute.call_args.args[1],action)
         self.assertEqual(self.request('DELETE','/api/v1/operator/session',headers=headers)[0],200)
         self.service.execute.reset_mock();self.assertEqual(self.request('GET',api.BASE,headers=headers)[0],401);self.service.execute.assert_not_called()
+    def test_recorded_observation_comparison_http_contract(self):
+        headers=self.login()
+        uri=api.BASE+'/A/objects/host-1/signals/comparison?generation=2&expected_revision=7'
+        self.assertEqual(self.request('GET',uri,headers=headers)[0],200)
+        self.assertEqual(self.service.execute.call_args.args[1],'observation_comparison')
+        self.assertEqual(self.service.execute.call_args.kwargs,
+                         {'generation':2,'expected_revision':7,'object_id':'host-1'})
+        self.service.execute.reset_mock()
+        for bad in ('&after=1','&limit=10','&secret=yes','&generation=3'):
+            self.assertEqual(self.request('GET',uri+bad,headers=headers)[0],400)
+        self.service.execute.assert_not_called()
+
     def test_signal_quality_http_contract(self):
         headers=self.login()
         uri=api.BASE+'/A/objects/host-1/signals/quality?generation=2&expected_revision=7'
