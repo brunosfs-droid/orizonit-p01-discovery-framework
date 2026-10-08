@@ -32,7 +32,7 @@ def inventory(conn, workspace_id, token, *, category, expected_revision=None, ma
     if expected_revision is not None:
         model.runtime.require_generation(expected_revision)
     kinds=CATEGORY_KINDS[category]
-    after='';seen=set();rows=[];revision=expected_revision
+    after='';seen=set();rows=[];revision=expected_revision;last_oid=''
     for _ in range(max_pages):
         page=model.list_objects(conn,workspace_id,token,after=after,limit=PAGE_SIZE,
                                 expected_revision=revision)
@@ -44,7 +44,8 @@ def inventory(conn, workspace_id, token, *, category, expected_revision=None, ma
         for obj in objects:
             oid=obj['object_id']
             model.ws.identifier(oid)
-            model.require(oid not in seen and oid>after)
+            model.require(oid not in seen and oid>after and oid>last_oid)
+            last_oid=oid
             seen.add(oid)
             if obj['kind'] in kinds:
                 rows.append({k:obj[k] for k in ('object_id','kind','label','site_id','environment_id','origin','created_revision')})

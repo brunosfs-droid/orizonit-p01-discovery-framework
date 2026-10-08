@@ -19,11 +19,12 @@ import P01_Operator_Auth as authn
 import P01_Operator_Web as web
 import P01_Workspace_Service as backend
 import P01_Workspace_Audit as workspace_audit
+import P01_Workspace_Category_Reader as category_reader
 pg,ws,runtime,model=backend.pg,backend.ws,backend.runtime,backend.model
-VERSION='0.6.29'
+VERSION='0.6.30'
 MAX_BODY=128*1024
 BASE='/api/v1/workspaces'
-ROUTE=re.compile(BASE+r'/([A-Za-z0-9][A-Za-z0-9._-]{0,127})/(open|close|objects|objects/([A-Za-z0-9][A-Za-z0-9._-]{0,127})|graph/([A-Za-z0-9][A-Za-z0-9._-]{0,127})|declarations|relationships|imports/preview|imports/apply|legacy/preview|legacy/apply|legacy/(bnd-[0-9a-f]{20})/report)')
+ROUTE=re.compile(BASE+r'/([A-Za-z0-9][A-Za-z0-9._-]{0,127})/(open|close|categories/(?:compute|network|services|components)|objects|objects/([A-Za-z0-9][A-Za-z0-9._-]{0,127})|graph/([A-Za-z0-9][A-Za-z0-9._-]{0,127})|declarations|relationships|imports/preview|imports/apply|legacy/preview|legacy/apply|legacy/(bnd-[0-9a-f]{20})/report)')
 
 class BindingPolicy:
     """Immutable server configuration, never request-supplied role or path."""
@@ -119,7 +120,7 @@ class HumanWorkspaceService:
             else:
                 token=self.workspace.active_token(conn,workspace_id,fields.pop('generation'))
                 functions={'objects':self.workspace.objects,'object':self.workspace.object,
-                    'graph':self.workspace.graph,'declare_object':self.workspace.declare_object,
+                    'graph':self.workspace.graph,'categories':self.workspace.categories,'declare_object':self.workspace.declare_object,
                     'declare_attribute':self.workspace.declare_attribute,'relationship':self.workspace.relationship,
                     'preview_import':self.workspace.preview_import,'apply_import':self.workspace.apply_import}
                 functions.update(preview_legacy=self.workspace.preview_legacy,apply_legacy=self.workspace.apply_legacy,
@@ -177,6 +178,10 @@ class WorkspaceHandler(http.OperatorHandler):
                     action='legacy_report';fields=self._query(path.query,{'generation','expected_revision','after_ordinal','limit','expected_scope_sha256'})
                     if 'generation' not in fields:raise authn.AccessError('workspace_input_invalid',400)
                     fields['collection_id']=match[5]
+                elif method=='GET' and route.startswith('categories/'):
+                    action='categories';fields=self._query(path.query,{'generation','expected_revision','max_pages'})
+                    if 'generation' not in fields:raise authn.AccessError('workspace_input_invalid',400)
+                    fields['category']=route.split('/')[1]
                 elif method=='GET' and route in ('objects','objects/'+str(match[3]),'graph/'+str(match[4])):
                     allowed={'generation','expected_revision'}
                     if route=='objects':allowed|={'after','limit'};action='objects'
@@ -255,6 +260,9 @@ class WorkspaceHandler(http.OperatorHandler):
         for key in ('generation','expected_revision'):
             if key in fields:runtime.require_generation(fields[key])
         if action in ('registry','objects'):ws.page_args(fields.get('after',''),fields.get('limit',100))
+        if action=='categories':
+            model.require(fields.get('category') in category_reader.CATEGORY_KINDS)
+            model.require(type(fields.get('max_pages',category_reader.MAX_PAGES)) is int and 1<=fields.get('max_pages',category_reader.MAX_PAGES)<=category_reader.MAX_PAGES)
         if action=='close':runtime.Coordinator._deadline(fields.get('timeout',5))
         if action=='graph':
             for key,low,high in (('depth',0,4),('node_limit',1,100),('edge_limit',1,200)):

@@ -28,7 +28,7 @@ OUTCOMES = frozenset({'response_written', 'delivery_failed', 'handler_failed'})
 IDENTIFIER = re.compile(r'[A-Za-z0-9][A-Za-z0-9._-]{0,127}')
 RESOURCE = re.compile(
     r'/api/v1/workspaces/[A-Za-z0-9][A-Za-z0-9._-]{0,127}/'
-    r'(?P<route>open|close|objects|objects/[A-Za-z0-9][A-Za-z0-9._-]{0,127}|'
+    r'(?P<route>open|close|categories/(?:compute|network|services|components)|objects|objects/[A-Za-z0-9][A-Za-z0-9._-]{0,127}|'
     r'graph/[A-Za-z0-9][A-Za-z0-9._-]{0,127}|declarations|relationships|'
     r'imports/preview|imports/apply|legacy/preview|legacy/apply|'
     r'legacy/bnd-[0-9a-f]{20}/report)'
@@ -69,6 +69,8 @@ def operation(method, target):
             return 'workspace_open' if method == 'POST' else 'other'
         if item == 'close':
             return 'workspace_close' if method == 'POST' else 'other'
+        if item.startswith('categories/'):
+            return 'category_read' if method == 'GET' else 'other'
         if item == 'objects':
             return {'GET': 'object_list', 'POST': 'object_declare'}.get(method, 'other')
         if item.startswith('objects/'):
