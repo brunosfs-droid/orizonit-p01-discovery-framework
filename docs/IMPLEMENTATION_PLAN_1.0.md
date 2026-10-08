@@ -1,4 +1,5 @@
 # Cancã — implementação e migração para 1.0
+[v0.6.32](WORKSPACE_OBSERVED_SIGNALS_v0.6.32.md) PR #143: candidato do leitor read-only de sinais observados, proveniência limitada e endpoint HTTP com revisão fixa; gates CI, LAB e Alpha independentes. [Status de gates](validation/WORKSPACE_OBSERVED_SIGNALS_GATES_v0.6.32.md).
 
 Plano 06/10/2026; execução atualizada em 08/10/2026 (-03).
 [v0.6.21](WORKSPACE_FOUNDATION_v0.6.21.md) implementa registry/sites/ambientes/grants

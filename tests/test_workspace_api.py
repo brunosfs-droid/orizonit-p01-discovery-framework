@@ -121,6 +121,25 @@ class HTTPTests(unittest.TestCase):
             self.assertEqual(self.service.execute.call_args.args[1],action)
         self.assertEqual(self.request('DELETE','/api/v1/operator/session',headers=headers)[0],200)
         self.service.execute.reset_mock();self.assertEqual(self.request('GET',api.BASE,headers=headers)[0],401);self.service.execute.assert_not_called()
+    def test_observed_signals_http_route_requires_fenced_continuation(self):
+        headers=self.login()
+        path=api.BASE+'/A/objects/host-1/signals?generation=2&expected_revision=3&after=1&limit=1'
+        self.assertEqual(self.request('GET',path,headers=headers)[0],200)
+        self.assertEqual(self.service.execute.call_args.args[1],'observed_signals')
+        self.assertEqual(self.service.execute.call_args.kwargs,
+                         {'generation':2,'expected_revision':3,'after':1,'limit':1,'object_id':'host-1'})
+        self.service.execute.reset_mock()
+        for bad in (
+            api.BASE+'/A/objects/host-1/signals?generation=2&after=1',
+            api.BASE+'/A/objects/host-1/signals?generation=2&limit=51',
+            api.BASE+'/A/objects/host-1/signals?generation=2&after=-1',
+            api.BASE+'/A/objects/host-1/signals?generation=2&after=1&after=1',
+            api.BASE+'/A/objects/host-1/signals?generation=2&source_refs=secret',
+            api.BASE+'/A/objects/host-1/signals?generation=2&limit=0',
+        ):
+            self.assertIn(self.request('GET',bad,headers=headers)[0],(400,404))
+        self.service.execute.assert_not_called()
+
     def test_category_route_requires_valid_context_and_fixed_category(self):
         headers=self.login()
         path=api.BASE+'/A/categories/network?generation=2&expected_revision=3&max_pages=1'
