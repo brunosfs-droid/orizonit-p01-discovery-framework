@@ -190,5 +190,14 @@ legado/schema4; CLI e limites no contrato. Migração/UI/Mapper ainda pendentes.
 preservando versões7/8 nos commits qualificados. Acrescenta rotas legacy/preview,
 legacy/apply e legacy/{bundle_id}/report com geração/revisão/grants e jobs do
 coordenador. LegacySources é mapping privado por assessment do store original
-somente leitura; requests não recebem paths ou roles. Audit HTTP workspace e
-recovery operacional continuam pendentes.
+somente leitura; requests não recebem paths ou roles. Recovery operacional e
+migração/readers adicionais continuam pendentes.
+
+## Workspace HTTP Audit v0.6.29 opt-in
+
+[Contrato](../docs/WORKSPACE_AUDIT_v0.6.29.md): `--audit-file` habilita um JSONL
+privado e exclusivo para o listener workspace. Login/lifecycle/read/manual/import/
+legacy/report usam operações fixas. O sink não grava token, body/query ou IDs de
+recurso submetidos; `workspace_id` só aparece após operação autorizada bem-sucedida.
+Falha de admissão responde `workspace_audit_unavailable` antes do backend.
+Schema9 e os contratos v0.6.26–28 permanecem inalterados.

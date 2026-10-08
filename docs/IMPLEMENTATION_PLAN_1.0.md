@@ -12,6 +12,8 @@ seguem parciais: categoria identity, sem backfill/observed adapters completos.
 [v0.6.27](WORKSPACE_RECOVERY_v0.6.27.md) qualifica lease por banco e restore isolado.
 [v0.6.28](WORKSPACE_LEGACY_v0.6.28.md) adiciona a ponte revisada de identidade do
 legado e relatórios históricos por bundle/revisão; migração completa ainda pendente.
+[v0.6.29](WORKSPACE_AUDIT_v0.6.29.md) qualifica auditoria HTTP workspace privada,
+fail-closed e redigida, sem alteração de schema.
 [Estado das tarefas e CI](validation/WORKSPACE_TASK_RESUMPTION_2026-10-07.md).
 [Backlog](BACKLOG_1.0.md) · [Gates](TEST_PLAN_1.0.md).
 
@@ -27,7 +29,8 @@ legado e relatórios históricos por bundle/revisão; migração completa ainda 
 | v0.6.26 | API humana workspace, bindings SQL e limites | Backend23–25 | Integrada/CI qualificado; migração completa e audit continuam pendentes. |
 | v0.6.27 | Lease por banco e recovery isolado schema8 | v0.6.26 | Integrada/118 casos e restore PASS por PG16/17; recovery operacional pendente. |
 | v0.6.28 | Backfill identity revisado e relatórios históricos schema9 | v0.6.27 | Bytes/IDs/avaliações preservados, atomicidade/drift/replay e restore schema9 qualificados. |
-| Próximos v0.6.x | Audit, migração/readers adicionais e fechamento | v0.6.21–28 | Migração/recovery/gates Alpha aprovados no escopo correspondente. |
+| v0.6.29 | Auditoria HTTP workspace privada e redigida | v0.6.28 | Admissão fail-closed, IDs confiáveis e nenhuma cópia de secrets/body/query; PG16/17. |
+| Próximos v0.6.x | Migração/readers adicionais e fechamento | v0.6.21–29 | Migração/recovery/gates Alpha aprovados no escopo correspondente. |
 
 Versões são alvos, não releases publicadas. Mais patches podem ser necessários.
 Não refazer v0.6.13–20 ou SNMP v0.4b.9 já implementados.
@@ -103,13 +106,14 @@ final de latência/RAM depende da medição, não é capacidade comercial garant
 2. [v0.6.27](WORKSPACE_RECOVERY_v0.6.27.md): recovery isolado schema8 e fence por
    banco integrados/qualificados; contrato anterior permanece pinado em8.
 3. [v0.6.28](WORKSPACE_LEGACY_v0.6.28.md): ponte revisada de identidade e relatório
-   histórico de avaliações existentes por bundle/revisão. Próximo: audit HTTP
-   workspace, migração/readers adicionais e recovery operacional. Fechar R06
-   somente nos gates correspondentes; contratos v0.6.26/schema7 e v0.6.27/schema8
-   preservados, listener atual exige9.
-4. v0.7: seleção/abertura/fechamento, páginas de objetos e Mapper limitado; Visão
+   histórico de avaliações existentes por bundle/revisão; contratos v0.6.26/schema7
+   e v0.6.27/schema8 preservados, listener atual exige9.
+4. [v0.6.29](WORKSPACE_AUDIT_v0.6.29.md): auditoria HTTP workspace própria,
+   opt-in, fail-closed e redigida, qualificada em PG16/17. Próximos gates:
+   migração/readers adicionais e recovery operacional; fechar R06 somente após eles.
+5. v0.7: seleção/abertura/fechamento, páginas de objetos e Mapper limitado; Visão
    geral da base separada da Administração do servidor, sites internos.
-5. Adapters observados adicionais e fixtures EVE-NG versionadas, seguidos dos
+6. Adapters observados adicionais e fixtures EVE-NG versionadas, seguidos dos
    gates de vendor/cobertura antes de alegar suporte de coleta real.
 
 Autorização do mantenedor: continuar os desenvolvimentos sem consultas rotineiras.

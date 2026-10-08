@@ -26,7 +26,15 @@ UI/Mapper e migração completa de inventário seguem nos próximos incrementos.
 o backend e a integração ao coordenador já estão em `main` (PR #135), seguidos
 pela API humana (#136), recuperação isolada (#137) e reconciliação dos marcos
 (#138). A v0.6.28 adiciona backfill revisado de identidade e relatório histórico
-por bundle/revisão. Próximo gate: auditoria HTTP workspace; Alpha aberta.
+por bundle/revisão. A v0.6.29 adiciona auditoria HTTP privada do workspace,
+qualificada em PostgreSQL16/17. Alpha aberta para migração/readers adicionais e
+recovery operacional.
+
+Workspace HTTP Audit v0.6.29: [admissão fail-closed e redação](docs/WORKSPACE_AUDIT_v0.6.29.md)
+(CANDIDATE, opt-in, sem schema novo). Operações fixas; token/body/query e IDs não
+confiáveis não entram no log. [CI qualificado](docs/validation/WORKSPACE_AUDIT_CI_v0.6.29.md):
+793 testes gerais PASS/217 skips esperados, 9 casos de audit PASS por PG16/17 e
+restores schema8/9 preservados.
 
 Workspace Legacy v0.6.28: [ponte revisada e relatórios históricos](docs/WORKSPACE_LEGACY_v0.6.28.md)
 (CANDIDATE, opt-in schema9). Mapping administrativo precede acesso às fontes;

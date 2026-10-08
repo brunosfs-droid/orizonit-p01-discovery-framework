@@ -45,8 +45,10 @@ registry/grants/sites/ambientes e mapping opt-in em base isolada.
 única; [v0.6.25](WORKSPACE_MODEL_v0.6.25.md) integra serviço/jobs e histórico/grafo/
 reconciliação. [v0.6.26](WORKSPACE_API_v0.6.26.md) entrega a API humana;
 [v0.6.27](WORKSPACE_RECOVERY_v0.6.27.md) qualifica lease por banco e recovery isolado.
-Mapper, backfill/readers completos, audit HTTP workspace e jobs legados seguem
-pendentes. Contratos legados v0.6.20/SNMP v0.4b.9 preservados.
+[v0.6.28](WORKSPACE_LEGACY_v0.6.28.md) acrescenta backfill identity revisado e
+relatório histórico; [v0.6.29](WORKSPACE_AUDIT_v0.6.29.md) qualifica audit HTTP.
+Mapper, migração/readers completos e jobs legados seguem pendentes. Contratos
+legados v0.6.20/SNMP v0.4b.9 preservados.
 [Tarefas 1–4 e CI verificados](validation/WORKSPACE_TASK_RESUMPTION_2026-10-07.md).
 Distributed mTLS R2 e R1 sintéticos PostgreSQL/recovery/lifecycle/CLI export/API/Web
 já têm aceite nos escopos registrados. Download Web v0.6.13+ e incrementos
@@ -83,5 +85,13 @@ incrementos26/27; R06 depende de migração, readers/reports, audit e gates oper
 
 [Backfill identity e relatório histórico por bundle](WORKSPACE_LEGACY_v0.6.28.md)
 adicionam um passo da migração, conservando evidência/IDs/avaliações. Mapping,
-prévia e commit por revisão são explícitos. Migração/categorias/readers completos,
-audit HTTP e recovery operacional ainda mantêm R01–R06 e a Alpha abertos.
+prévia e commit por revisão são explícitos. A auditoria HTTP foi qualificada na
+v0.6.29; migração/categorias/readers completos e recovery operacional ainda mantêm
+R01–R06 e a Alpha abertos.
+
+## Auditoria HTTP workspace v0.6.29
+
+[Contrato](WORKSPACE_AUDIT_v0.6.29.md): log privado opt-in com operações fixas,
+admissão fail-closed e somente IDs já confiáveis. Não persiste secrets, body/query
+ou identificadores de recursos submetidos. A qualificação PG16/17 preserva os
+restores schema8/9; não equivale a recovery operacional ou fechamento da Alpha.
