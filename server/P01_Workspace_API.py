@@ -21,10 +21,10 @@ import P01_Workspace_Service as backend
 import P01_Workspace_Audit as workspace_audit
 import P01_Workspace_Category_Reader as category_reader
 pg,ws,runtime,model=backend.pg,backend.ws,backend.runtime,backend.model
-VERSION='0.6.35'
+VERSION='0.6.36'
 MAX_BODY=128*1024
 BASE='/api/v1/workspaces'
-ROUTE=re.compile(BASE+r'/([A-Za-z0-9][A-Za-z0-9._-]{0,127})/(open|close|categories/(?:compute|network|services|components)(?:/coverage)?|objects|objects/([A-Za-z0-9][A-Za-z0-9._-]{0,127})(?:/signals(?:/(?:summary|quality|comparison))?)?|graph/([A-Za-z0-9][A-Za-z0-9._-]{0,127})|declarations|relationships|imports/preview|imports/apply|legacy/preview|legacy/apply|legacy/(bnd-[0-9a-f]{20})/report)')
+ROUTE=re.compile(BASE+r'/([A-Za-z0-9][A-Za-z0-9._-]{0,127})/(open|close|categories/(?:compute|network|services|components)(?:/(?:coverage|signal-coverage))?|objects|objects/([A-Za-z0-9][A-Za-z0-9._-]{0,127})(?:/signals(?:/(?:summary|quality|comparison))?)?|graph/([A-Za-z0-9][A-Za-z0-9._-]{0,127})|declarations|relationships|imports/preview|imports/apply|legacy/preview|legacy/apply|legacy/(bnd-[0-9a-f]{20})/report)')
 
 class BindingPolicy:
     """Immutable server configuration, never request-supplied role or path."""
@@ -120,7 +120,7 @@ class HumanWorkspaceService:
             else:
                 token=self.workspace.active_token(conn,workspace_id,fields.pop('generation'))
                 functions={'objects':self.workspace.objects,'object':self.workspace.object,
-                    'graph':self.workspace.graph,'categories':self.workspace.categories,'category_coverage':self.workspace.category_coverage,'observed_signals':self.workspace.observed_signals,'signal_summary':self.workspace.signal_summary,'signal_quality':self.workspace.signal_quality,'observation_comparison':self.workspace.observation_comparison,'declare_object':self.workspace.declare_object,
+                    'graph':self.workspace.graph,'categories':self.workspace.categories,'category_coverage':self.workspace.category_coverage,'category_signal_coverage':self.workspace.category_signal_coverage,'observed_signals':self.workspace.observed_signals,'signal_summary':self.workspace.signal_summary,'signal_quality':self.workspace.signal_quality,'observation_comparison':self.workspace.observation_comparison,'declare_object':self.workspace.declare_object,
                     'declare_attribute':self.workspace.declare_attribute,'relationship':self.workspace.relationship,
                     'preview_import':self.workspace.preview_import,'apply_import':self.workspace.apply_import}
                 functions.update(preview_legacy=self.workspace.preview_legacy,apply_legacy=self.workspace.apply_legacy,
@@ -179,7 +179,10 @@ class WorkspaceHandler(http.OperatorHandler):
                     if 'generation' not in fields:raise authn.AccessError('workspace_input_invalid',400)
                     fields['collection_id']=match[5]
                 elif method=='GET' and route.startswith('categories/'):
-                    action='category_coverage' if route.endswith('/coverage') else 'categories';fields=self._query(path.query,{'generation','expected_revision','max_pages','after','site_id','environment_id','kind','origin'})
+                    action='category_signal_coverage' if route.endswith('/signal-coverage') else 'category_coverage' if route.endswith('/coverage') else 'categories'
+                    allowed={'generation','expected_revision','after','site_id','environment_id','kind','origin'}
+                    allowed|={'limit'} if action=='category_signal_coverage' else {'max_pages'}
+                    fields=self._query(path.query,allowed)
                     if 'generation' not in fields:raise authn.AccessError('workspace_input_invalid',400)
                     fields['category']=route.split('/')[1]
                 elif method=='GET' and route in ('objects','objects/'+str(match[3]),'objects/'+str(match[3])+'/signals','objects/'+str(match[3])+'/signals/summary','objects/'+str(match[3])+'/signals/quality','objects/'+str(match[3])+'/signals/comparison','graph/'+str(match[4])):
@@ -271,7 +274,7 @@ class WorkspaceHandler(http.OperatorHandler):
             model.require(type(fields.get('after',0)) is int and 0<=fields.get('after',0)<=100)
             model.require(type(fields.get('limit',50)) is int and 1<=fields.get('limit',50)<=50)
             if fields.get('after',0):model.require('expected_revision' in fields)
-        if action in ('categories','category_coverage'):
+        if action in ('categories','category_coverage','category_signal_coverage'):
             model.require(fields.get('category') in category_reader.CATEGORY_KINDS)
             for location in ('site_id','environment_id'):
                 if location in fields:ws.identifier(fields[location])
@@ -279,6 +282,9 @@ class WorkspaceHandler(http.OperatorHandler):
             if 'origin' in fields:model.require(fields['origin'] in ('declared','observed'))
             if fields.get('after'):model.require('expected_revision' in fields)
             model.require(type(fields.get('max_pages',category_reader.MAX_PAGES)) is int and 1<=fields.get('max_pages',category_reader.MAX_PAGES)<=category_reader.MAX_PAGES)
+        if action=='category_signal_coverage':
+            value=fields.get('limit',20)
+            model.require(type(value) is int and 1<=value<=20)
         if action=='close':runtime.Coordinator._deadline(fields.get('timeout',5))
         if action=='graph':
             for key,low,high in (('depth',0,4),('node_limit',1,100),('edge_limit',1,200)):
