@@ -10,6 +10,7 @@ sys.path.insert(0,str(Path(__file__).resolve().parent))
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'persistence'))
 import P01_Workspace_Model as model
 import P01_Workspace_Legacy as legacy
+import P01_Workspace_Legacy_Readiness as legacy_readiness
 import P01_Workspace_Category_Reader as category_reader
 import P01_Workspace_Observed_Signals as observed_signals
 import P01_Workspace_Signal_Summary as signal_summary
@@ -115,6 +116,18 @@ class WorkspaceService:
             projection=self.sources.prepare(token.workspace_id,assessment_id,bundle_id)
             operation.check()
             result=model.preview_import(actor,token.workspace_id,token,projection,**selection)
+            operation.check()
+            return dict(result,generation=token.generation)
+
+    def legacy_readiness(self,actor,token,bundle_id,*,expected_revision=None):
+        # SQL mapping/authorization MUST precede any original-store I/O.
+        with self.coordinator.borrow(actor,token,'workspace:read') as operation:
+            snapshot=legacy.source_snapshot(actor,token.workspace_id,token,bundle_id)
+            operation.check()
+            projection=self.legacy_sources.prepare(snapshot['import']['assessment_id'],bundle_id)
+            operation.check()
+            result=legacy_readiness.inspect(actor,token.workspace_id,token,snapshot,projection,
+                                             expected_revision=expected_revision)
             operation.check()
             return dict(result,generation=token.generation)
 
