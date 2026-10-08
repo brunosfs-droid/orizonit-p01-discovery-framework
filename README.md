@@ -13,7 +13,7 @@
 Workspaces isolados, sites internos, uma base aberta por instalação e Mapper como
 experiência central. Visão geral do workspace separada da Administração do servidor.
 Scans/imports explícitos, histórico, relações, serviços, findings e planos de ação.
-Especificação aprovada na PR #132; incrementos v0.6.21–25 CANDIDATE.
+Especificação aprovada na PR #132; incrementos v0.6.21–27 CANDIDATE.
 UI/Mapper e migração completa de inventário seguem nos próximos incrementos.
 
 [Especificação](docs/PRODUCT_SPEC_1.0.md) · [Arquitetura](docs/ARCHITECTURE.md) ·
@@ -21,6 +21,11 @@ UI/Mapper e migração completa de inventário seguem nos próximos incrementos.
 [Testes/EVE-NG](docs/TEST_PLAN_1.0.md) · [Estado](docs/STATUS_REBASELINE_1.0_2026-10-06.md).
 
 ## Product baseline
+
+[Retomada verificada das tarefas 1–4](docs/validation/WORKSPACE_TASK_RESUMPTION_2026-10-07.md):
+o backend e a integração ao coordenador já estão em `main` (PR #135), seguidos
+pela API humana (#136) e recuperação isolada (#137). Próximos gates: backfill
+revisado, readers/reports por revisão e auditoria HTTP workspace; Alpha aberta.
 
 Workspace Recovery v0.6.27: [fence por banco e recuperação isolada](docs/WORKSPACE_RECOVERY_v0.6.27.md)
 (CANDIDATE, opt-in schema8; qualificado em CI PG16/17). Novo listener exige8; schema7
@@ -33,17 +38,18 @@ upgrade no LAB.
 
 Workspace Model v0.6.25: [histórico, grafo manual e reconciliação revisada](docs/WORKSPACE_MODEL_v0.6.25.md)
 (CANDIDATE, opt-in). Objetos e declarações isolados, import com prévia/revisão/recibo
-e commits protegidos pelo coordenador. API humana, UI/Mapper e migração completa
-ainda pendentes; nenhuma alteração operacional no LAB.
+e commits protegidos pelo coordenador. API humana entregue na v0.6.26;
+UI/Mapper e migração completa continuam pendentes.
 
 Workspace Coordinator v0.6.22: [carga única, lease e encerramento seguro](docs/WORKSPACE_COORDINATOR_v0.6.22.md)
 (CANDIDATE, opt-in). Contexto lógico com generation, drain e cache limitado;
-UI/API/inventário e ligação aos jobs legados ainda pendentes. Nenhuma ação no LAB.
+Serviço e API workspace integrados nas v0.6.25/26; UI, backfill de inventário e
+adapters dos jobs legados continuam pendentes.
 
 Workspace Foundation v0.6.21: [registro, sites/ambientes e grants SQL](docs/WORKSPACE_FOUNDATION_v0.6.21.md)
 (CANDIDATE, opt-in). Migração 0005 explícita em base isolada, RLS em tabelas novas e
-mapping administrativo sem reescrever evidência. API/Mapper e migração
-completa de inventário seguem nos próximos incrementos; nenhuma ação no LAB agora.
+mapping administrativo sem reescrever evidência. A API workspace foi entregue
+na v0.6.26; Mapper e migração completa de inventário seguem nos próximos incrementos.
 
 SNMP planned execution v0.4b.8: [explicit endpoints and opt-in execution](docs/SNMP_PLANNED_EXECUTION_v0.4b.8.md)
 
@@ -310,7 +316,8 @@ O repositório preserva histórico por **commits, branches, tags e releases**. O
 ## Próximas fases
 
 1. v0.6.x — estender Alpha com workspaces/grants/carga única, observações/relações,
-   reconciliação e migração; primeiro incremento alvo v0.6.21. Alpha ainda aberta.
+   reconciliação e migração; backend v0.6.21–27 integrado e qualificado em CI.
+   Backfill/readers/auditoria e gates operacionais mantêm a Alpha aberta.
 2. v0.7 — UI orientada a objetos, wizard, Mapper/submaps/zoom e serviços básicos.
 3. v0.8/v0.8.x — redes/AD/Compute/virtualização, Graph/M365/catálogos e perfis.
 4. v0.9 — dashboards/custom reports/actions, backup/restore/hardening e RC.

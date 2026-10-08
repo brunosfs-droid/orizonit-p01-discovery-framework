@@ -2,16 +2,18 @@
 
 Rebaseline 06/10/2026; execução atualizada em 07/10/2026 (-03).
 R01 iniciou com [v0.6.21 CANDIDATE](WORKSPACE_FOUNDATION_v0.6.21.md): registry,
-sites/ambientes/grants SQL/RLS/mapping. Ownership de inventário/API ainda pendente;
+sites/ambientes/grants SQL/RLS/mapping. Backfill completo de inventário ainda pendente;
 R01 completo e demais requisitos não são marcados como concluídos.
 R02 iniciou com [v0.6.22](WORKSPACE_COORDINATOR_v0.6.22.md): lease por instalação,
-generation/drain/jobs/cache limitados. Web/API/loader e jobs legados ainda pendentes.
+generation/drain/jobs/cache limitados. Serviço/API workspace integrados nas
+v0.6.25/26; Web/loader e adapters dos jobs legados ainda pendentes.
 [v0.6.25](WORKSPACE_MODEL_v0.6.25.md) inicia R03–R05 com backend de histórico,
 objetos/relações manuais e reconciliação identity. Serviço registra jobs e cerca
-commits; migração/API/UI e cobertura adicional mantêm os requisitos parciais.
+commits; backfill/UI e cobertura adicional mantêm os requisitos parciais.
 [v0.6.26](WORKSPACE_API_v0.6.26.md) entrega listener humano separado para os
 contratos backend, com binding/grants SQL; R06 segue parcial por migração,
-restore, audit workspace e readers/reports legados.
+recovery operacional, audit workspace e readers/reports legados. Recovery isolado
+e lease por banco foram qualificados em [v0.6.27](WORKSPACE_RECOVERY_v0.6.27.md).
 P0: fundação/isolamento; P1: experiência central; P2: profundidade incremental.
 P2 pertence ao alvo 1.0; não significa exclusão automática. [Testes](TEST_PLAN_1.0.md).
 
@@ -40,9 +42,10 @@ P2 pertence ao alvo 1.0; não significa exclusão automática. [Testes](TEST_PLA
 
 ## Primeiro lote
 
-R01–R05 possuem agora fundamentos opt-in e fixtures adversariais A/B; próxima
-entrega é API humana autenticada e integração/backfill por revisão. Mapper usa
-o novo grafo limitado somente após a qualificação de seu contrato HTTP. Teste base de recovery T13 precede R06;
+R01–R05 possuem fundamentos opt-in e fixtures adversariais A/B, com serviço/API
+workspace qualificados. Próximas entregas: integração/backfill e readers/reports
+por revisão, além de audit HTTP workspace. Mapper usa o grafo limitado após os
+gates de fechamento Alpha. Recovery isolado T13 tem qualificação CI na v0.6.27;
 R20 completo depende do restante somente para GA, evitando dependência circular.
 
 O mantenedor autorizou iniciar desenvolvimento em 07/10/2026. Preparação concluída
@@ -54,3 +57,22 @@ na PR #132; implementação passa por qualificação própria e não encerra a A
 reset de contexto/marker após restore e gate automático do par banco/store.
 Qualificação em CI; não encerra migração/backfill, audit, restore cross-cluster ou
 Alpha. R06/T13/R20 permanecem parciais. Nenhuma operação no LAB.
+
+## Estado dos marcos após retomada das tarefas 1–4
+
+[Registro de verificação](validation/WORKSPACE_TASK_RESUMPTION_2026-10-07.md).
+O lote backend23–25 está integrado na PR #135; tarefas1–2 preservadas e tarefa3
+comprovada por serviço/jobs, isolamento e cancelamento. A tarefa4 sincroniza os
+marcos após verificar a baseline v0.6.27 e seu CI.
+
+| Requisito | Entrega integrada | Gate ainda aberto |
+| --- | --- | --- |
+| R01 | Registry/sites/ambientes/grants/RLS e API workspace | Ownership/backfill completo do legado e integração dos readers/store. |
+| R02 | Lease/generation/drain, serviço/API e fence por banco | Adapters de jobs/scanners legados, UI e benchmarks T14. |
+| R03 | Histórico, observações/declarações e identidade | Backfill e demais categorias observadas. |
+| R04 | Objetos/relações manuais e grafo limitado | Adapters observados de interfaces/redes/componentes e serviços. |
+| R05 | Preview/apply identity, revisão e recibos | Reconciliação das demais categorias e fluxo completo de import. |
+| R06 | API autenticada e recovery isolado PG16/17 | Migração completa, readers/reports, audit e qualificação operacional. |
+
+Nenhum R01–R06 é declarado integralmente concluído. T13/R20 continuam parciais:
+restore same-cluster/roles existentes não qualifica recuperação cross-cluster.

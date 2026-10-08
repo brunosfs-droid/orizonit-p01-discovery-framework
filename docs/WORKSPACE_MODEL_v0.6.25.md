@@ -72,5 +72,7 @@ planos/recibos, nunca UPDATE da revisão nem acesso ao runtime. Grants de worksp
 continuam explícitos. Aplicação deve usar conexão própria por operação e
 WorkspaceService; esse provisionamento ainda não é um instalador automático.
 
-Próximo: API autenticada, migration/backfill e readers por snapshot; depois UI
-workspace/Mapper. Restore7, Windows nativo e dispositivos reais permanecem gates.
+Continuação integrada: [API humana v0.6.26](WORKSPACE_API_v0.6.26.md) e
+[recovery isolado schema8 v0.6.27](WORKSPACE_RECOVERY_v0.6.27.md). Backfill e readers
+por snapshot continuam pendentes antes de UI workspace/Mapper. O contrato desta
+versão permanece em schema7; Windows nativo e dispositivos reais mantêm seus gates.

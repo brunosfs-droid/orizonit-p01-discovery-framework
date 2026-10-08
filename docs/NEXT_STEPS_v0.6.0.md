@@ -1,6 +1,6 @@
 # P01 — Próximos passos da Product Alpha
 
-Atualizado em 07/10/2026 (-03). Workspace Coordinator v0.6.22 CANDIDATE opt-in;
+Atualizado em 07/10/2026 (-03). Workspace Recovery v0.6.27 CANDIDATE opt-in schema8;
 contratos legados v0.6.20/SNMP v0.4b.9 preservados.
 
 ## Próxima execução após replanejamento
@@ -14,13 +14,33 @@ Opt-in em base isolada; não é migração completa de inventário nem upgrade d
 Fonte qualificada: 15 runs PASS, incluindo 18 casos sem skips por PostgreSQL 16/17
 no workflow dedicado. [Evidência e limites](validation/WORKSPACE_FOUNDATION_CI_v0.6.21.md).
 Segundo incremento: [v0.6.22 CANDIDATE](WORKSPACE_COORDINATOR_v0.6.22.md),
-coordenador lógico de carga única/lease/generation/drain/cache. R02 parcial até
-integração Web/API/loader/jobs legados. Fonte qualificada: 15 runs PASS, 44 casos
+coordenador lógico de carga única/lease/generation/drain/cache. Fonte qualificada:
+15 runs PASS, 44 casos
 sem skips por PG16/17 e 687 casos locais/163 skips esperados.
 [Evidência e limites](validation/WORKSPACE_COORDINATOR_CI_v0.6.22.md).
-Próximo: v0.6.23 observações/identidades,
-depois relações e reconciliação.
-Só então fechar Alpha e iniciar UI/Mapper v0.7. A Alpha permanece aberta.
+[v0.6.25](WORKSPACE_MODEL_v0.6.25.md), PR #135, já implementou o backend23–25:
+observações/identidade, histórico, grafo manual e prévia/aplicação por revisão.
+Preparo de import, leituras e escritas estão registrados no coordenador, com
+cancelamento, isolamento A/B e rejeição de respostas antigas/revogadas.
+[v0.6.26](WORKSPACE_API_v0.6.26.md), PR #136, entregou a API humana separada.
+[v0.6.27](WORKSPACE_RECOVERY_v0.6.27.md), PR #137, entregou o fence por banco e
+qualificou recuperação isolada. `main`3874be4: oito workflows/21 jobs PASS;
+118 casos workspace sem skips e restore PASS por PG16/17.
+[Retomada das tarefas 1–4 e evidência](validation/WORKSPACE_TASK_RESUMPTION_2026-10-07.md).
+
+## Próximos gates independentes
+
+1. Backfill/import revisado do legado e readers/findings/reports ligados à revisão
+   e cobertura; qualificar idempotência, drift e preservação de evidência.
+2. Auditoria HTTP workspace com contratos próprios e recovery operacional do
+   conjunto banco/store/configuração/roles. Restore CI same-cluster já aprovado
+   não comprova recuperação cross-cluster ou do LAB.
+3. Fechar R01–R06 somente após os gates correspondentes. UI/Mapper v0.7 usa os
+   contratos HTTP qualificados; adapters dos jobs/scanners legados e categorias
+   observadas adicionais continuam explicitamente pendentes.
+
+A Alpha permanece aberta. As tarefas 1–3 deste lote já estão integradas; a tarefa4
+reconcilia qualificação/integração/marcos sem repetir essas implementações.
 
 Nenhum teste dependente do mantenedor é solicitado agora. Gates antigos abaixo
 mantêm seus limites; testes novos serão propostos sobre a versão qualificada.
