@@ -67,7 +67,7 @@ class CategoryReaderTests(unittest.TestCase):
         self.assertEqual([x['object_id'] for x in result['objects']],['a'])
         self.assertEqual(result['scanned'],3)
         self.assertEqual(result['matched'],1)
-        self.assertEqual(result['filters'],dict(site_id='S1',environment_id='E1'))
+        self.assertEqual(result['filters'],dict(site_id='S1',environment_id='E1',kind=None,origin=None))
         self.assertTrue(result['complete'])
 
     def test_filtered_page_without_matches_still_has_next_cursor(self):
