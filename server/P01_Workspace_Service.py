@@ -11,6 +11,7 @@ sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'persistence'))
 import P01_Workspace_Model as model
 import P01_Workspace_Legacy as legacy
 import P01_Workspace_Category_Reader as category_reader
+import P01_Workspace_Observed_Signals as observed_signals
 
 runtime,ws,pg=model.runtime,model.ws,model.pg
 VERSION='0.6.25'
@@ -83,6 +84,8 @@ class WorkspaceService:
         return self._call(actor,token,'workspace:read',category_reader.inventory,**query)
     def category_coverage(self,actor,token,**query):
         return self._call(actor,token,'workspace:read',category_reader.coverage,**query)
+    def observed_signals(self,actor,token,object_id,**query):
+        return self._call(actor,token,'workspace:read',observed_signals.object_signals,object_id,**query)
     def object(self,actor,token,object_id,**query):
         return self._call(actor,token,'workspace:read',model.object_state,object_id,**query)
     def graph(self,actor,token,root_id,**query):
