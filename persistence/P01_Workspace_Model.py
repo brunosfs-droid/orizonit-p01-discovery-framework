@@ -80,7 +80,7 @@ def token_args(workspace_id,token):
 def scope(conn,workspace_id,token,*,writing=False):
     token_args(workspace_id,token)
     with ws.scope(conn,workspace_id,'workspace:write' if writing else 'workspace:read'):
-        pg.schema_check(conn,minimum=7,recovery=True)
+        pg.schema_check(conn,minimum=7,legacy=True)
         conn.execute("SELECT set_config('canca.workspace_generation',%s,true)",(str(token.generation),))
         conn.execute("SELECT set_config('canca.workspace_lease',%s,true)",(token.lease_id,))
         allowed=conn.execute('SELECT canca.workspace_model_allowed(%s)',(writing,)).fetchone()[0]
@@ -284,45 +284,50 @@ def preview_import(conn,workspace_id,token,projection,*,mode='merge',categories=
 
 def apply_import(conn,workspace_id,token,plan_id,request_id):
     ws.identifier(plan_id);ws.identifier(request_id)
-    request=dict(op='apply_import',plan_id=plan_id)
     with scope(conn,workspace_id,token,writing=True) as revision:
-        old=replay(conn,workspace_id,request_id,request)
-        if old:return old
-        row=conn.execute('SELECT expected_revision,payload_sha256,payload,preview FROM canca.workspace_import_plans '
-            'WHERE workspace_id=%s AND plan_id=%s',(workspace_id,plan_id)).fetchone()
-        pg.require(row,'model_plan_not_found');expected,sha,payload,preview=row
-        require(payload['policy']==POLICY and sha==digest(payload));validate_source(payload['projection'])
-        check_revision(expected,revision)
-        pg.require(not any(r['decision']=='review_required' for r in preview),'model_review_required')
-        projection=payload['projection'];imported=projection['import'];collection_id=imported['bundle_id']
-        projection_sha=digest(projection)
-        previous=conn.execute('SELECT projection_sha256,mode,categories FROM canca.workspace_collections WHERE workspace_id=%s AND collection_id=%s',
-            (workspace_id,collection_id)).fetchone()
-        if previous:
-            pg.require(previous==(projection_sha,payload['mode'],payload['categories']),'model_import_conflict')
-            return dict(status='already_imported',collection_id=collection_id,revision=revision,replayed=True)
-        conn.execute('INSERT INTO canca.workspace_collections (workspace_id,collection_id,bundle_sha256,projection_sha256,assessment_id,run_id,node_id,'
-            'received_at_utc,mode,categories,coverage,created_revision) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s::jsonb,%s,0)',
-            (workspace_id,collection_id,imported['bundle_sha256'],projection_sha,imported['assessment_id'],imported['run_id'],imported['node_id'],
-             imported['imported_at_utc'],payload['mode'],json.dumps(payload['categories']),'identity_only'))
-        for obs,item in zip(projection['observations'],preview):
-            object_id=item['object_id']
-            if item['decision'] in ('new_identity','manual_create'):
-                label=next((s['value'] for s in obs['signals'] if s['kind']=='fqdn'),obs['source_asset_id'])
-                conn.execute('INSERT INTO canca.workspace_objects (workspace_id,object_id,kind,label,site_id,environment_id,origin,created_revision) '
-                    "VALUES (%s,%s,'device',%s,%s,%s,'observed',0)",(workspace_id,object_id,label,payload['site_id'],payload['environment_id']))
-            eligible=identity_eligible(conn,workspace_id,object_id,obs,item['decision']) if object_id is not None else False
-            conn.execute('INSERT INTO canca.workspace_observations (workspace_id,collection_id,ordinal,object_id,source_asset_id,decision,identity_eligible,reason,signals,source_refs,created_revision) '
-                'VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s::jsonb,%s::jsonb,0)',
-                (workspace_id,collection_id,obs['ordinal'],object_id,obs['source_asset_id'],item['decision'],eligible,item['reason'],
-                 json.dumps(obs['signals']),json.dumps(obs['source_refs'])))
-            if object_id is not None:
-                for signal in obs['signals']:
-                    conn.execute('INSERT INTO canca.workspace_identity_signals (workspace_id,object_id,kind,value,qualified,eligible,created_revision) '
-                        'VALUES (%s,%s,%s,%s,%s,%s,0) ON CONFLICT DO NOTHING',
-                        (workspace_id,object_id,signal['kind'],signal['value'],signal['qualified'],eligible))
-        return receipt(conn,workspace_id,request_id,request,dict(status='applied',collection_id=collection_id,
-            observation_count=len(projection['observations']),mode=payload['mode']))
+        return _apply_import_locked(conn,workspace_id,plan_id,request_id,revision)
+
+
+def _apply_import_locked(conn,workspace_id,plan_id,request_id,revision):
+    """Internal composition point; caller holds the checked write/revision fence."""
+    request=dict(op="apply_import",plan_id=plan_id)
+    old=replay(conn,workspace_id,request_id,request)
+    if old:return old
+    row=conn.execute('SELECT expected_revision,payload_sha256,payload,preview FROM canca.workspace_import_plans '
+        'WHERE workspace_id=%s AND plan_id=%s',(workspace_id,plan_id)).fetchone()
+    pg.require(row,'model_plan_not_found');expected,sha,payload,preview=row
+    require(payload['policy']==POLICY and sha==digest(payload));validate_source(payload['projection'])
+    check_revision(expected,revision)
+    pg.require(not any(r['decision']=='review_required' for r in preview),'model_review_required')
+    projection=payload['projection'];imported=projection['import'];collection_id=imported['bundle_id']
+    projection_sha=digest(projection)
+    previous=conn.execute('SELECT projection_sha256,mode,categories FROM canca.workspace_collections WHERE workspace_id=%s AND collection_id=%s',
+        (workspace_id,collection_id)).fetchone()
+    if previous:
+        pg.require(previous==(projection_sha,payload['mode'],payload['categories']),'model_import_conflict')
+        return dict(status='already_imported',collection_id=collection_id,revision=revision,replayed=True)
+    conn.execute('INSERT INTO canca.workspace_collections (workspace_id,collection_id,bundle_sha256,projection_sha256,assessment_id,run_id,node_id,'
+        'received_at_utc,mode,categories,coverage,created_revision) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s::jsonb,%s,0)',
+        (workspace_id,collection_id,imported['bundle_sha256'],projection_sha,imported['assessment_id'],imported['run_id'],imported['node_id'],
+         imported['imported_at_utc'],payload['mode'],json.dumps(payload['categories']),'identity_only'))
+    for obs,item in zip(projection['observations'],preview):
+        object_id=item['object_id']
+        if item['decision'] in ('new_identity','manual_create'):
+            label=next((s['value'] for s in obs['signals'] if s['kind']=='fqdn'),obs['source_asset_id'])
+            conn.execute('INSERT INTO canca.workspace_objects (workspace_id,object_id,kind,label,site_id,environment_id,origin,created_revision) '
+                "VALUES (%s,%s,'device',%s,%s,%s,'observed',0)",(workspace_id,object_id,label,payload['site_id'],payload['environment_id']))
+        eligible=identity_eligible(conn,workspace_id,object_id,obs,item['decision']) if object_id is not None else False
+        conn.execute('INSERT INTO canca.workspace_observations (workspace_id,collection_id,ordinal,object_id,source_asset_id,decision,identity_eligible,reason,signals,source_refs,created_revision) '
+            'VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s::jsonb,%s::jsonb,0)',
+            (workspace_id,collection_id,obs['ordinal'],object_id,obs['source_asset_id'],item['decision'],eligible,item['reason'],
+             json.dumps(obs['signals']),json.dumps(obs['source_refs'])))
+        if object_id is not None:
+            for signal in obs['signals']:
+                conn.execute('INSERT INTO canca.workspace_identity_signals (workspace_id,object_id,kind,value,qualified,eligible,created_revision) '
+                    'VALUES (%s,%s,%s,%s,%s,%s,0) ON CONFLICT DO NOTHING',
+                    (workspace_id,object_id,signal['kind'],signal['value'],signal['qualified'],eligible))
+    return receipt(conn,workspace_id,request_id,request,dict(status='applied',collection_id=collection_id,
+        observation_count=len(projection['observations']),mode=payload['mode']))
 
 
 def list_objects(conn,workspace_id,token,*,after='',limit=100,expected_revision=None):

@@ -19,19 +19,20 @@ import P01_Operator_Auth as authn
 import P01_Operator_Web as web
 import P01_Workspace_Service as backend
 pg,ws,runtime,model=backend.pg,backend.ws,backend.runtime,backend.model
-VERSION='0.6.26'
+VERSION='0.6.28'
 MAX_BODY=128*1024
 BASE='/api/v1/workspaces'
-ROUTE=re.compile(BASE+r'/([A-Za-z0-9][A-Za-z0-9._-]{0,127})/(open|close|objects|objects/([A-Za-z0-9][A-Za-z0-9._-]{0,127})|graph/([A-Za-z0-9][A-Za-z0-9._-]{0,127})|declarations|relationships|imports/preview|imports/apply)')
+ROUTE=re.compile(BASE+r'/([A-Za-z0-9][A-Za-z0-9._-]{0,127})/(open|close|objects|objects/([A-Za-z0-9][A-Za-z0-9._-]{0,127})|graph/([A-Za-z0-9][A-Za-z0-9._-]{0,127})|declarations|relationships|imports/preview|imports/apply|legacy/preview|legacy/apply|legacy/(bnd-[0-9a-f]{20})/report)')
 
 class BindingPolicy:
     """Immutable server configuration, never request-supplied role or path."""
-    __slots__=('roles','coordinator_role','sources')
+    __slots__=('roles','coordinator_role','sources','legacy_sources')
     def __init__(self,raw,accounts):
         try:
             if not isinstance(raw,bytes) or not 1<=len(raw)<=256*1024:raise ValueError()
             doc=json.loads(raw.decode('utf-8'),object_pairs_hook=authn.unique_object)
-            if type(doc) is not dict or set(doc)!={'binding_version','coordinator_role','bindings','sources'} or doc['binding_version']!='1':raise ValueError()
+            required={'binding_version','coordinator_role','bindings','sources'}
+            if type(doc) is not dict or not required<=set(doc) or set(doc)-required-{'legacy_sources'} or doc['binding_version']!='1':raise ValueError()
             role=ws.identifier(doc['coordinator_role']);rows=doc['bindings']
             if type(rows) is not list or not 1<=len(rows)<=1024:raise ValueError()
             operators={a.operator_id for a in accounts.accounts.values()};roles={};used={role}
@@ -43,6 +44,7 @@ class BindingPolicy:
             sources=backend.SourceRoots(doc['sources'])
             object.__setattr__(self,'roles',MappingProxyType(roles))
             object.__setattr__(self,'coordinator_role',role);object.__setattr__(self,'sources',sources)
+            object.__setattr__(self,'legacy_sources',backend.LegacySources(doc.get('legacy_sources',{})))
         except (ValueError,TypeError,UnicodeError,RecursionError,KeyError,OSError,pg.PersistenceError):
             raise ValueError('invalid workspace binding policy') from None
     def __setattr__(self,key,value):raise AttributeError('workspace bindings are immutable')
@@ -119,6 +121,8 @@ class HumanWorkspaceService:
                     'graph':self.workspace.graph,'declare_object':self.workspace.declare_object,
                     'declare_attribute':self.workspace.declare_attribute,'relationship':self.workspace.relationship,
                     'preview_import':self.workspace.preview_import,'apply_import':self.workspace.apply_import}
+                functions.update(preview_legacy=self.workspace.preview_legacy,apply_legacy=self.workspace.apply_legacy,
+                                 legacy_report=self.workspace.legacy_report)
                 pg.require(action in functions,'workspace_input_invalid')
                 result=functions[action](conn,token,**fields)
             # Logout/expiry can race a committed mutation; suppress delivery and
@@ -166,7 +170,11 @@ class WorkspaceHandler(http.OperatorHandler):
                 match=ROUTE.fullmatch(path.path)
                 if not match:raise authn.AccessError('route_not_found',404)
                 workspace_id,route=match[1],match[2]
-                if method=='GET' and route in ('objects','objects/'+str(match[3]),'graph/'+str(match[4])):
+                if method=='GET' and match[5] is not None:
+                    action='legacy_report';fields=self._query(path.query,{'generation','expected_revision','after_ordinal','limit','expected_scope_sha256'})
+                    if 'generation' not in fields:raise authn.AccessError('workspace_input_invalid',400)
+                    fields['collection_id']=match[5]
+                elif method=='GET' and route in ('objects','objects/'+str(match[3]),'graph/'+str(match[4])):
                     allowed={'generation','expected_revision'}
                     if route=='objects':allowed|={'after','limit'};action='objects'
                     elif route.startswith('objects/'):action='object'
@@ -193,6 +201,14 @@ class WorkspaceHandler(http.OperatorHandler):
                             fields['decisions']={int(k):v for k,v in decisions.items()}
                     elif route=='imports/apply':
                         action='apply_import';fields=self._fields(doc,('generation','plan_id','request_id'))
+                    elif route=='legacy/preview':
+                        action='preview_legacy';fields=self._fields(doc,('generation','bundle_id'),('mode','categories','decisions','site_id','environment_id'))
+                        if 'decisions' in fields:
+                            decisions=fields['decisions']
+                            if type(decisions) is not dict or len(decisions)>1000 or any(not re.fullmatch('0|[1-9][0-9]{0,2}',k) for k in decisions):raise authn.AccessError('workspace_input_invalid',400)
+                            fields['decisions']={int(k):v for k,v in decisions.items()}
+                    elif route=='legacy/apply':
+                        action='apply_legacy';fields=self._fields(doc,('generation','plan_id','request_id'))
                     else:raise authn.AccessError('route_not_found',404)
                 else:raise authn.AccessError('route_not_found',404)
             self._validate(action,fields)
@@ -200,8 +216,10 @@ class WorkspaceHandler(http.OperatorHandler):
             self._send(200,result)
         except authn.AccessError as exc:self._send(exc.status,dict(status='failed',error_code=str(exc)))
         except pg.PersistenceError as exc:
-            code=str(exc) if str(exc) in model.ERRORS else 'database_failed'
+            code=str(exc) if str(exc) in backend.legacy.ERRORS else 'database_failed'
             status=403 if code=='workspace_access_denied' else 400 if code in ('model_input_invalid','workspace_input_invalid') else 404 if code in ('model_object_not_found','model_plan_not_found') else 409 if code in ('model_revision_stale','workspace_generation_stale','workspace_runtime_busy','workspace_close_pending','model_request_conflict','model_review_required','model_import_conflict','model_relationship_conflict') else 503
+            if code in ('legacy_source_unavailable','legacy_plan_not_found','legacy_report_not_found'):status=404
+            if code in ('legacy_source_conflict','legacy_scope_conflict'):status=409
             self._send(status,dict(status='failed',error_code=code))
         except Exception:self._send(503,dict(status='failed',error_code='workspace_request_failed'))
     @staticmethod
@@ -214,10 +232,10 @@ class WorkspaceHandler(http.OperatorHandler):
             for key,low,high in (('depth',0,4),('node_limit',1,100),('edge_limit',1,200)):
                 value=fields.get(key,{'depth':2,'node_limit':100,'edge_limit':200}[key])
                 model.require(type(value) is int and low<=value<=high)
-        if action=='preview_import':
+        if action in ('preview_import','preview_legacy'):
             model.require(fields.get('mode','merge') in ('merge','evidence_only'))
             model.require(type(fields.get('categories',['identity'])) is list and fields.get('categories',['identity'])==['identity'])
-            ws.identifier(fields['assessment_id'])
+            if action=='preview_import':ws.identifier(fields['assessment_id'])
             model.require(isinstance(fields['bundle_id'],str) and backend.BUNDLE.fullmatch(fields['bundle_id']))
     @staticmethod
     def _query(raw,allowed):
@@ -225,9 +243,10 @@ class WorkspaceHandler(http.OperatorHandler):
             pairs=parse_qsl(raw,keep_blank_values=True,strict_parsing=True,max_num_fields=8) if raw else []
             values=dict(pairs)
             if len(values)!=len(pairs) or set(values)-allowed:raise ValueError()
-            for key in set(values)-{'after'}:
-                if not re.fullmatch('0|[1-9][0-9]{0,18}',values[key]):raise ValueError()
+            for key in set(values)-{'after','expected_scope_sha256'}:
+                if not re.fullmatch('(-1|0|[1-9][0-9]{0,18})' if key=='after_ordinal' else '0|[1-9][0-9]{0,18}',values[key]):raise ValueError()
                 values[key]=int(values[key])
+            if 'expected_scope_sha256' in values and not re.fullmatch('[0-9a-f]{64}',values['expected_scope_sha256']):raise ValueError()
             return values
         except ValueError:raise authn.AccessError('workspace_input_invalid',400) from None
 
@@ -248,12 +267,12 @@ def create_server(accounts_path,bindings_path,host='127.0.0.1',port=8879,*,tls_c
         context=ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER);context.minimum_version=ssl.TLSVersion.TLSv1_2;context.load_cert_chain(tls_cert,tls_key)
     accounts=authn.load_policy(accounts_path);bindings=load_bindings(bindings_path,accounts)
     connections=RoleConnections(bindings);control=connections.open(bindings.coordinator_role)
-    try:pg.schema_check(control,minimum=8,recovery=True)
+    try:pg.schema_check(control,minimum=9,legacy=True)
     except BaseException:control.close();raise
     coordinator=runtime.Coordinator(runtime.SessionLease(control));server=None
     try:
         coordinator.start()
-        service=HumanWorkspaceService(authn.LocalAuth(accounts),connections,backend.WorkspaceService(coordinator,bindings.sources))
+        service=HumanWorkspaceService(authn.LocalAuth(accounts),connections,backend.WorkspaceService(coordinator,bindings.sources,bindings.legacy_sources))
         server=WorkspaceServer((str(address),port),service);server._owns_coordinator=True
         if context:server.tls_context=context
         return server

@@ -1,6 +1,6 @@
 # Cancã — backlog rastreável 1.0
 
-Rebaseline 06/10/2026; execução atualizada em 07/10/2026 (-03).
+Rebaseline 06/10/2026; execução atualizada em 08/10/2026 (-03).
 R01 iniciou com [v0.6.21 CANDIDATE](WORKSPACE_FOUNDATION_v0.6.21.md): registry,
 sites/ambientes/grants SQL/RLS/mapping. Backfill completo de inventário ainda pendente;
 R01 completo e demais requisitos não são marcados como concluídos.
@@ -14,6 +14,9 @@ commits; backfill/UI e cobertura adicional mantêm os requisitos parciais.
 contratos backend, com binding/grants SQL; R06 segue parcial por migração,
 recovery operacional, audit workspace e readers/reports legados. Recovery isolado
 e lease por banco foram qualificados em [v0.6.27](WORKSPACE_RECOVERY_v0.6.27.md).
+[v0.6.28](WORKSPACE_LEGACY_v0.6.28.md) adiciona backfill identity revisado e
+relatórios históricos por bundle/revisão. Os gates de migração completa e audit
+HTTP workspace permanecem abertos.
 P0: fundação/isolamento; P1: experiência central; P2: profundidade incremental.
 P2 pertence ao alvo 1.0; não significa exclusão automática. [Testes](TEST_PLAN_1.0.md).
 
@@ -43,8 +46,9 @@ P2 pertence ao alvo 1.0; não significa exclusão automática. [Testes](TEST_PLA
 ## Primeiro lote
 
 R01–R05 possuem fundamentos opt-in e fixtures adversariais A/B, com serviço/API
-workspace qualificados. Próximas entregas: integração/backfill e readers/reports
-por revisão, além de audit HTTP workspace. Mapper usa o grafo limitado após os
+workspace qualificados e ponte revisada de legado/relatório por bundle na v0.6.28.
+Próximas entregas: audit HTTP workspace, migração/categorias/readers adicionais.
+Mapper usa o grafo limitado após os
 gates de fechamento Alpha. Recovery isolado T13 tem qualificação CI na v0.6.27;
 R20 completo depende do restante somente para GA, evitando dependência circular.
 
@@ -67,12 +71,12 @@ marcos após verificar a baseline v0.6.27 e seu CI.
 
 | Requisito | Entrega integrada | Gate ainda aberto |
 | --- | --- | --- |
-| R01 | Registry/sites/ambientes/grants/RLS e API workspace | Ownership/backfill completo do legado e integração dos readers/store. |
+| R01 | Registry/sites/ambientes/grants/RLS, API e ponte mapeada do legado | Ownership/backfill completo e demais readers/store. |
 | R02 | Lease/generation/drain, serviço/API e fence por banco | Adapters de jobs/scanners legados, UI e benchmarks T14. |
-| R03 | Histórico, observações/declarações e identidade | Backfill e demais categorias observadas. |
+| R03 | Histórico, observações/declarações, identidade e backfill revisado | Demais categorias observadas e migração completa. |
 | R04 | Objetos/relações manuais e grafo limitado | Adapters observados de interfaces/redes/componentes e serviços. |
-| R05 | Preview/apply identity, revisão e recibos | Reconciliação das demais categorias e fluxo completo de import. |
-| R06 | API autenticada e recovery isolado PG16/17 | Migração completa, readers/reports, audit e qualificação operacional. |
+| R05 | Preview/apply identity e legado, revisão/recibos | Reconciliação das demais categorias e fluxo completo de import. |
+| R06 | API autenticada, ponte/relatório histórico e recovery isolado schema8/9 PG16/17 | Migração/readers completos, audit e qualificação operacional. |
 
 Nenhum R01–R06 é declarado integralmente concluído. T13/R20 continuam parciais:
 restore same-cluster/roles existentes não qualifica recuperação cross-cluster.

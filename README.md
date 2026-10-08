@@ -13,7 +13,7 @@
 Workspaces isolados, sites internos, uma base aberta por instalação e Mapper como
 experiência central. Visão geral do workspace separada da Administração do servidor.
 Scans/imports explícitos, histórico, relações, serviços, findings e planos de ação.
-Especificação aprovada na PR #132; incrementos v0.6.21–27 CANDIDATE.
+Especificação aprovada na PR #132; incrementos v0.6.21–28 CANDIDATE.
 UI/Mapper e migração completa de inventário seguem nos próximos incrementos.
 
 [Especificação](docs/PRODUCT_SPEC_1.0.md) · [Arquitetura](docs/ARCHITECTURE.md) ·
@@ -24,12 +24,18 @@ UI/Mapper e migração completa de inventário seguem nos próximos incrementos.
 
 [Retomada verificada das tarefas 1–4](docs/validation/WORKSPACE_TASK_RESUMPTION_2026-10-07.md):
 o backend e a integração ao coordenador já estão em `main` (PR #135), seguidos
-pela API humana (#136) e recuperação isolada (#137). Próximos gates: backfill
-revisado, readers/reports por revisão e auditoria HTTP workspace; Alpha aberta.
+pela API humana (#136), recuperação isolada (#137) e reconciliação dos marcos
+(#138). A v0.6.28 adiciona backfill revisado de identidade e relatório histórico
+por bundle/revisão. Próximo gate: auditoria HTTP workspace; Alpha aberta.
+
+Workspace Legacy v0.6.28: [ponte revisada e relatórios históricos](docs/WORKSPACE_LEGACY_v0.6.28.md)
+(CANDIDATE, opt-in schema9). Mapping administrativo precede acesso às fontes;
+apply transacional conserva IDs/evidência/avaliações, sem reexecutar findings.
+Listener atual exige9; migração completa e recovery operacional seguem pendentes.
 
 Workspace Recovery v0.6.27: [fence por banco e recuperação isolada](docs/WORKSPACE_RECOVERY_v0.6.27.md)
-(CANDIDATE, opt-in schema8; qualificado em CI PG16/17). Novo listener exige8; schema7
-v0.6.26 permanece pinado. Sem upgrade ou restore operacional no LAB.
+(CANDIDATE, opt-in schema8; qualificado em CI PG16/17). Contratos schema7/8
+v0.6.26/27 permanecem pinados. Sem upgrade ou restore operacional no LAB.
 
 Workspace API v0.6.26: [listener humano com roles e contexto explícitos](docs/WORKSPACE_API_v0.6.26.md)
 (CANDIDATE, opt-in). Login, registry/open/close, objetos/grafo/declarações e

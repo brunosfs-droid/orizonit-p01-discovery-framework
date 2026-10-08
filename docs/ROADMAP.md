@@ -8,7 +8,7 @@
 [Backlog](BACKLOG_1.0.md) · [Implementação/migração](IMPLEMENTATION_PLAN_1.0.md) ·
 [Testes/EVE-NG](TEST_PLAN_1.0.md).
 
-Baseline atual: v0.6.27 CANDIDATE opt-in schema8, contratos Web v0.6.20 e
+Baseline atual: v0.6.28 CANDIDATE opt-in schema9, contratos Web v0.6.20 e
 SNMP v0.4b.9 CANDIDATE. Alpha aberta.
 Inventário/Mapper/serviços/dependências passam a integrar a 1.0. Histórico abaixo
 preserva entregas e limites anteriores; não é autorização para repetir testes.
@@ -35,7 +35,9 @@ histórico/identidade, grafo manual e reconciliação com jobs/commits cercados.
 [v0.6.27](WORKSPACE_RECOVERY_v0.6.27.md), PR #137, qualifica lease por banco e
 recovery isolado. CI da baseline integrada: oito runs/21 jobs PASS.
 [Retomada e marcos verificados](validation/WORKSPACE_TASK_RESUMPTION_2026-10-07.md).
-Próximo: backfill revisado, readers/reports por revisão e audit HTTP workspace.
+[v0.6.28](WORKSPACE_LEGACY_v0.6.28.md) adiciona backfill identity revisado e
+relatórios de avaliações históricas por bundle/revisão, preservando fontes/IDs.
+Próximo: audit HTTP workspace, migração/categorias/readers adicionais.
 UI/Mapper v0.7 segue após os gates R01–R06; jobs/scanners legados, outras
 categorias observadas e qualificação operacional ainda exigem seus adapters/gates.
 Versões seguintes são alvos de planejamento, não releases.

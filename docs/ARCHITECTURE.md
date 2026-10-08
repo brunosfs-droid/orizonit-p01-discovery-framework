@@ -128,3 +128,12 @@ Categoria observada identity; sem backfill completo, API humana, UI/Mapper ou
 ações em dispositivos. Gates adicionais: drift/replay, sessão perdida/rollback,
 close durante commit/preparação, autoria/RLS/FKs A/B e isolamento de sources.
 R03–R05 continuam parciais; R06 depende de migração/restore/API e regressão.
+
+## Ponte revisada v0.6.28
+
+[Contrato](WORKSPACE_LEGACY_v0.6.28.md): a API/serviço registra a leitura do legado
+como job do coordenador. SQL resolve ownership explícito antes de preparar bytes
+no store original; apply confirma revisão/snapshot e publica identidade/história/
+recibos atomicamente. O relatório consulta a cópia histórica limitada por bundle,
+revisão e hash de escopo, sem executar findings atuais. SQL1–8 e tarefas anteriores
+permanecem preservados; audit e migração completa são os próximos gates.

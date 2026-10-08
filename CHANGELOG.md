@@ -1,4 +1,17 @@
-## Unreleased — Workspace task and milestone reconciliation (07/10/2026)
+## v0.6.28 — Reviewed legacy bridge and historical workspace reports (CANDIDATE)
+
+- Add explicit schema9 with mapped, bounded legacy snapshots and immutable plans/
+  history; preserve SQL1–8, original stores, legacy IDs and historical evaluations.
+- Preview identity reconciliation and apply model/history/receipts atomically under
+  coordinator generation, SQL lease, grants and workspace revision fences.
+- Expose authenticated preview/apply and paged historical bundle reports; preserve
+  recorded outcomes/catalogue without rerunning findings or inventing clean coverage.
+- Extend PG16/17 CI with drift, cancellation, source tamper, failed copy/lease-loss
+  rollback and an independent schema9 database/store/report/receipt restore gate.
+- Full migration, workspace HTTP audit, UI/Mapper and operational recovery remain
+  separate gates; tasks1–3 and prior schema8 qualification are preserved.
+
+## Workspace task and milestone reconciliation (07/10/2026)
 
 - Verify merged PRs #135–137 and main 3874be4: eight successful workflows,
   21 successful jobs, PostgreSQL 16/17 workspace contracts and isolated restore.
