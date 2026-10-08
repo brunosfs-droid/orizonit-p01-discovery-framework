@@ -21,7 +21,7 @@ OPERATIONS = frozenset({
     'login', 'logout', 'health', 'workspace_directory', 'workspace_open',
     'workspace_close', 'object_list', 'object_read', 'graph_read',
     'category_coverage', 'category_signal_coverage', 'observed_signals', 'signal_summary', 'signal_quality', 'observation_comparison', 'object_declare', 'declaration_write', 'relationship_write',
-    'import_preview', 'import_apply', 'legacy_preview', 'legacy_apply',
+    'import_preview', 'import_apply', 'legacy_preview', 'legacy_apply', 'legacy_readiness',
     'historical_report', 'other',
 })
 OUTCOMES = frozenset({'response_written', 'delivery_failed', 'handler_failed'})
@@ -31,7 +31,7 @@ RESOURCE = re.compile(
     r'(?P<route>open|close|categories/(?:compute|network|services|components)(?:/(?:coverage|signal-coverage))?|objects|objects/[A-Za-z0-9][A-Za-z0-9._-]{0,127}(?:/signals(?:/(?:summary|quality|comparison))?)?|'
     r'graph/[A-Za-z0-9][A-Za-z0-9._-]{0,127}|declarations|relationships|'
     r'imports/preview|imports/apply|legacy/preview|legacy/apply|'
-    r'legacy/bnd-[0-9a-f]{20}/report)'
+    r'legacy/bnd-[0-9a-f]{20}/(?:report|readiness))'
 )
 
 
@@ -89,6 +89,8 @@ def operation(method, target):
             return 'legacy_preview' if method == 'POST' else 'other'
         if item == 'legacy/apply':
             return 'legacy_apply' if method == 'POST' else 'other'
+        if item.startswith('legacy/') and item.endswith('/readiness'):
+            return 'legacy_readiness' if method == 'GET' else 'other'
         if item.startswith('legacy/') and item.endswith('/report'):
             return 'historical_report' if method == 'GET' else 'other'
     except (ValueError, TypeError):
