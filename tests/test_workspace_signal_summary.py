@@ -12,14 +12,15 @@ class SummaryTests(unittest.TestCase):
         s=state()
         a=s['observations'][0]
         a['signals']=[{'kind':'hostname','value':'alpha'},{'kind':'hostname','value':'beta'}]
-        s['observations'][1]['signals']=[{'kind':'hostname','value':'newer'}]
+        s['observations'][1]['received_at_utc']='2026-10-07T00:00:00Z'
+        s['observations'][1]['signals']=[{'kind':'hostname','value':'older'}]
         result=summary.summarize(s)
         field=result['fields'][0]
         self.assertEqual(field['values'][0]['value'],'alpha')
         self.assertEqual(field['values'][1]['value'],'beta')
         self.assertEqual(field['status'],'conflicting')
         self.assertEqual(field['values'][0]['provenance'][0]['collection_id'],'col-1')
-        self.assertNotIn('newer',str(result))
+        self.assertNotIn('older',str(result))
         self.assertNotIn('manual-value',str(result))
         self.assertNotIn('/private/secrets',str(result))
 
