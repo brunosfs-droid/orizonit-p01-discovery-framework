@@ -79,6 +79,26 @@ class CategoryReaderTests(unittest.TestCase):
         self.assertEqual(result['next_after'],'x')
         self.assertEqual(result['scanned'],1)
 
+    def test_kind_and_origin_narrow_category_without_reassigning(self):
+        rows=[self.row('a','host'),self.row('b','host'),self.row('c','vlan')]
+        rows[1]['origin']='observed'
+        page=dict(workspace_id='A',revision=3,objects=rows,has_more=False,next_after='c')
+        with patch.object(model,'list_objects',return_value=page):
+            result=reader.inventory(None,'A',self.token,category='compute',kind='host',origin='observed')
+        self.assertEqual([x['object_id'] for x in result['objects']],['b'])
+        self.assertEqual(result['scanned'],3)
+        self.assertEqual(result['matched'],1)
+        self.assertEqual(result['filters']['origin'],'observed')
+
+    def test_invalid_row_metadata_is_rejected_not_silently_ignored(self):
+        for key,value in (('kind','secret'),('origin','admin'),('created_revision',True),
+                          ('site_id','../B'),('label','')):
+            obj=self.row('a','host');obj[key]=value
+            page=dict(workspace_id='A',revision=0,objects=[obj],has_more=False,next_after='a')
+            with patch.object(model,'list_objects',return_value=page):
+                with self.assertRaises(model.pg.PersistenceError):
+                    reader.inventory(None,'A',self.token,category='compute')
+
     def test_rejects_cross_workspace_or_drift(self):
         for bad in (dict(workspace_id='B',revision=2,objects=[],has_more=False,next_after=''),
                     dict(workspace_id='A',revision=3,objects=[],has_more=False,next_after='')):
@@ -100,7 +120,8 @@ class CategoryReaderTests(unittest.TestCase):
         with patch.object(model,'list_objects') as listing:
             for kw in (dict(category='identity'),dict(category='network',max_pages=0),
                        dict(category='network',max_pages=True),dict(category='network',site_id='../B'),
-                       dict(category='network',environment_id='bad path')):
+                       dict(category='network',environment_id='bad path'),
+                       dict(category='compute',kind='vlan'),dict(category='compute',origin='manual')):
                 with self.assertRaises(model.pg.PersistenceError):
                     reader.inventory(None,'A',self.token,**kw)
             listing.assert_not_called()

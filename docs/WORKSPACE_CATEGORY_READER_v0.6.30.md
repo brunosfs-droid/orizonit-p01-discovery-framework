@@ -53,3 +53,8 @@ SQL otimizada por site; complete=false não permite inferir ausência de objetos
 O cursor deve conservar categoria/site/ambiente entre as chamadas, com revisão
 fixa; valores de filtros não são copiados para o audit log. Continuam pendentes
 leitores de sinais observados, integração real de scanners e recuperação em LAB.
+
+## Lote de qualificação e refinamento seguinte
+
+A revisão 30fd559 passou integralmente nos oito workflows de PR (incluindo Workspace Foundation PG16/PG17).
+O incremento posterior inclui filtros opcionais kind/origin, combináveis com site/ambiente, com enumeração fechada e kind restrito à categoria selecionada. Linhas provenientes do model são validadas (tipo/origem/revisão/localizações/label) antes de retornar objetos. Todos os filtros continuam após a leitura autorizada, sem claims de inventário completo. Os testes unitários e HTTP cobrem dados malformados e parâmetros duplicados/fora de escopo.

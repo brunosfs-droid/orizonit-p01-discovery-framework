@@ -154,6 +154,17 @@ class HTTPTests(unittest.TestCase):
             self.assertEqual(self.request('GET',api.BASE+'/A/categories/compute?generation=2&'+bad,headers=headers)[0],400)
         self.service.execute.assert_not_called()
 
+    def test_category_kind_origin_filters_are_strict(self):
+        headers=self.login()
+        uri=api.BASE+'/A/categories/network?generation=2&kind=vlan&origin=observed'
+        self.assertEqual(self.request('GET',uri,headers=headers)[0],200)
+        self.assertEqual(self.service.execute.call_args.kwargs['kind'],'vlan')
+        self.assertEqual(self.service.execute.call_args.kwargs['origin'],'observed')
+        self.service.execute.reset_mock()
+        for bad in ('kind=host','origin=manual','kind=vlan&kind=device'):
+            self.assertEqual(self.request('GET',api.BASE+'/A/categories/network?generation=2&'+bad,headers=headers)[0],400)
+        self.service.execute.assert_not_called()
+
     def test_missing_forged_query_token_and_node_identity_denied(self):
         for path,headers in ((api.BASE,None),(api.BASE,{'Authorization':'Bearer '+'x'*43}),
                              (api.BASE,{'X-P01-Node-ID':'OP-01'}),(api.BASE+'?access_token=PRIVATE',None)):
