@@ -121,6 +121,22 @@ class HTTPTests(unittest.TestCase):
             self.assertEqual(self.service.execute.call_args.args[1],action)
         self.assertEqual(self.request('DELETE','/api/v1/operator/session',headers=headers)[0],200)
         self.service.execute.reset_mock();self.assertEqual(self.request('GET',api.BASE,headers=headers)[0],401);self.service.execute.assert_not_called()
+    def test_category_route_requires_valid_context_and_fixed_category(self):
+        headers=self.login()
+        path=api.BASE+'/A/categories/network?generation=2&expected_revision=3&max_pages=1'
+        self.assertEqual(self.request('GET',path,headers=headers)[0],200)
+        self.assertEqual(self.service.execute.call_args.args[1],'categories')
+        self.assertEqual(self.service.execute.call_args.kwargs,
+                         {'generation':2,'expected_revision':3,'max_pages':1,'category':'network'})
+        self.service.execute.reset_mock()
+        for bad in (api.BASE+'/A/categories/network',
+                    api.BASE+'/A/categories/network?generation=2&max_pages=11',
+                    api.BASE+'/A/categories/network?generation=2&max_pages=0',
+                    api.BASE+'/A/categories/network?generation=2&token=private',
+                    api.BASE+'/A/categories/unknown?generation=2'):
+            self.assertIn(self.request('GET',bad,headers=headers)[0],(400,404))
+        self.service.execute.assert_not_called()
+
     def test_missing_forged_query_token_and_node_identity_denied(self):
         for path,headers in ((api.BASE,None),(api.BASE,{'Authorization':'Bearer '+'x'*43}),
                              (api.BASE,{'X-P01-Node-ID':'OP-01'}),(api.BASE+'?access_token=PRIVATE',None)):
