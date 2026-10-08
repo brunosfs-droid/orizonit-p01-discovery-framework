@@ -1,4 +1,5 @@
 # Cancã — backlog rastreável 1.0
+[v0.6.32](WORKSPACE_OBSERVED_SIGNALS_v0.6.32.md) PR #143: leitor de observações persistidas com proveniência, sem promoção de declarações; ainda candidato, pendente de CI/merge e validação EVE-NG separada. [Gates](validation/WORKSPACE_OBSERVED_SIGNALS_GATES_v0.6.32.md).
 
 Rebaseline 06/10/2026; execução atualizada em 08/10/2026 (-03).
 R01 iniciou com [v0.6.21 CANDIDATE](WORKSPACE_FOUNDATION_v0.6.21.md): registry,
