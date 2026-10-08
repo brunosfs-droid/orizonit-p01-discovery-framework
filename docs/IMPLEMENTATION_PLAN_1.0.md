@@ -13,6 +13,8 @@ seguem parciais: categoria identity, sem backfill/observed adapters completos.
 [v0.6.27](WORKSPACE_RECOVERY_v0.6.27.md) qualifica lease por banco e restore isolado.
 [v0.6.28](WORKSPACE_LEGACY_v0.6.28.md) adiciona a ponte revisada de identidade do
 legado e relatórios históricos por bundle/revisão; migração completa ainda pendente.
+[v0.6.35](WORKSPACE_OBSERVATION_COMPARISON_v0.6.35.md) inicia comparação controlada de lotes observados por atributo, sem inferir drift nem afirmar cobertura; CI e EVE-NG em gates separados.
+[v0.6.32–34](WORKSPACE_SIGNAL_QUALITY_v0.6.34.md) integradas via PRs #143–145: leitura, resumo e diagnósticos de sinais com proveniência.
 [v0.6.29](WORKSPACE_AUDIT_v0.6.29.md) qualifica auditoria HTTP workspace privada,
 fail-closed e redigida, sem alteração de schema.
 [Estado das tarefas e CI](validation/WORKSPACE_TASK_RESUMPTION_2026-10-07.md).
