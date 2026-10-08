@@ -13,7 +13,7 @@ ERRORS=model.ERRORS|{'workspace_restore_busy','workspace_restore_stale'}
 def inspect(conn):
     pg.guard_connection(conn)
     with conn.transaction():
-        pg.timeout(conn);pg.schema_check(conn,minimum=8,recovery=True);ws.admin(conn)
+        pg.timeout(conn);pg.schema_check(conn,minimum=8,legacy=True);ws.admin(conn)
         row=conn.execute('SELECT generation,state FROM canca.workspace_runtime WHERE singleton').fetchone()
         pg.require(row,'workspace_runtime_not_provisioned')
         count=conn.execute('SELECT count(*) FROM canca.workspace_revisions').fetchone()[0]
@@ -23,7 +23,7 @@ def prepare_restored(conn,expected_generation):
     """No dump, copy, grants, source repair or automatic resume. Admin confirms pair."""
     runtime.require_generation(expected_generation);pg.guard_connection(conn)
     with conn.transaction():
-        pg.timeout(conn);pg.schema_check(conn,minimum=8,recovery=True);ws.admin(conn)
+        pg.timeout(conn);pg.schema_check(conn,minimum=8,legacy=True);ws.admin(conn)
         held=conn.execute('SELECT pg_try_advisory_xact_lock(%s)',(runtime.LOCK_KEY,)).fetchone()[0]
         pg.require(held,'workspace_restore_busy')
         row=conn.execute('SELECT generation FROM canca.workspace_runtime WHERE singleton FOR UPDATE').fetchone()

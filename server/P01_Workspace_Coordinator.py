@@ -44,7 +44,7 @@ def provision(conn, principal_role):
     ws.identifier(principal_role)
     pg.guard_connection(conn)
     with conn.transaction():
-        pg.timeout(conn); pg.schema_check(conn, minimum=6, recovery=True); ws.admin(conn)
+        pg.timeout(conn); pg.schema_check(conn, minimum=6, legacy=True); ws.admin(conn)
         role = conn.execute('SELECT rolsuper,rolbypassrls FROM pg_roles WHERE rolname=%s', (principal_role,)).fetchone()
         pg.require(role and not any(role), 'workspace_role_invalid')
         conn.execute('SELECT pg_advisory_xact_lock(%s)', (pg.lock_key('coordinator-provision'),))
@@ -69,7 +69,7 @@ class SessionLease:
         pg.guard_connection(self.conn)
         try:
             with self.conn.transaction():
-                pg.timeout(self.conn); pg.schema_check(self.conn, minimum=6, recovery=True)
+                pg.timeout(self.conn); pg.schema_check(self.conn, minimum=6, legacy=True)
                 role = self.conn.execute('SELECT rolsuper OR rolbypassrls FROM pg_roles WHERE rolname=current_user').fetchone()
                 pg.require(role and not role[0], 'workspace_role_invalid')
                 self.held = self.conn.execute('SELECT pg_try_advisory_lock(%s)', (LOCK_KEY,)).fetchone()[0]

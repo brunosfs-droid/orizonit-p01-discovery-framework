@@ -65,6 +65,7 @@ class WorkspacePostgreSQLTests(unittest.TestCase):
         self.conn.execute('DROP SCHEMA IF EXISTS canca CASCADE')
         pg.migrate(self.conn)
         pg.index_import(self.conn,pg.prepare_import(self.store,self.directory))
+        if hasattr(self,'seed_legacy'):self.seed_legacy()
         self.before=self.legacy_rows()
         self.bytes_before={str(p.relative_to(self.store)):pg.digest(p.read_bytes()) for p in self.store.rglob('*') if p.is_file()}
         self.assertEqual(pg.migrate(self.conn,workspace=True)['migration'],5)

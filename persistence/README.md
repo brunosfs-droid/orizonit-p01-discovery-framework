@@ -129,3 +129,12 @@ regra/catálogo/engine salvos coincidem. JSON/Markdown com referências e hashes
 diretório privado novo. Reutiliza a coleta completa fenced, as permissões SELECT
 e o driver existentes, sem migração ou acesso ao store. CANDIDATE; gate manual
 futuro, independente do download Web v0.6.13 adiado pelo mantenedor.
+
+## Workspace Legacy v0.6.28
+
+[Ponte revisada e relatório histórico](../docs/WORKSPACE_LEGACY_v0.6.28.md):
+schema9 explícito, mapping administrativo antes de leitura, planos/cópias sob
+FORCE RLS, apply junto da identidade/recibos na mesma transação/revisão. Original
+store/SQL/IDs e avaliações persistidas são preservados, sem engine corrente.
+O listener atual exige9; migrate Recovery continua pinado em8. CI mantém restore8
+e adiciona restore9 independente; migração/recovery operacional seguem pendentes.

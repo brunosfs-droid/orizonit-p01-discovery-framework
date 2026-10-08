@@ -87,3 +87,14 @@ Categoria observada identity; sem backfill completo, API humana, UI/Mapper ou
 ações em dispositivos. Gates adicionais: drift/replay, sessão perdida/rollback,
 close durante commit/preparação, autoria/RLS/FKs A/B e isolamento de sources.
 R03–R05 continuam parciais; R06 depende de migração/restore/API e regressão.
+
+## Ponte revisada v0.6.28 (08/10/2026)
+
+[Contrato](WORKSPACE_LEGACY_v0.6.28.md): fixture schema4 real produz imports/assets/
+findings antes do upgrade9. PG16/17 verifica mapping antes dos bytes, ausência de
+SELECT legado, RLS A/B, preview sem revisão, preservação de linhas/IDs/arquivos,
+apply único/replay, revisão/cursor stale, fonte/snapshot alterados, rollback de
+cópia e perda de sessão SQL antes do commit, close durante preparo e HTTP humano.
+Engine corrente é bloqueada no teste de preservação histórica. Restore schema8
+permanece; gate schema9 compara30 tabelas, relatórios/recibos e store original.
+Gates sintéticos não encerram migração completa/T13/R20 ou qualificação operacional.

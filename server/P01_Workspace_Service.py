@@ -1,6 +1,6 @@
 """Trusted adapter: register model requests as jobs; fence reads and responses.
 
-No user paths/DSNs, listener, auth-policy change, live collection or legacy reads.
+No user paths/DSNs or live collection. Legacy reads require administrative mapping.
 """
 from pathlib import Path
 import re
@@ -9,6 +9,7 @@ import sys
 sys.path.insert(0,str(Path(__file__).resolve().parent))
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'persistence'))
 import P01_Workspace_Model as model
+import P01_Workspace_Legacy as legacy
 
 runtime,ws,pg=model.runtime,model.ws,model.pg
 VERSION='0.6.25'
@@ -40,9 +41,11 @@ class SourceRoots:
 
 
 class WorkspaceService:
-    def __init__(self,coordinator,source_roots):
+    def __init__(self,coordinator,source_roots,legacy_roots=None):
         pg.require(isinstance(coordinator,runtime.Coordinator) and isinstance(source_roots,SourceRoots),'model_input_invalid')
         self.coordinator,self.sources=coordinator,source_roots
+        pg.require(legacy_roots is None or isinstance(legacy_roots,LegacySources),'model_input_invalid')
+        self.legacy_sources=legacy_roots or LegacySources({})
 
     def registry(self,actor,*,after='',limit=100):
         pg.require(runtime.connection_target(actor)==self.coordinator.lease.target,'workspace_connection_mismatch')
@@ -94,3 +97,49 @@ class WorkspaceService:
             result=model.preview_import(actor,token.workspace_id,token,projection,**selection)
             operation.check()
             return dict(result,generation=token.generation)
+
+    def preview_legacy(self,actor,token,bundle_id,**selection):
+        with self.coordinator.borrow(actor,token,'workspace:write') as operation:
+            snapshot=legacy.source_snapshot(actor,token.workspace_id,token,bundle_id)
+            projection=self.legacy_sources.prepare(snapshot['import']['assessment_id'],bundle_id)
+            operation.check()
+            result=legacy.preview(actor,token.workspace_id,token,projection,snapshot,**selection)
+            operation.check();return dict(result,generation=token.generation)
+
+    def apply_legacy(self,actor,token,plan_id,request_id):
+        with self.coordinator.borrow(actor,token,'workspace:write') as operation:
+            replay=legacy.replay_request(actor,token.workspace_id,token,plan_id,request_id)
+            if replay:operation.check();return dict(replay,generation=token.generation)
+            payload=legacy.read_plan(actor,token.workspace_id,token,plan_id)
+            imported=payload['source']['import']
+            projection=self.legacy_sources.prepare(imported['assessment_id'],imported['bundle_id'])
+            operation.check()
+            result=legacy.apply(actor,token.workspace_id,token,plan_id,request_id,projection)
+            operation.check();return dict(result,generation=token.generation)
+
+    def legacy_report(self,actor,token,collection_id,**query):
+        return self._call(actor,token,'workspace:read',legacy.report,collection_id,**query)
+
+
+class LegacySources:
+    """Read-only original stores keyed by assessment; SQL mapping precedes access.
+
+    Shared stores are permitted only here. IDs select a fixed assessment directory,
+    never a client path, and verified receipts bind the returned original identity.
+    """
+    def __init__(self,roots):
+        pg.require(type(roots) is dict and len(roots)<=1024,'model_input_invalid')
+        self._roots={}
+        for assessment_id,value in roots.items():
+            ws.identifier(assessment_id)
+            pg.require(isinstance(value,(str,Path)) and '\x00' not in str(value),'model_input_invalid')
+            path=Path(value).expanduser().absolute()
+            pg.require(path==path.resolve() and path.is_dir(),'model_input_invalid')
+            self._roots[assessment_id]=path
+    def prepare(self,assessment_id,bundle_id):
+        ws.identifier(assessment_id)
+        pg.require(isinstance(bundle_id,str) and BUNDLE.fullmatch(bundle_id),'model_input_invalid')
+        root=self._roots.get(assessment_id);pg.require(root is not None,'legacy_source_unavailable')
+        projection=model.prepare_source(root,root/'assessments'/assessment_id/'imports'/bundle_id)
+        pg.require(projection['import']['assessment_id']==assessment_id and projection['import']['bundle_id']==bundle_id,'identity_mismatch')
+        return projection

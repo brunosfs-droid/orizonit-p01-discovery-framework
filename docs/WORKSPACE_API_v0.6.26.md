@@ -4,7 +4,7 @@ CANDIDATE opt-in em schema7 isolado. Listener humano separado na porta8879 por
 default; não substituir o operador legado em schema4. [ADR0040](ADR_0040_Workspace_API_v0.6.26.md).
 
 Este documento preserva o contrato v0.6.26/schema7. O código atual do listener
-em `main` exige schema8, conforme [v0.6.27](WORKSPACE_RECOVERY_v0.6.27.md);
+em `main` exige schema9, conforme [v0.6.28](WORKSPACE_LEGACY_v0.6.28.md);
 usar o commit qualificado da v0.6.26 para reproduzir especificamente schema7.
 
 ## Rotas
@@ -73,7 +73,8 @@ aguarda workers, drena o coordenador e libera a sessão; erro de shutdown é rep
 
 ## Próximos gates
 
-Recovery isolado schema8 já qualificado em v0.6.27. Backfill/reports por revisão,
+Recovery isolado schema8 já qualificado em v0.6.27; ponte revisada de identidade e
+relatórios históricos por bundle são adicionados em v0.6.28. Migração completa,
 recovery operacional, UI workspace/Mapper, metadados de sites e administração
 com contratos próprios e audit HTTP workspace continuam pendentes. Testes sintéticos não
 comprovam suporte de vendor/EVE-NG, Windows nativo ou capacidade de produção.

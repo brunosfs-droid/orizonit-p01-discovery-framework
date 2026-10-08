@@ -1,6 +1,6 @@
 # P01 — Próximos passos da Product Alpha
 
-Atualizado em 07/10/2026 (-03). Workspace Recovery v0.6.27 CANDIDATE opt-in schema8;
+Atualizado em 08/10/2026 (-03). Workspace Legacy v0.6.28 CANDIDATE opt-in schema9;
 contratos legados v0.6.20/SNMP v0.4b.9 preservados.
 
 ## Próxima execução após replanejamento
@@ -28,13 +28,21 @@ qualificou recuperação isolada. `main`3874be4: oito workflows/21 jobs PASS;
 118 casos workspace sem skips e restore PASS por PG16/17.
 [Retomada das tarefas 1–4 e evidência](validation/WORKSPACE_TASK_RESUMPTION_2026-10-07.md).
 
+[v0.6.28](WORKSPACE_LEGACY_v0.6.28.md) acrescenta a ponte revisada do legado:
+mapping explícito, verificação dos bytes, preview/apply identity transacional e
+relatórios históricos por bundle/revisão. As avaliações/IDs antigos são conservados;
+não executar findings correntes nem tratar ausência de análise como resultado limpo.
+[Fonte qualificada](validation/WORKSPACE_LEGACY_CI_v0.6.28.md):15 runs/41 jobs,
+141 casos sem skips e restores schema8/9 PASS por PG16/17.
+
 ## Próximos gates independentes
 
-1. Backfill/import revisado do legado e readers/findings/reports ligados à revisão
-   e cobertura; qualificar idempotência, drift e preservação de evidência.
-2. Auditoria HTTP workspace com contratos próprios e recovery operacional do
+1. Auditoria HTTP workspace com contratos próprios, incluindo login, lifecycle,
+   imports/backfill e relatório histórico; qualificar admissão e redação de dados.
+2. Ampliar migração/categorias/readers conforme os contratos e recovery operacional do
    conjunto banco/store/configuração/roles. Restore CI same-cluster já aprovado
-   não comprova recuperação cross-cluster ou do LAB.
+   não comprova recuperação cross-cluster ou do LAB. O schema9 adiciona gate
+   independente para cópias históricas, relatório e recibos restaurados.
 3. Fechar R01–R06 somente após os gates correspondentes. UI/Mapper v0.7 usa os
    contratos HTTP qualificados; adapters dos jobs/scanners legados e categorias
    observadas adicionais continuam explicitamente pendentes.

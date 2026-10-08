@@ -78,3 +78,10 @@ ações em dispositivos. Gates adicionais: drift/replay, sessão perdida/rollbac
 close durante commit/preparação, autoria/RLS/FKs A/B e isolamento de sources.
 R03–R05 continuam parciais. API humana e recovery isolado foram entregues nos
 incrementos26/27; R06 depende de migração, readers/reports, audit e gates operacionais.
+
+## Ponte revisada v0.6.28
+
+[Backfill identity e relatório histórico por bundle](WORKSPACE_LEGACY_v0.6.28.md)
+adicionam um passo da migração, conservando evidência/IDs/avaliações. Mapping,
+prévia e commit por revisão são explícitos. Migração/categorias/readers completos,
+audit HTTP e recovery operacional ainda mantêm R01–R06 e a Alpha abertos.

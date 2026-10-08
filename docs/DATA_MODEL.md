@@ -77,3 +77,11 @@ Categoria observada identity; sem backfill completo, API humana, UI/Mapper ou
 ações em dispositivos. Gates adicionais: drift/replay, sessão perdida/rollback,
 close durante commit/preparação, autoria/RLS/FKs A/B e isolamento de sources.
 R03–R05 continuam parciais; R06 depende de migração/restore/API e regressão.
+
+## Ponte legada schema9 v0.6.28
+
+workspace_legacy_plans referencia a prévia de identidade e seu snapshot verificado;
+workspace_legacy_imports referencia collection e mapping administrativo, conservando
+avaliações históricas e links ordinal → objeto. Ambos são imutáveis sob FORCE RLS.
+Apply compõe identidade/cópia/recibos numa revisão. IDs de assets/findings antigos
+não são substituídos; objetos workspace têm IDs próprios. [Contrato](WORKSPACE_LEGACY_v0.6.28.md).

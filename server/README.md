@@ -183,3 +183,12 @@ Do not repeat either accepted R1; see the evidence record for the remaining wide
 LocalAuth + binding operador/role SQL privado e conexão por request. Operações
 exigem workspace/generation; grants atuais no banco. Não substituir listener
 legado/schema4; CLI e limites no contrato. Migração/UI/Mapper ainda pendentes.
+
+## Workspace Legacy v0.6.28 opt-in
+
+[Contrato](../docs/WORKSPACE_LEGACY_v0.6.28.md): listener atual exige schema9,
+preservando versões7/8 nos commits qualificados. Acrescenta rotas legacy/preview,
+legacy/apply e legacy/{bundle_id}/report com geração/revisão/grants e jobs do
+coordenador. LegacySources é mapping privado por assessment do store original
+somente leitura; requests não recebem paths ou roles. Audit HTTP workspace e
+recovery operacional continuam pendentes.
