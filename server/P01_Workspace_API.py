@@ -21,10 +21,10 @@ import P01_Workspace_Service as backend
 import P01_Workspace_Audit as workspace_audit
 import P01_Workspace_Category_Reader as category_reader
 pg,ws,runtime,model=backend.pg,backend.ws,backend.runtime,backend.model
-VERSION='0.6.31'
+VERSION='0.6.32'
 MAX_BODY=128*1024
 BASE='/api/v1/workspaces'
-ROUTE=re.compile(BASE+r'/([A-Za-z0-9][A-Za-z0-9._-]{0,127})/(open|close|categories/(?:compute|network|services|components)(?:/coverage)?|objects|objects/([A-Za-z0-9][A-Za-z0-9._-]{0,127})|graph/([A-Za-z0-9][A-Za-z0-9._-]{0,127})|declarations|relationships|imports/preview|imports/apply|legacy/preview|legacy/apply|legacy/(bnd-[0-9a-f]{20})/report)')
+ROUTE=re.compile(BASE+r'/([A-Za-z0-9][A-Za-z0-9._-]{0,127})/(open|close|categories/(?:compute|network|services|components)(?:/coverage)?|objects|objects/([A-Za-z0-9][A-Za-z0-9._-]{0,127})(?:/signals)?|graph/([A-Za-z0-9][A-Za-z0-9._-]{0,127})|declarations|relationships|imports/preview|imports/apply|legacy/preview|legacy/apply|legacy/(bnd-[0-9a-f]{20})/report)')
 
 class BindingPolicy:
     """Immutable server configuration, never request-supplied role or path."""
@@ -120,7 +120,7 @@ class HumanWorkspaceService:
             else:
                 token=self.workspace.active_token(conn,workspace_id,fields.pop('generation'))
                 functions={'objects':self.workspace.objects,'object':self.workspace.object,
-                    'graph':self.workspace.graph,'categories':self.workspace.categories,'category_coverage':self.workspace.category_coverage,'declare_object':self.workspace.declare_object,
+                    'graph':self.workspace.graph,'categories':self.workspace.categories,'category_coverage':self.workspace.category_coverage,'observed_signals':self.workspace.observed_signals,'declare_object':self.workspace.declare_object,
                     'declare_attribute':self.workspace.declare_attribute,'relationship':self.workspace.relationship,
                     'preview_import':self.workspace.preview_import,'apply_import':self.workspace.apply_import}
                 functions.update(preview_legacy=self.workspace.preview_legacy,apply_legacy=self.workspace.apply_legacy,
@@ -182,14 +182,15 @@ class WorkspaceHandler(http.OperatorHandler):
                     action='category_coverage' if route.endswith('/coverage') else 'categories';fields=self._query(path.query,{'generation','expected_revision','max_pages','after','site_id','environment_id','kind','origin'})
                     if 'generation' not in fields:raise authn.AccessError('workspace_input_invalid',400)
                     fields['category']=route.split('/')[1]
-                elif method=='GET' and route in ('objects','objects/'+str(match[3]),'graph/'+str(match[4])):
+                elif method=='GET' and route in ('objects','objects/'+str(match[3]),'objects/'+str(match[3])+'/signals','graph/'+str(match[4])):
                     allowed={'generation','expected_revision'}
                     if route=='objects':allowed|={'after','limit'};action='objects'
+                    elif route.endswith('/signals'):allowed|={'after','limit'};action='observed_signals'
                     elif route.startswith('objects/'):action='object'
                     else:allowed|={'depth','node_limit','edge_limit'};action='graph'
                     fields=self._query(path.query,allowed)
                     if 'generation' not in fields:raise authn.AccessError('workspace_input_invalid',400)
-                    if action=='object':fields['object_id']=match[3]
+                    if action in ('object','observed_signals'):fields['object_id']=match[3]
                     if action=='graph':fields['root_id']=match[4]
                 elif method=='POST' and not path.query:
                     doc=self._json()
@@ -260,6 +261,10 @@ class WorkspaceHandler(http.OperatorHandler):
         for key in ('generation','expected_revision'):
             if key in fields:runtime.require_generation(fields[key])
         if action in ('registry','objects'):ws.page_args(fields.get('after',''),fields.get('limit',100))
+        if action=='observed_signals':
+            model.require(type(fields.get('after',0)) is int and 0<=fields.get('after',0)<=100)
+            model.require(type(fields.get('limit',50)) is int and 1<=fields.get('limit',50)<=50)
+            if fields.get('after',0):model.require('expected_revision' in fields)
         if action in ('categories','category_coverage'):
             model.require(fields.get('category') in category_reader.CATEGORY_KINDS)
             for location in ('site_id','environment_id'):
