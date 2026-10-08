@@ -1,3 +1,11 @@
+## v0.6.30 — Bounded workspace category views (CANDIDATE)
+
+- Add authenticated read-only category views for compute, network, services and components, selected from the workspace's declared/observed object metadata, not a new scanner.
+- Support explicit site, environment, kind and origin filters with per-category kind allowlists, strict ID validation and bounded scan budgets.
+- Resume pagination using an explicit revision fence; report complete/next_after plus scanned/matched so partial results are never mistaken for complete inventory.
+- Extend HTTP audit classification with category_read without persisting query values; preserve schema9, workspace grants and legacy assessment stores.
+- Add adversarial input tests and real PostgreSQL16/17 isolation tests. Full migration, observed reader adapters, LAB and operational recovery remain open gates.
+
 ## v0.6.29 — Private workspace HTTP audit (CANDIDATE)
 
 - Add opt-in exclusive JSONL audit to the schema9 workspace listener without a
