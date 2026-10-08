@@ -121,6 +121,19 @@ class HTTPTests(unittest.TestCase):
             self.assertEqual(self.service.execute.call_args.args[1],action)
         self.assertEqual(self.request('DELETE','/api/v1/operator/session',headers=headers)[0],200)
         self.service.execute.reset_mock();self.assertEqual(self.request('GET',api.BASE,headers=headers)[0],401);self.service.execute.assert_not_called()
+    def test_category_signal_coverage_http_contract(self):
+        headers=self.login()
+        uri=api.BASE+'/A/categories/network/signal-coverage?generation=2&expected_revision=7&limit=2'
+        self.assertEqual(self.request('GET',uri,headers=headers)[0],200)
+        self.assertEqual(self.service.execute.call_args.args[1],'category_signal_coverage')
+        self.assertEqual(self.service.execute.call_args.kwargs,
+                         {'generation':2,'expected_revision':7,'limit':2,'category':'network'})
+        self.service.execute.reset_mock()
+        for bad in ('&limit=21','&limit=0','&max_pages=2','&token=secret','&limit=2'):
+            self.assertEqual(self.request('GET',uri+bad,headers=headers)[0],400)
+        self.assertEqual(self.request('GET',api.BASE+'/A/categories/network/signal-coverage?generation=2&after=host-001',headers=headers)[0],400)
+        self.service.execute.assert_not_called()
+
     def test_recorded_observation_comparison_http_contract(self):
         headers=self.login()
         uri=api.BASE+'/A/objects/host-1/signals/comparison?generation=2&expected_revision=7'
