@@ -247,5 +247,31 @@ class CategoryReaderTests(unittest.TestCase):
                 reader.inventory(None,'A',self.token,category='compute')
 
 
+    def test_coverage_counts_only_visible_objects(self):
+        rows=[self.row('a','host'),self.row('b','host')]
+        rows[1]['origin']='observed'
+        page=dict(workspace_id='A',revision=3,objects=rows,has_more=False,next_after='b')
+        with patch.object(model,'list_objects',return_value=page):
+            result=reader.coverage(None,'A',self.token,category='compute')
+        self.assertEqual(result['kinds'],{'host':2})
+        self.assertEqual(result['origins'],{'declared':1,'observed':1})
+        self.assertEqual(result['collection_coverage'],'not_assessed')
+        self.assertNotIn('objects',result)
+
+    def test_coverage_partial_never_claims_complete(self):
+        page=dict(workspace_id='A',revision=4,objects=[self.row('a','device')],has_more=True,next_after='a')
+        with patch.object(model,'list_objects',return_value=page):
+            result=reader.coverage(None,'A',self.token,category='network',max_pages=1)
+        self.assertFalse(result['complete'])
+        self.assertEqual(result['next_after'],'a')
+        self.assertEqual(result['matched'],1)
+
+    def test_coverage_denies_other_workspace_before_reader(self):
+        token=model.runtime.Token('B',1,'a'*32)
+        with patch.object(model,'list_objects') as listing:
+            with self.assertRaises(model.pg.PersistenceError):
+                reader.coverage(None,'A',token,category='network')
+            listing.assert_not_called()
+
 
 if __name__=='__main__':unittest.main()

@@ -1,3 +1,11 @@
+## v0.6.31 — Bounded category coverage counters (CANDIDATE)
+
+- Read-only authenticated category coverage endpoint summarizes registered objects by kind and origin.
+- Reuses workspace authorization, coordinator jobs, revision-pinned pagination and optional filters.
+- Returns explicit complete/next_after and labels collection coverage not_assessed; no scanner claims or speculative assets.
+- Distinct redacted HTTP audit label; regression tests for counts, pagination, isolation and invalid routes.
+- Schema9, store, collector, import and legacy evidence unchanged; LAB/real device testing still outstanding.
+
 ## v0.6.30 — Bounded workspace category views (CANDIDATE)
 
 - Add authenticated read-only category views for compute, network, services and components, selected from the workspace's declared/observed object metadata, not a new scanner.

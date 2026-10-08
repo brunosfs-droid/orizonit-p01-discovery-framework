@@ -9,7 +9,7 @@ from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'persistence'))
 import P01_Workspace_Model as model
 
-VERSION='0.6.30'
+VERSION='0.6.31'
 CATEGORY_KINDS={
     'compute':frozenset(('host',)),
     'network':frozenset(('device','interface','network','vlan')),
@@ -80,3 +80,19 @@ def inventory(conn, workspace_id, token, *, category, expected_revision=None, ma
     return dict(status='listed',workspace_id=workspace_id,revision=revision,
                 category=category,objects=rows,complete=False,next_after=after,
                 scanned=scanned,matched=len(rows),filters=dict(site_id=site_id,environment_id=environment_id,kind=kind,origin=origin))
+
+
+def coverage(conn, workspace_id, token, *, category, expected_revision=None, max_pages=MAX_PAGES,
+             after='', site_id=None, environment_id=None, kind=None, origin=None):
+    """Bounded counts of registered objects only. Not collection coverage or an audit."""
+    page=inventory(conn,workspace_id,token,category=category,expected_revision=expected_revision,
+                   max_pages=max_pages,after=after,site_id=site_id,environment_id=environment_id,
+                   kind=kind,origin=origin)
+    kinds={k:0 for k in sorted(CATEGORY_KINDS[category])}
+    origins={'declared':0,'observed':0}
+    for obj in page['objects']:
+        kinds[obj['kind']]+=1
+        origins[obj['origin']]+=1
+    return {key:page[key] for key in ('workspace_id','revision','category','complete','next_after','scanned','matched','filters')} | {
+        'status':'coverage','kinds':kinds,'origins':origins,
+        'scope':'registered_objects_in_scanned_pages','collection_coverage':'not_assessed'}

@@ -81,6 +81,8 @@ class WorkspaceService:
         return self._call(actor,token,'workspace:read',model.list_objects,**query)
     def categories(self,actor,token,**query):
         return self._call(actor,token,'workspace:read',category_reader.inventory,**query)
+    def category_coverage(self,actor,token,**query):
+        return self._call(actor,token,'workspace:read',category_reader.coverage,**query)
     def object(self,actor,token,object_id,**query):
         return self._call(actor,token,'workspace:read',model.object_state,object_id,**query)
     def graph(self,actor,token,root_id,**query):
