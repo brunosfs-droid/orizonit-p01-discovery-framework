@@ -1,4 +1,5 @@
 # Cancã — backlog rastreável 1.0
+[v0.6.33](WORKSPACE_SIGNAL_SUMMARY_v0.6.33.md) — candidata: síntese limitada de sinais efetivamente observados por objeto, conflitos explícitos e proveniência (sem inferências, sem promoção de declarações). Gate de CI, integração e EVE-NG independentes; R03/R05/R06 ainda parciais.
 [v0.6.32](WORKSPACE_OBSERVED_SIGNALS_v0.6.32.md) PR #143: leitor de observações persistidas com proveniência, sem promoção de declarações; ainda candidato, pendente de CI/merge e validação EVE-NG separada. [Gates](validation/WORKSPACE_OBSERVED_SIGNALS_GATES_v0.6.32.md).
 
 Rebaseline 06/10/2026; execução atualizada em 08/10/2026 (-03).
