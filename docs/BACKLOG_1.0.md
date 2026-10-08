@@ -21,6 +21,9 @@ skips por PG16/17 e restores schema8/9, preservando tarefas1–3 e marcos anteri
 [v0.6.29](WORKSPACE_AUDIT_v0.6.29.md) qualifica auditoria HTTP própria, privada e
 fail-closed sem schema novo. [Evidência](validation/WORKSPACE_AUDIT_CI_v0.6.29.md):
 9 casos audit por PG16/17 e regressão geral 793 PASS/217 skips esperados.
+[v0.6.30](WORKSPACE_CATEGORY_READER_v0.6.30.md), PR #141 (rascunho), acrescenta
+readers categorizados por tipo declarado, filtros explícitos, paginação e rota
+HTTP; a qualificação no último commit está pendente. Não marcar R03–R06 fechados.
 P0: fundação/isolamento; P1: experiência central; P2: profundidade incremental.
 P2 pertence ao alvo 1.0; não significa exclusão automática. [Testes](TEST_PLAN_1.0.md).
 

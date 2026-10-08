@@ -13,7 +13,7 @@
 Workspaces isolados, sites internos, uma base aberta por instalação e Mapper como
 experiência central. Visão geral do workspace separada da Administração do servidor.
 Scans/imports explícitos, histórico, relações, serviços, findings e planos de ação.
-Especificação aprovada na PR #132; incrementos v0.6.21–28 CANDIDATE.
+Especificação aprovada na PR #132; incrementos v0.6.21–30 CANDIDATE.
 UI/Mapper e migração completa de inventário seguem nos próximos incrementos.
 
 [Especificação](docs/PRODUCT_SPEC_1.0.md) · [Arquitetura](docs/ARCHITECTURE.md) ·
@@ -27,8 +27,8 @@ o backend e a integração ao coordenador já estão em `main` (PR #135), seguid
 pela API humana (#136), recuperação isolada (#137) e reconciliação dos marcos
 (#138). A v0.6.28 adiciona backfill revisado de identidade e relatório histórico
 por bundle/revisão. A v0.6.29 adiciona auditoria HTTP privada do workspace,
-qualificada em PostgreSQL16/17. Alpha aberta para migração/readers adicionais e
-recovery operacional.
+qualificada em PostgreSQL16/17. A v0.6.30 adiciona views de inventário por categoria com filtros e paginação.
+Alpha aberta para migração/readers adicionais e recovery operacional.
 
 Workspace HTTP Audit v0.6.29: [admissão fail-closed e redação](docs/WORKSPACE_AUDIT_v0.6.29.md)
 (CANDIDATE, opt-in, sem schema novo). Operações fixas; token/body/query e IDs não

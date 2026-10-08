@@ -10,6 +10,7 @@ sys.path.insert(0,str(Path(__file__).resolve().parent))
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'persistence'))
 import P01_Workspace_Model as model
 import P01_Workspace_Legacy as legacy
+import P01_Workspace_Category_Reader as category_reader
 
 runtime,ws,pg=model.runtime,model.ws,model.pg
 VERSION='0.6.25'
@@ -78,6 +79,8 @@ class WorkspaceService:
 
     def objects(self,actor,token,**query):
         return self._call(actor,token,'workspace:read',model.list_objects,**query)
+    def categories(self,actor,token,**query):
+        return self._call(actor,token,'workspace:read',category_reader.inventory,**query)
     def object(self,actor,token,object_id,**query):
         return self._call(actor,token,'workspace:read',model.object_state,object_id,**query)
     def graph(self,actor,token,root_id,**query):
