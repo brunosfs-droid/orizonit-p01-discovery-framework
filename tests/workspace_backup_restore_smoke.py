@@ -98,9 +98,11 @@ def run(container,*,reviewed_legacy=False):
             model.relationship(conn,'A',case.token,applied['revision'],'restore-relation','restore-edge','manual',observed,'depends_on',reason='CI restore')
             before_state=model.object_state(conn,'A',case.token,'manual')
             before_graph=model.graph(conn,'A',case.token,'manual')
-        if reviewed_legacy:before_report=case.report()
+        if reviewed_legacy:
+            with case.role('canca_ws_writer'):
+                before_report=reviewed.legacy.report(conn,'A',case.token,case.bid)
         old_token=case.token;case.c.shutdown(timeout=0)
-        require(pg.migrate(conn,legacy=True if reviewed_legacy else False,recovery=True)['migration']==(9 if reviewed_legacy else 8))
+        require(pg.migrate(conn,legacy=reviewed_legacy,recovery=True)['migration']==(9 if reviewed_legacy else 8))
         before=snapshot(conn,tables);before_policies=policies(conn)
         current_revision=conn.execute("SELECT revision FROM canca.workspace_revisions WHERE workspace_id='A'").fetchone()[0]
         generation=conn.execute('SELECT generation FROM canca.workspace_runtime').fetchone()[0]
@@ -195,6 +197,7 @@ def cli(argv=None):
     parser.add_argument('--reviewed-legacy',action='store_true');args=parser.parse_args(argv)
     try:print(json.dumps(run(args.container_id,reviewed_legacy=args.reviewed_legacy)));return 0
     except Exception:
-        print(json.dumps(dict(status='failed',error_code='workspace_backup_restore_failed',recovery_version=VERSION)));return 2
+        print(json.dumps(dict(status='failed',error_code='workspace_backup_restore_failed',
+            recovery_version='0.6.28' if args.reviewed_legacy else VERSION)));return 2
 
 if __name__=='__main__':raise SystemExit(cli())
