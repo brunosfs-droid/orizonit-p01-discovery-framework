@@ -1,6 +1,7 @@
 # ADR0042 — ponte revisada do legado e relatórios históricos
 
 Data:08/10/2026 (-03). CANDIDATE opt-in schema9.
+[Qualificação e limites](validation/WORKSPACE_LEGACY_CI_v0.6.28.md).
 
 ## Contexto
 

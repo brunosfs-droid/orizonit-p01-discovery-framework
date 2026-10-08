@@ -32,6 +32,8 @@ Workspace Legacy v0.6.28: [ponte revisada e relatórios históricos](docs/WORKSP
 (CANDIDATE, opt-in schema9). Mapping administrativo precede acesso às fontes;
 apply transacional conserva IDs/evidência/avaliações, sem reexecutar findings.
 Listener atual exige9; migração completa e recovery operacional seguem pendentes.
+[CI qualificado](docs/validation/WORKSPACE_LEGACY_CI_v0.6.28.md):15 runs/41 jobs,
+141 casos sem skips por PG16/17 e restores schema8/9 PASS.
 
 Workspace Recovery v0.6.27: [fence por banco e recuperação isolada](docs/WORKSPACE_RECOVERY_v0.6.27.md)
 (CANDIDATE, opt-in schema8; qualificado em CI PG16/17). Contratos schema7/8

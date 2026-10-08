@@ -10,6 +10,8 @@
   rollback and an independent schema9 database/store/report/receipt restore gate.
 - Full migration, workspace HTTP audit, UI/Mapper and operational recovery remain
   separate gates; tasks1–3 and prior schema8 qualification are preserved.
+- Qualify15 source runs/41 jobs;141 workspace cases without skips per PG16/17,
+  schema8/9 restores PASS and full regression784 cases/217 expected skips.
 
 ## Workspace task and milestone reconciliation (07/10/2026)
 

@@ -32,6 +32,8 @@ qualificou recuperação isolada. `main`3874be4: oito workflows/21 jobs PASS;
 mapping explícito, verificação dos bytes, preview/apply identity transacional e
 relatórios históricos por bundle/revisão. As avaliações/IDs antigos são conservados;
 não executar findings correntes nem tratar ausência de análise como resultado limpo.
+[Fonte qualificada](validation/WORKSPACE_LEGACY_CI_v0.6.28.md):15 runs/41 jobs,
+141 casos sem skips e restores schema8/9 PASS por PG16/17.
 
 ## Próximos gates independentes
 

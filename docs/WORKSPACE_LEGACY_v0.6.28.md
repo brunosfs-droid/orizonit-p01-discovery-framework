@@ -2,6 +2,8 @@
 
 08/10/2026 (-03). CANDIDATE opt-in em banco isolado, schema9.
 [ADR0042](ADR_0042_Workspace_Legacy_v0.6.28.md).
+[Qualificação CI](validation/WORKSPACE_LEGACY_CI_v0.6.28.md):15 runs/41 jobs PASS,
+141 casos sem skips por PG16/17 e restores independentes schema8/9.
 O listener atual exige9; os contratos qualificados v0.6.26/schema7 e
 v0.6.27/schema8 permanecem reproduzíveis nos commits anteriores.
 As tarefas1–3 integradas e a reconciliação da PR #138 são preservadas.

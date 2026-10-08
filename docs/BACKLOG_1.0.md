@@ -17,6 +17,8 @@ e lease por banco foram qualificados em [v0.6.27](WORKSPACE_RECOVERY_v0.6.27.md)
 [v0.6.28](WORKSPACE_LEGACY_v0.6.28.md) adiciona backfill identity revisado e
 relatórios históricos por bundle/revisão. Os gates de migração completa e audit
 HTTP workspace permanecem abertos.
+[Qualificação v0.6.28](validation/WORKSPACE_LEGACY_CI_v0.6.28.md):141 casos sem
+skips por PG16/17 e restores schema8/9, preservando tarefas1–3 e marcos anteriores.
 P0: fundação/isolamento; P1: experiência central; P2: profundidade incremental.
 P2 pertence ao alvo 1.0; não significa exclusão automática. [Testes](TEST_PLAN_1.0.md).
 
