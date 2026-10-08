@@ -30,3 +30,7 @@ Requer sessão autenticada, workspace aberto e grant workspace:read. Resposta pa
 ## Continuação de paginação
 
 Se a resposta contiver `complete=false`, o cliente deve repetir o GET com `after=next_after`, **a mesma categoria, geração e `expected_revision=revision`** retornada. Cursor não é autoridade, não transfere grants e não ignora o fence. Mudança de revisão impede a retomada e exige reiniciar a leitura. Sem `after`, a revisão pode ser capturada na primeira página.
+
+## Qualificação SQL acrescentada
+
+O workflow Workspace Foundation CI (PostgreSQL 16/17) agora compila o reader, executa sua suite unitária e exercita por SQL real os readers via WorkspaceService: categorização declarada, revisão expirada, role read-only, grant revogado, troca A/B e token antigo. Estes testes são evidência de isolamento sintético, não substituem o restore cross-cluster nem o LAB real.

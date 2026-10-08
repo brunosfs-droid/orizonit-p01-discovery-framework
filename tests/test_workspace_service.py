@@ -125,6 +125,42 @@ class ServicePostgreSQLTests(unittest.TestCase):
             self.assertEqual(plan['generation'],self.token.generation)
             result=adapter.apply_import(self.conn,self.token,plan['plan_id'],'apply-service')
             self.assertEqual(result['revision'],1);self.assertFalse(self.c._jobs)
+    def test_categories_real_sql_revision_and_role_isolation(self):
+        adapter=self.adapter()
+        self.create('server','host')
+        self.create('switch','device')
+        with self.role('canca_ws_a'):
+            token=adapter.active_token(self.conn,'A',self.token.generation)
+            compute=adapter.categories(self.conn,token,category='compute')
+            self.assertEqual([x['object_id'] for x in compute['objects']],['server'])
+            network=adapter.categories(self.conn,token,category='network',
+                                       expected_revision=compute['revision'])
+            self.assertEqual([x['object_id'] for x in network['objects']],['switch'])
+            self.assertTrue(network['complete'])
+            with self.assertRaisesRegex(pg.PersistenceError,'model_revision_stale'):
+                adapter.categories(self.conn,token,category='network',
+                                   expected_revision=compute['revision']-1)
+            with self.assertRaisesRegex(pg.PersistenceError,'workspace_generation_stale'):
+                adapter.categories(self.conn,runtime.Token('B',token.generation,token.lease_id),
+                                   category='compute')
+        service.ws.revoke_workspace(self.conn,'A','canca_ws_a','workspace:read')
+        with self.role('canca_ws_a'):
+            with self.assertRaisesRegex(pg.PersistenceError,'workspace_access_denied'):
+                adapter.categories(self.conn,self.token,category='network')
+
+    def test_categories_switching_workspace_never_leaks_records(self):
+        adapter=self.adapter()
+        self.create('a-only','host')
+        with self.role('canca_ws_writer'):
+            self.c.close(self.conn,'A',self.token.generation)
+            other=self.c.open(self.conn,'B',self.c.generation)
+            result=adapter.categories(self.conn,other,category='compute')
+            self.assertEqual(result['workspace_id'],'B')
+            self.assertEqual(result['objects'],[])
+            with self.assertRaisesRegex(pg.PersistenceError,'workspace_generation_stale'):
+                adapter.categories(self.conn,self.token,category='compute')
+        self.assertFalse(self.c._jobs)
+
     def test_connection_target_mismatch_rejected_before_sql(self):
         with patch.object(runtime,'connection_target',return_value=('other',5432,'other')):
             for call in (lambda:self.adapter().registry(self.conn),
