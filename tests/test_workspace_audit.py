@@ -123,6 +123,12 @@ class FileAuditTests(unittest.TestCase):
         with self.assertRaises(audit.AuditError):
             sink.begin('health')
 
+    def test_category_signal_coverage_redacted_audit(self):
+        target='/api/v1/workspaces/private/categories/network/signal-coverage?kind=secret'
+        self.assertEqual(audit.operation('GET',target),'category_signal_coverage')
+        self.assertEqual(audit.operation('POST',target),'other')
+        self.assertNotIn('private',audit.operation('GET',target))
+
     def test_observation_comparison_audit_redacts_resource(self):
         target='/api/v1/workspaces/A/objects/secret-host/signals/comparison?token=NO-LEAK'
         self.assertEqual(audit.operation('GET',target),'observation_comparison')
