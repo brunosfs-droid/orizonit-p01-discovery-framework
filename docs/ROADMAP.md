@@ -8,7 +8,7 @@
 [Backlog](BACKLOG_1.0.md) · [Implementação/migração](IMPLEMENTATION_PLAN_1.0.md) ·
 [Testes/EVE-NG](TEST_PLAN_1.0.md).
 
-Baseline atual: v0.6.22 CANDIDATE opt-in, contratos Web v0.6.20 e
+Baseline atual: v0.6.27 CANDIDATE opt-in schema8, contratos Web v0.6.20 e
 SNMP v0.4b.9 CANDIDATE. Alpha aberta.
 Inventário/Mapper/serviços/dependências passam a integrar a 1.0. Histórico abaixo
 preserva entregas e limites anteriores; não é autorização para repetir testes.
@@ -27,10 +27,17 @@ não substitui requisitos. Community Beta e RC dependem de gates; número da ver
 não declara maturidade. Banco de grafos/NMS/remediação não são pré-requisitos.
 
 Primeiro incremento [v0.6.21 CANDIDATE](WORKSPACE_FOUNDATION_v0.6.21.md): registry,
-sites/ambientes/grants SQL/RLS/mapping aditivo opt-in. Migração completa de inventário
-e API ainda pendentes. [v0.6.22](WORKSPACE_COORDINATOR_v0.6.22.md) implementa o
-coordenador lógico de carga única; ligações Web/loader/jobs ainda pendentes.
-Próximo: observações/identidade v0.6.23, antes de UI/Graph.
+sites/ambientes/grants SQL/RLS/mapping aditivo opt-in.
+[v0.6.22](WORKSPACE_COORDINATOR_v0.6.22.md) implementa o coordenador de carga única.
+[v0.6.25](WORKSPACE_MODEL_v0.6.25.md), PR #135, entrega o backend dos alvos23–25:
+histórico/identidade, grafo manual e reconciliação com jobs/commits cercados.
+[v0.6.26](WORKSPACE_API_v0.6.26.md), PR #136, integra a API humana workspace;
+[v0.6.27](WORKSPACE_RECOVERY_v0.6.27.md), PR #137, qualifica lease por banco e
+recovery isolado. CI da baseline integrada: oito runs/21 jobs PASS.
+[Retomada e marcos verificados](validation/WORKSPACE_TASK_RESUMPTION_2026-10-07.md).
+Próximo: backfill revisado, readers/reports por revisão e audit HTTP workspace.
+UI/Mapper v0.7 segue após os gates R01–R06; jobs/scanners legados, outras
+categorias observadas e qualificação operacional ainda exigem seus adapters/gates.
 Versões seguintes são alvos de planejamento, não releases.
 Estimativas anteriores são hipóteses; reestimar após primeiro incremento/adapters.
 Datas não serão prometidas com base somente nesta revisão.
@@ -649,7 +656,8 @@ fora do escopo. [Edições](LICENSING_AND_EDITIONS.md).
 [ADR0039](ADR_0039_Workspace_Model_v0.6.25.md) fixam histórico append-only,
 observado/declarado, grafo manual limitado, revisão transacional e preview/apply
 idempotente. O adapter registra operações como jobs e revalida respostas.
-Categoria observada identity; sem backfill completo, API humana, UI/Mapper ou
+Categoria observada identity; sem backfill completo, UI/Mapper ou
 ações em dispositivos. Gates adicionais: drift/replay, sessão perdida/rollback,
 close durante commit/preparação, autoria/RLS/FKs A/B e isolamento de sources.
-R03–R05 continuam parciais; R06 depende de migração/restore/API e regressão.
+R03–R05 continuam parciais. API humana foi entregue em v0.6.26 e recovery isolado
+em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates operacionais.

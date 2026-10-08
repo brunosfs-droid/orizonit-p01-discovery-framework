@@ -1,3 +1,44 @@
+## Unreleased — Workspace task and milestone reconciliation (07/10/2026)
+
+- Verify merged PRs #135–137 and main 3874be4: eight successful workflows,
+  21 successful jobs, PostgreSQL 16/17 workspace contracts and isolated restore.
+- Preserve completed tasks 1–2 and the already integrated coordinator/service
+  task 3; reconcile task 4, roadmap, backlog and next steps with v0.6.27.
+- Documentation only; Alpha remains open for reviewed backfill, revision-bound
+  readers/reports, workspace HTTP audit and operational qualification.
+
+## v0.6.27 — Database-bound workspace leases and isolated recovery (CANDIDATE)
+
+- Add opt-in schema8 with a database-specific lease fence, preserving SQL1–7.
+- Add maintenance-only restored-runtime reset without rewriting content history,
+  revisions or receipts; the current workspace listener explicitly requires8.
+- Qualify 118 workspace cases without skips on each PostgreSQL16/17, plus
+  same-cluster disposable dump/store/restore with existing synthetic roles.
+- Full backfill, cross-cluster role/config recovery and operational LAB remain
+  separate gates. See docs/validation/WORKSPACE_RECOVERY_CI_v0.6.27.md.
+
+## v0.6.26 — Authenticated workspace API (CANDIDATE)
+
+- Add a separate opt-in human listener with immutable operator/SQL-role bindings,
+  fresh actor connections and explicit workspace/generation on content requests.
+- Expose registry/open/close, objects/history/graph, declarations/relationships
+  and reviewed imports through bounded coordinator jobs and current SQL grants.
+- Apply Host/Origin/body/worker/TLS controls, suppress revoked or late responses
+  and drain owned workers/coordinator on shutdown; preserve the legacy Web/API.
+- Qualify 107 workspace cases without skips per PostgreSQL16/17, including19
+  API cases. UI/Mapper, backfill and workspace HTTP audit remain pending.
+
+## v0.6.25 — Workspace history, graph and reviewed reconciliation (CANDIDATE)
+
+- Deliver the additive backend of planned v0.6.23–25 in opt-in schema7:
+  immutable observations/declarations, manual relationships and identity imports.
+- Fence preview/apply by revision and policy, with explicit review, transactional
+  commits and idempotent receipts; preserve original evidence and legacy data.
+- Register preparation/reads/writes with the coordinator; reject stale/revoked
+  results and finish shutdown cleanup when lease loss is first detected.
+- Qualify 88 workspace cases without skips per PostgreSQL16/17:18 foundation,
+  27 coordinator,30 model and13 service; R03–R05 remain partial.
+
 ## v0.6.22 — Opt-in single-workspace coordinator (CANDIDATE)
 
 - Add separate migration 0006 and trusted SQL service role with forced RLS;

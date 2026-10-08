@@ -3,11 +3,14 @@
 Plano 06/10/2026; execução atualizada em 07/10/2026 (-03).
 [v0.6.21](WORKSPACE_FOUNDATION_v0.6.21.md) implementa registry/sites/ambientes/grants
 e mapping opt-in; [v0.6.22](WORKSPACE_COORDINATOR_v0.6.22.md) acrescenta
-coordenador lógico/lease/generation/drain/cache. Inventário/API/jobs legados ainda
+coordenador lógico/lease/generation/drain/cache. Backfill/readers/jobs legados ainda
 não integrados; R01/R02 permanecem parciais.
 [v0.6.25](WORKSPACE_MODEL_v0.6.25.md) entrega o backend aditivo dos alvos23–25:
 histórico/identidade, grafo manual, preview/apply e fence de commit. R03–R05
-seguem parciais: categoria identity, sem backfill/API/observed adapters completos.
+seguem parciais: categoria identity, sem backfill/observed adapters completos.
+[v0.6.26](WORKSPACE_API_v0.6.26.md) integra o listener humano workspace;
+[v0.6.27](WORKSPACE_RECOVERY_v0.6.27.md) qualifica lease por banco e restore isolado.
+[Estado das tarefas e CI](validation/WORKSPACE_TASK_RESUMPTION_2026-10-07.md).
 [Backlog](BACKLOG_1.0.md) · [Gates](TEST_PLAN_1.0.md).
 
 ## Extensão Alpha
@@ -19,7 +22,9 @@ seguem parciais: categoria identity, sem backfill/API/observed adapters completo
 | v0.6.23 | CollectionRun, Observation, Declaration e AssetIdentity | v0.6.21/22 | Histórico/replay/migração sem merge indevido. |
 | v0.6.24 | Relationship, interfaces/componentes/rede/VLAN e serviços | v0.6.23 | Ownership, origens, ciclos e namespace de VLAN. |
 | v0.6.25 | Prévia/diff, categories e commit/revisão | v0.6.23/24 | Idempotência, drift, partial e crash reconciliados. |
-| v0.6.26+ | Migração completa, API foundations, regressão/fechamento | Todos | Recovery/grants/gates Alpha aprovados. |
+| v0.6.26 | API humana workspace, bindings SQL e limites | Backend23–25 | Integrada/CI qualificado; migração completa e audit continuam pendentes. |
+| v0.6.27 | Lease por banco e recovery isolado schema8 | v0.6.26 | Integrada/118 casos e restore PASS por PG16/17; recovery operacional pendente. |
+| Próximos v0.6.x | Backfill, readers/reports, audit e fechamento | v0.6.21–27 | Migração/recovery/gates Alpha aprovados no escopo correspondente. |
 
 Versões são alvos, não releases publicadas. Mais patches podem ser necessários.
 Não refazer v0.6.13–20 ou SNMP v0.4b.9 já implementados.
@@ -91,8 +96,10 @@ final de latência/RAM depende da medição, não é capacidade comercial garant
 1. [v0.6.26](WORKSPACE_API_v0.6.26.md): API humana opt-in implementada, com
    binding operador/role SQL explícito, workspace/generation, limites/erros e
    revalidação de sessão/grant. Não encerra integração/migração/audit de R06.
-2. Backfill revisado do legado, recibos/recovery e restore7; leitores de findings
-   e reports ligados a revisão/cobertura. Fechar R06 somente com esses gates.
+2. [v0.6.27](WORKSPACE_RECOVERY_v0.6.27.md): recovery isolado schema8 e fence por
+   banco integrados/qualificados. Backfill revisado, readers de findings/reports
+   por revisão/cobertura, audit HTTP e recovery operacional seguem pendentes.
+   Fechar R06 somente com esses gates; o listener v0.6.26/schema7 permanece pinado.
 3. v0.7: seleção/abertura/fechamento, páginas de objetos e Mapper limitado; Visão
    geral da base separada da Administração do servidor, sites internos.
 4. Adapters observados adicionais e fixtures EVE-NG versionadas, seguidos dos

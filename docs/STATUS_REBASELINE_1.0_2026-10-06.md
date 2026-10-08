@@ -2,6 +2,11 @@
 
 Decisão: 06/10/2026 America/Sao_Paulo; verificação técnica 07/10 UTC.
 
+Este registro preserva a revisão original. Para o estado posterior à integração
+das PRs #133–137 e retomada das tarefas1–4, consultar o
+[registro atualizado](validation/WORKSPACE_TASK_RESUMPTION_2026-10-07.md) e os
+[próximos passos](NEXT_STEPS_v0.6.0.md).
+
 ## Estado anterior confirmado
 
 - Repo público brunosfs-droid/orizonit-p01-discovery-framework, main.

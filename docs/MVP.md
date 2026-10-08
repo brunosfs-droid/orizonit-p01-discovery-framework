@@ -40,10 +40,14 @@ instalação reproduzível, SBOM/licenças/matriz pública e limitações antes 
 ## Estado real
 
 Primeiro incremento workspace [v0.6.21 CANDIDATE](WORKSPACE_FOUNDATION_v0.6.21.md):
-registry/grants/sites/ambientes e mapping opt-in em base isolada. Migração completa,
+registry/grants/sites/ambientes e mapping opt-in em base isolada.
 [v0.6.22](WORKSPACE_COORDINATOR_v0.6.22.md) adiciona coordenador lógico de carga
-única; API/Mapper/loader/jobs legados ainda pendentes. Contratos legados v0.6.20/SNMP v0.4b.9
-preservados.
+única; [v0.6.25](WORKSPACE_MODEL_v0.6.25.md) integra serviço/jobs e histórico/grafo/
+reconciliação. [v0.6.26](WORKSPACE_API_v0.6.26.md) entrega a API humana;
+[v0.6.27](WORKSPACE_RECOVERY_v0.6.27.md) qualifica lease por banco e recovery isolado.
+Mapper, backfill/readers completos, audit HTTP workspace e jobs legados seguem
+pendentes. Contratos legados v0.6.20/SNMP v0.4b.9 preservados.
+[Tarefas 1–4 e CI verificados](validation/WORKSPACE_TASK_RESUMPTION_2026-10-07.md).
 Distributed mTLS R2 e R1 sintéticos PostgreSQL/recovery/lifecycle/CLI export/API/Web
 já têm aceite nos escopos registrados. Download Web v0.6.13+ e incrementos
 posteriores, vendors reais e roles/TLS/produção mantêm seus gates pendentes.
@@ -69,7 +73,8 @@ qualifica upgrade/restore; GA fecha bloqueadores e publica suporte real.
 [ADR0039](ADR_0039_Workspace_Model_v0.6.25.md) fixam histórico append-only,
 observado/declarado, grafo manual limitado, revisão transacional e preview/apply
 idempotente. O adapter registra operações como jobs e revalida respostas.
-Categoria observada identity; sem backfill completo, API humana, UI/Mapper ou
+Categoria observada identity; sem backfill completo, UI/Mapper ou
 ações em dispositivos. Gates adicionais: drift/replay, sessão perdida/rollback,
 close durante commit/preparação, autoria/RLS/FKs A/B e isolamento de sources.
-R03–R05 continuam parciais; R06 depende de migração/restore/API e regressão.
+R03–R05 continuam parciais. API humana e recovery isolado foram entregues nos
+incrementos26/27; R06 depende de migração, readers/reports, audit e gates operacionais.
