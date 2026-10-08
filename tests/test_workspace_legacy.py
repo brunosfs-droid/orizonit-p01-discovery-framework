@@ -190,6 +190,10 @@ class LegacyPostgreSQLTests(unittest.TestCase):
         plan=self.preview();self.conn.execute("UPDATE canca.finding_analyses SET engine_sha256=%s",('f'*64,))
         with self.assertRaisesRegex(pg.PersistenceError,'legacy_source_conflict'):self.apply(plan)
         self.assertEqual(self.conn.execute('SELECT count(*) FROM canca.workspace_collections').fetchone()[0],0)
+    def test_corrupt_historical_projection_is_rejected_before_preview(self):
+        self.conn.execute("UPDATE canca.finding_analyses SET engine_sha256=%s",('f'*64,))
+        with self.assertRaisesRegex(pg.PersistenceError,'legacy_source_conflict'):self.preview()
+        self.assertEqual(self.conn.execute('SELECT count(*) FROM canca.workspace_import_plans').fetchone()[0],0)
     def test_close_during_original_source_preparation_suppresses_migration(self):
         ready=threading.Event();release=threading.Event();errors=[]
         actor=pg.open_connection();self.addCleanup(actor.close);actor.execute('SET ROLE canca_ws_writer')

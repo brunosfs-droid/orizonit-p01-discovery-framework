@@ -76,7 +76,7 @@ def validate_snapshot(snapshot,projection):
             if observation is not None:
                 require(type(observation) is int and 0<=observation<len(rows)
                     and any(r['path']==e['source_path'] for r in rows[observation]['source_refs']))
-            require(type(e['evidence_refs']) is list and len(e['evidence_refs'])<=7
+            require(type(e['evidence_refs']) is list and len(e['evidence_refs'])<=6 and len(set(e['evidence_refs']))==len(e['evidence_refs'])
                 and all(isinstance(r,str) and r in {'/authentication/success','/enrichment/collection_status',
                     '/enrichment/collection_sections','/enrichment/security/firewall_profiles','/enrichment/identity',
                     '/enrichment/security/secure_channel_checked','/enrichment/security/secure_channel_healthy'}
@@ -91,6 +91,14 @@ def validate_snapshot(snapshot,projection):
                         and values==sorted(set(values)) and set(values)<={'domain','private','public'})
             else:require(e['finding_id'] is None and e['finding_status'] is None and e['evidence'] is None)
         require(pairs=={(path,rule) for path in refs for rule in historical.RULES})
+        # Rebuild the recorded projection with its saved engine/catalogue. This
+        # verifies its digest without evaluating current rules or source content.
+        recorded=dict(policy_version=analysis['policy_version'],engine_sha256=analysis['engine_sha256'],
+            catalog_sha256=analysis['catalog_sha256'],catalog=analysis['catalog'],assets=projection,
+            evaluations=[dict(ordinal=e['ordinal'],source_ref=refs[e['source_path']],rule_id=e['rule_id'],
+                result=e['result'],observation_ordinal=e['observation_ordinal'],link_state=e['link_state'],
+                evidence_refs=e['evidence_refs'],evidence=e['evidence'] if e['result']=='finding' else {}) for e in evaluations])
+        require(model.digest(recorded)==analysis['projection_sha256'])
     except pg.PersistenceError:raise
     except Exception:raise pg.PersistenceError('legacy_source_conflict') from None
 

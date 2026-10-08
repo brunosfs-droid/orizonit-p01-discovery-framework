@@ -48,6 +48,8 @@ o asset antigo e o objeto novo quando disponíveis. `evidence_only` conserva as
 avaliações sem associar objetos. Não há execução da engine de findings corrente.
 Ausência de análise resulta em `not_analyzed`, nunca em resultado limpo; outcomes
 `insufficient_evidence`, `not_applicable` e `not_supported` permanecem distintos.
+O digest da projeção histórica é reconstruído com os metadados salvos, sem
+avaliar regras correntes; divergência anterior à prévia também é recusada.
 Nenhum finding é fechado automaticamente. O tempo é o recebimento do import;
 tempo de coleta não é inferido.
 
