@@ -8,13 +8,19 @@ Este incremento distingue **observações persistidas** de atributos **declarado
 
 Limites: máximo de 100 observações por objeto (limite do próprio modelo), máximo de 1.000 sinais processados e no máximo 50 observações por página. O cursor `after` representa a posição na lista da revisão corrente; a continuação exige `expected_revision`. O contrato expõe `complete` e `next_after`, sem extrapolar completude do ambiente. Horários são de recebimento, não prova do instante da coleta.
 
+## API HTTP
+
+GET /api/v1/workspaces/{workspace_id}/objects/{object_id}/signals?generation=N&expected_revision=R&after=0&limit=50
+
+Requer sessão autenticada, workspace aberto e `workspace:read`. Em continuações, `expected_revision` é obrigatório. A trilha de auditoria usa o nome fixo `observed_signals` sem gravar identificadores/caminhos de recursos. Não fornece referências originais nem evidência bruta.
+
 ## Testes
 
 Suite `tests/test_workspace_observed_signals.py` cobre paginação, redaction de referências, exclusão de declarações, autorização delegada ao model, revision fence e falha fechada diante de dados incorretos. Workspace Foundation CI executa a suite na matriz PostgreSQL 16/17.
 
 ## Gates não atendidos neste incremento
 
-- Endpoint HTTP autenticado e contratos de UI ainda não implementados.
+- Interface visual de sinais e integração com Mapper ainda não implementadas.
 - Rastreabilidade de evidências até conteúdo imutável, verificação de integridade e sinais de outros conectores continuam pendentes.
 - Amplitude de dispositivos, coleta real, mapper e reconciliação semântica permanecem fases futuras.
 - EVE-NG, restore operacional multicompontente e Product Alpha exigem validação própria.
