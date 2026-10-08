@@ -42,6 +42,21 @@ class CategoryReaderTests(unittest.TestCase):
         self.assertFalse(result['complete'])
         self.assertEqual(result['next_after'],'a')
 
+    def test_resume_cursor_requires_revision_and_preserves_order(self):
+        page=dict(workspace_id='A',revision=7,objects=[self.row('m','vlan')],
+                  has_more=False,next_after='m')
+        with patch.object(model,'list_objects',return_value=page) as listing:
+            result=reader.inventory(None,'A',self.token,category='network',
+                                    after='k',expected_revision=7)
+        self.assertEqual(result['objects'][0]['object_id'],'m')
+        listing.assert_called_once_with(None,'A',self.token,after='k',limit=100,expected_revision=7)
+        with patch.object(model,'list_objects') as listing:
+            for cursor,revision in (('k',None),('../B',2)):
+                with self.assertRaises(model.pg.PersistenceError):
+                    reader.inventory(None,'A',self.token,category='network',
+                                     after=cursor,expected_revision=revision)
+            listing.assert_not_called()
+
     def test_rejects_cross_workspace_or_drift(self):
         for bad in (dict(workspace_id='B',revision=2,objects=[],has_more=False,next_after=''),
                     dict(workspace_id='A',revision=3,objects=[],has_more=False,next_after='')):

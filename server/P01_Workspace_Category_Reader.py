@@ -20,7 +20,7 @@ MAX_PAGES=10
 PAGE_SIZE=100
 
 
-def inventory(conn, workspace_id, token, *, category, expected_revision=None, max_pages=MAX_PAGES):
+def inventory(conn, workspace_id, token, *, category, expected_revision=None, max_pages=MAX_PAGES, after=''):
     """Return stable category rows, or explicit incomplete pagination.
 
     Calls model.list_objects with revision fences on every page. The model owns
@@ -29,10 +29,14 @@ def inventory(conn, workspace_id, token, *, category, expected_revision=None, ma
     model.token_args(workspace_id,token)
     model.require(type(category) is str and category in CATEGORY_KINDS)
     model.require(type(max_pages) is int and 1<=max_pages<=MAX_PAGES)
+    model.require(type(after) is str)
+    if after:
+        model.ws.identifier(after)
+        model.require(expected_revision is not None)
     if expected_revision is not None:
         model.runtime.require_generation(expected_revision)
     kinds=CATEGORY_KINDS[category]
-    after='';seen=set();rows=[];revision=expected_revision;last_oid=''
+    seen=set();rows=[];revision=expected_revision;last_oid=after
     for _ in range(max_pages):
         page=model.list_objects(conn,workspace_id,token,after=after,limit=PAGE_SIZE,
                                 expected_revision=revision)

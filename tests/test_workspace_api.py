@@ -136,6 +136,12 @@ class HTTPTests(unittest.TestCase):
                     api.BASE+'/A/categories/unknown?generation=2'):
             self.assertIn(self.request('GET',bad,headers=headers)[0],(400,404))
         self.service.execute.assert_not_called()
+        resumed=api.BASE+'/A/categories/network?generation=2&expected_revision=3&after=k'
+        self.assertEqual(self.request('GET',resumed,headers=headers)[0],200)
+        self.assertEqual(self.service.execute.call_args.kwargs['after'],'k')
+        self.service.execute.reset_mock()
+        self.assertEqual(self.request('GET',api.BASE+'/A/categories/network?generation=2&after=k',headers=headers)[0],400)
+        self.service.execute.assert_not_called()
 
     def test_missing_forged_query_token_and_node_identity_denied(self):
         for path,headers in ((api.BASE,None),(api.BASE,{'Authorization':'Bearer '+'x'*43}),

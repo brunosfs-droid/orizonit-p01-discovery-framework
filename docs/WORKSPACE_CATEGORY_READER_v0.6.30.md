@@ -26,3 +26,7 @@ concluídos, e recuperação cross-cluster permanece pendente.
 
 GET /api/v1/workspaces/{workspace_id}/categories/{compute|network|services|components}?generation=N&expected_revision=R&max_pages=P.
 Requer sessão autenticada, workspace aberto e grant workspace:read. Resposta parcial mantém complete=false e next_after; não há continuação HTTP direta baseada no cursor neste incremento. Auditoria registra somente category_read, sem caminho ou query. Cobertura SQL/HTTP de ponta a ponta permanece gate antes de merge.
+
+## Continuação de paginação
+
+Se a resposta contiver `complete=false`, o cliente deve repetir o GET com `after=next_after`, **a mesma categoria, geração e `expected_revision=revision`** retornada. Cursor não é autoridade, não transfere grants e não ignora o fence. Mudança de revisão impede a retomada e exige reiniciar a leitura. Sem `after`, a revisão pode ser capturada na primeira página.
