@@ -140,7 +140,7 @@ class ServicePostgreSQLTests(unittest.TestCase):
             with self.assertRaisesRegex(pg.PersistenceError,'model_revision_stale'):
                 adapter.categories(self.conn,token,category='network',
                                    expected_revision=compute['revision']-1)
-            with self.assertRaisesRegex(pg.PersistenceError,'workspace_generation_stale'):
+            with self.assertRaisesRegex(pg.PersistenceError,'workspace_access_denied'):
                 adapter.categories(self.conn,runtime.Token('B',token.generation,token.lease_id),
                                    category='compute')
         service.ws.revoke_workspace(self.conn,'A','canca_ws_a','workspace:read')
