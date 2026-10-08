@@ -143,6 +143,17 @@ class HTTPTests(unittest.TestCase):
         self.assertEqual(self.request('GET',api.BASE+'/A/categories/network?generation=2&after=k',headers=headers)[0],400)
         self.service.execute.assert_not_called()
 
+    def test_category_filters_are_whitelisted_and_preserved(self):
+        headers=self.login()
+        uri=api.BASE+'/A/categories/compute?generation=2&site_id=S1&environment_id=E1'
+        self.assertEqual(self.request('GET',uri,headers=headers)[0],200)
+        self.assertEqual(self.service.execute.call_args.kwargs['site_id'],'S1')
+        self.assertEqual(self.service.execute.call_args.kwargs['environment_id'],'E1')
+        self.service.execute.reset_mock()
+        for bad in ('site_id=..%2FB','environment_id=has%20space','password=secret'):
+            self.assertEqual(self.request('GET',api.BASE+'/A/categories/compute?generation=2&'+bad,headers=headers)[0],400)
+        self.service.execute.assert_not_called()
+
     def test_missing_forged_query_token_and_node_identity_denied(self):
         for path,headers in ((api.BASE,None),(api.BASE,{'Authorization':'Bearer '+'x'*43}),
                              (api.BASE,{'X-P01-Node-ID':'OP-01'}),(api.BASE+'?access_token=PRIVATE',None)):

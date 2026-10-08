@@ -34,3 +34,22 @@ Se a resposta contiver `complete=false`, o cliente deve repetir o GET com `after
 ## Qualificação SQL acrescentada
 
 O workflow Workspace Foundation CI (PostgreSQL 16/17) agora compila o reader, executa sua suite unitária e exercita por SQL real os readers via WorkspaceService: categorização declarada, revisão expirada, role read-only, grant revogado, troca A/B e token antigo. Estes testes são evidência de isolamento sintético, não substituem o restore cross-cluster nem o LAB real.
+
+## Dez entregas deste lote
+
+1. Qualificação do CI anterior (oito workflows PASS).
+2. Filtro opcional por site_id, após leitura autorizada.
+3. Filtro opcional por environment_id, após leitura autorizada.
+4. Combinação AND de site/ambiente sem inferir identidade.
+5. Validação estrita dos filtros antes do banco.
+6. Whitelist HTTP dos parâmetros sem aceitar caminhos arbitrários.
+7. Contagem explícita de objetos varridos (scanned).
+8. Contagem explícita de correspondências (matched).
+9. Preservação do cursor mesmo em páginas filtradas vazias.
+10. Testes de filtro, paginação e rejeições na suite unitária e HTTP.
+
+Os filtros são locais ao conjunto limitado de objetos lidos, **não** uma consulta
+SQL otimizada por site; complete=false não permite inferir ausência de objetos.
+O cursor deve conservar categoria/site/ambiente entre as chamadas, com revisão
+fixa; valores de filtros não são copiados para o audit log. Continuam pendentes
+leitores de sinais observados, integração real de scanners e recuperação em LAB.

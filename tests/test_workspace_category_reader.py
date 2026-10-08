@@ -57,6 +57,28 @@ class CategoryReaderTests(unittest.TestCase):
                                      after=cursor,expected_revision=revision)
             listing.assert_not_called()
 
+    def test_site_and_environment_filters_keep_cursor_over_all_scanned_objects(self):
+        rows=[self.row('a','host'),self.row('b','host'),self.row('c','vlan')]
+        rows[0]['site_id']='S1';rows[0]['environment_id']='E1'
+        rows[1]['site_id']='S2';rows[1]['environment_id']='E1'
+        page=dict(workspace_id='A',revision=3,objects=rows,has_more=False,next_after='c')
+        with patch.object(model,'list_objects',return_value=page):
+            result=reader.inventory(None,'A',self.token,category='compute',site_id='S1',environment_id='E1')
+        self.assertEqual([x['object_id'] for x in result['objects']],['a'])
+        self.assertEqual(result['scanned'],3)
+        self.assertEqual(result['matched'],1)
+        self.assertEqual(result['filters'],dict(site_id='S1',environment_id='E1'))
+        self.assertTrue(result['complete'])
+
+    def test_filtered_page_without_matches_still_has_next_cursor(self):
+        p=dict(workspace_id='A',revision=4,objects=[self.row('x','vlan')],has_more=True,next_after='x')
+        with patch.object(model,'list_objects',return_value=p):
+            result=reader.inventory(None,'A',self.token,category='compute',site_id='S1',max_pages=1)
+        self.assertEqual(result['objects'],[])
+        self.assertFalse(result['complete'])
+        self.assertEqual(result['next_after'],'x')
+        self.assertEqual(result['scanned'],1)
+
     def test_rejects_cross_workspace_or_drift(self):
         for bad in (dict(workspace_id='B',revision=2,objects=[],has_more=False,next_after=''),
                     dict(workspace_id='A',revision=3,objects=[],has_more=False,next_after='')):
@@ -77,7 +99,8 @@ class CategoryReaderTests(unittest.TestCase):
     def test_rejects_invalid_category_and_budget_before_sql(self):
         with patch.object(model,'list_objects') as listing:
             for kw in (dict(category='identity'),dict(category='network',max_pages=0),
-                       dict(category='network',max_pages=True)):
+                       dict(category='network',max_pages=True),dict(category='network',site_id='../B'),
+                       dict(category='network',environment_id='bad path')):
                 with self.assertRaises(model.pg.PersistenceError):
                     reader.inventory(None,'A',self.token,**kw)
             listing.assert_not_called()
