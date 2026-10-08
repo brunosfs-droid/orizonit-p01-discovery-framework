@@ -58,3 +58,7 @@ leitores de sinais observados, integração real de scanners e recuperação em 
 
 A revisão 30fd559 passou integralmente nos oito workflows de PR (incluindo Workspace Foundation PG16/PG17).
 O incremento posterior inclui filtros opcionais kind/origin, combináveis com site/ambiente, com enumeração fechada e kind restrito à categoria selecionada. Linhas provenientes do model são validadas (tipo/origem/revisão/localizações/label) antes de retornar objetos. Todos os filtros continuam após a leitura autorizada, sem claims de inventário completo. Os testes unitários e HTTP cobrem dados malformados e parâmetros duplicados/fora de escopo.
+
+## Gates adversariais adicionais
+
+Suite de 16 cenários extras cobre: partição de tipos; filtros combinados; página terminal vazia; revisão zero; limite com zero matches; token B contra A; limites não inteiros; categorias de tipo inválido; cursor não canônico; has_more estrito; duplicidade; origem sem reclassificação; projeção sem campos extras; metadados ausentes; resposta cross-workspace; e drift entre páginas. Esses cenários são sintéticos e não substituem tests de SQL real.

@@ -127,4 +127,125 @@ class CategoryReaderTests(unittest.TestCase):
             listing.assert_not_called()
 
 
+    def test_all_four_category_type_sets_are_disjoint_and_complete(self):
+        groups=reader.CATEGORY_KINDS
+        combined=set()
+        for types in groups.values():
+            self.assertFalse(combined.intersection(types))
+            combined.update(types)
+        self.assertEqual(combined,set(model.KINDS))
+
+    def test_valid_filter_combinations_include_all_matching_rows_only(self):
+        rows=[self.row('a','host'),self.row('b','host'),self.row('c','host')]
+        rows[0].update(site_id='S1',environment_id='E1',origin='observed')
+        rows[1].update(site_id='S1',environment_id='E2',origin='observed')
+        rows[2].update(site_id='S2',environment_id='E1',origin='declared')
+        page=dict(workspace_id='A',revision=2,objects=rows,has_more=False,next_after='c')
+        with patch.object(model,'list_objects',return_value=page):
+            filtered=reader.inventory(None,'A',self.token,category='compute',kind='host',
+                                      origin='observed',site_id='S1',environment_id='E1')
+        self.assertEqual([x['object_id'] for x in filtered['objects']],['a'])
+
+    def test_empty_terminal_page_is_complete_not_missing_data(self):
+        page=dict(workspace_id='A',revision=0,objects=[],has_more=False,next_after='')
+        with patch.object(model,'list_objects',return_value=page):
+            result=reader.inventory(None,'A',self.token,category='compute')
+        self.assertTrue(result['complete'])
+        self.assertIsNone(result['next_after'])
+        self.assertEqual(result['scanned'],0)
+
+    def test_revision_zero_is_valid_explicit_resume_revision(self):
+        page=dict(workspace_id='A',revision=0,objects=[self.row('z','host')],has_more=False,next_after='z')
+        with patch.object(model,'list_objects',return_value=page) as listing:
+            result=reader.inventory(None,'A',self.token,category='compute',after='a',expected_revision=0)
+        self.assertEqual(result['revision'],0)
+        listing.assert_called_once()
+
+    def test_scan_budget_limits_even_when_every_row_is_filtered_out(self):
+        page=dict(workspace_id='A',revision=1,objects=[self.row('a','vlan')],has_more=True,next_after='a')
+        with patch.object(model,'list_objects',return_value=page) as listing:
+            result=reader.inventory(None,'A',self.token,category='compute',max_pages=1)
+        self.assertFalse(result['complete'])
+        self.assertEqual(result['scanned'],1)
+        self.assertEqual(result['matched'],0)
+        listing.assert_called_once()
+
+    def test_wrong_token_workspace_fails_before_listing(self):
+        token=model.runtime.Token('B',1,'a'*32)
+        with patch.object(model,'list_objects') as listing:
+            with self.assertRaises(model.pg.PersistenceError):
+                reader.inventory(None,'A',token,category='network')
+            listing.assert_not_called()
+
+    def test_invalid_page_limit_boolean_and_fraction_rejected(self):
+        with patch.object(model,'list_objects') as listing:
+            for value in (False,1.5,-1,11,None):
+                with self.assertRaises(model.pg.PersistenceError):
+                    reader.inventory(None,'A',self.token,category='network',max_pages=value)
+            listing.assert_not_called()
+
+    def test_invalid_category_container_rejected_before_listing(self):
+        with patch.object(model,'list_objects') as listing:
+            for category in (None,[],{},True,0,'NETWORK'):
+                with self.assertRaises(model.pg.PersistenceError):
+                    reader.inventory(None,'A',self.token,category=category)
+            listing.assert_not_called()
+
+    def test_noncanonical_cursor_rejected_before_listing(self):
+        with patch.object(model,'list_objects') as listing:
+            for cursor in (None,True,'../other','contains space',[]):
+                with self.assertRaises(model.pg.PersistenceError):
+                    reader.inventory(None,'A',self.token,category='compute',after=cursor,expected_revision=2)
+            listing.assert_not_called()
+
+    def test_page_must_return_boolean_has_more(self):
+        page=dict(workspace_id='A',revision=1,objects=[self.row('a','host')],has_more=1,next_after='a')
+        with patch.object(model,'list_objects',return_value=page):
+            with self.assertRaises(model.pg.PersistenceError):
+                reader.inventory(None,'A',self.token,category='compute')
+
+    def test_page_must_return_unique_ordered_rows(self):
+        page=dict(workspace_id='A',revision=1,objects=[self.row('a','host'),self.row('a','host')],
+                  has_more=False,next_after='a')
+        with patch.object(model,'list_objects',return_value=page):
+            with self.assertRaises(model.pg.PersistenceError):
+                reader.inventory(None,'A',self.token,category='compute')
+
+    def test_filter_origin_observed_does_not_convert_manual_rows(self):
+        page=dict(workspace_id='A',revision=1,objects=[self.row('a','host')],has_more=False,next_after='a')
+        with patch.object(model,'list_objects',return_value=page):
+            result=reader.inventory(None,'A',self.token,category='compute',origin='observed')
+        self.assertEqual(result['objects'],[])
+        self.assertTrue(result['complete'])
+
+    def test_page_result_contains_no_extra_fields_from_source(self):
+        row=self.row('a','host')
+        row['sensitive_internal']='do-not-return'
+        page=dict(workspace_id='A',revision=1,objects=[row],has_more=False,next_after='a')
+        with patch.object(model,'list_objects',return_value=page):
+            result=reader.inventory(None,'A',self.token,category='compute')
+        self.assertNotIn('sensitive_internal',result['objects'][0])
+
+    def test_page_rejects_missing_required_metadata(self):
+        obj=self.row('a','host');del obj['origin']
+        page=dict(workspace_id='A',revision=1,objects=[obj],has_more=False,next_after='a')
+        with patch.object(model,'list_objects',return_value=page):
+            with self.assertRaises(model.pg.PersistenceError):
+                reader.inventory(None,'A',self.token,category='compute')
+
+    def test_rejects_page_that_returns_other_workspace(self):
+        page=dict(workspace_id='B',revision=1,objects=[self.row('a','host')],has_more=False,next_after='a')
+        with patch.object(model,'list_objects',return_value=page):
+            with self.assertRaises(model.pg.PersistenceError):
+                reader.inventory(None,'A',self.token,category='compute',expected_revision=1)
+
+    def test_rejects_page_revision_drift_after_one_page(self):
+        a=dict(workspace_id='A',revision=1,objects=[self.row('a','host')],has_more=True,next_after='a')
+        b=dict(workspace_id='A',revision=2,objects=[self.row('b','host')],has_more=False,next_after='b')
+        with patch.object(model,'list_objects',side_effect=[a,b]):
+            with self.assertRaises(model.pg.PersistenceError):
+                reader.inventory(None,'A',self.token,category='compute')
+
+
+
 if __name__=='__main__':unittest.main()
