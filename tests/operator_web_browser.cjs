@@ -12,7 +12,9 @@ const {chromium} = require(process.env.CANCA_PLAYWRIGHT_MODULE || 'playwright');
 (async () => {
   const fixture = spawn(process.env.CANCA_BROWSER_PYTHON || 'python', [path.join(__dirname, 'operator_web_browser_fixture.py')], {stdio:['ignore','pipe','pipe']});
   const lines = readline.createInterface({input:fixture.stdout});
-  let browser;
+  let browser, flowError, fixtureErrors = '';
+  fixture.stderr.setEncoding('utf8');
+  fixture.stderr.on('data', chunk => { fixtureErrors = (fixtureErrors + chunk).slice(-16384); });
   const readyTimeout = setTimeout(() => fixture.kill('SIGINT'), 20000);
   try {
     const [line] = await Promise.race([once(lines, 'line'), once(fixture, 'exit').then(() => { throw new Error('browser fixture exited before ready'); })]);
@@ -190,10 +192,14 @@ const {chromium} = require(process.env.CANCA_PLAYWRIGHT_MODULE || 'playwright');
       await context.close();
     }
     console.log('OPERATOR WEB BROWSER PASS — Chromium desktop/mobile, executive preview/hash/empty/12-group pagination, isolated grants, unchanged technical and executive ZIPs');
+  } catch (error) {
+    flowError = error; throw error;
   } finally {
     clearTimeout(readyTimeout); if (browser) await browser.close(); lines.close();
     if (fixture.exitCode === null) { const exit = once(fixture, 'exit'); fixture.kill('SIGINT'); await exit; }
-    assert.equal(fixture.exitCode,0,'Browser HTTP fixture and private audit must close successfully');
-    console.log('OPERATOR WEB AUDIT PASS — private JSONL, paired events, trusted IDs and no submitted secrets');
+    if (fixture.exitCode !== 0) {
+      if (fixtureErrors) console.error('Synthetic browser fixture failure:',fixtureErrors);
+      if (!flowError) assert.equal(fixture.exitCode,0,'Browser HTTP fixture and private audit must close successfully');
+    } else console.log('OPERATOR WEB AUDIT PASS — private JSONL, paired events, trusted IDs and no submitted secrets');
   }
 })().catch(error => { console.error('OPERATOR WEB BROWSER FAILED', error); process.exitCode=1; });

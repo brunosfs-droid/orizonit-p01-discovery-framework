@@ -4,8 +4,8 @@
 [PR #139](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/pull/139). Tarefas1–3 e a reconciliação da PR #138 preservadas.
 
 Fonte: `4ab193c423c07003a700f0f9cc34ea38ea3808b0`; tree `d86452d08fa6090ba2d9151fce36c0e467a566fb`.
-Base: `8dda792e24f1865793616a5021b7dc7f66ebbce9`. O próximo commit altera somente
-documentação e recebe qualificação própria antes da integração.
+Base: `8dda792e24f1865793616a5021b7dc7f66ebbce9`. A documentação e o ajuste do
+diagnóstico Chromium recebem CI no head final da PR antes da integração.
 
 ## Evidência
 
