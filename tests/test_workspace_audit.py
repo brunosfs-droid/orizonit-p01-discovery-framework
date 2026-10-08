@@ -376,6 +376,8 @@ class WiringTests(unittest.TestCase):
         ), patch.object(
             api.runtime, 'Coordinator', return_value=coordinator
         ), patch.object(
+            api.backend, 'WorkspaceService', return_value=Mock()
+        ), patch.object(
             api, 'HumanWorkspaceService', return_value=Mock()
         ), patch.object(
             api, 'WorkspaceServer', return_value=server
