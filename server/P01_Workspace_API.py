@@ -190,6 +190,9 @@ class WorkspaceHandler(http.OperatorHandler):
                     else:allowed|={'depth','node_limit','edge_limit'};action='graph'
                     fields=self._query(path.query,allowed)
                     if 'generation' not in fields:raise authn.AccessError('workspace_input_invalid',400)
+                    if action=='observed_signals' and 'after' in fields:
+                        if not re.fullmatch('0|[1-9][0-9]{0,2}',fields['after']):raise authn.AccessError('workspace_input_invalid',400)
+                        fields['after']=int(fields['after'])
                     if action in ('object','observed_signals'):fields['object_id']=match[3]
                     if action=='graph':fields['root_id']=match[4]
                 elif method=='POST' and not path.query:
