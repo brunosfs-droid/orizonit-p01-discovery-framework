@@ -42,6 +42,14 @@ backend. [Fonte qualificada](validation/WORKSPACE_AUDIT_CI_v0.6.29.md): 9 casos
 audit PASS por PG16/17, regressão geral 793 PASS/217 skips esperados e restores
 schema8/9 preservados.
 
+## v0.6.30 — desenvolvimento em PR #141 (não integrado)
+
+Leitor de categorias de inventário por tipo declarado, filtros de site/ambiente/kind/origin,
+paginação por revisão, acesso HTTP autenticado e testes adversariais novos. Código
+em branch de trabalho, pendente de resultado dos workflows no último HEAD; o CI
+anterior da PR estava aprovado. **Não** qualifica readers observados de scanner,
+migração completa ou recuperação operacional.
+
 ## Próximos gates independentes
 
 1. Ampliar migração/categorias/readers conforme os contratos e recovery operacional do
