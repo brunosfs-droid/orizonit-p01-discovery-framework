@@ -825,3 +825,8 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 
 - [Gate SQL](WORKSPACE_LEDGER_READER_INTENTS_TRUNCATE_v0.6.74.md): role read-only não apaga intenções e decisões relacionadas via TRUNCATE CASCADE.
 - v0.6.73 integrada no PR #184; E0 e R02/R06 seguem abertos.
+
+## v0.6.75 — leitor sem DELETE direto nas intenções (CANDIDATE)
+
+- [Gate SQL](WORKSPACE_LEDGER_READER_INTENT_DELETE_DENIAL_v0.6.75.md): role read-only reconcedida não pode remover intenção persistida.
+- v0.6.74 integrada pelo PR #185; E0 e R02/R06 seguem abertos.
