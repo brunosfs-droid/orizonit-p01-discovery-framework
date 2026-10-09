@@ -1,5 +1,7 @@
 # Cancã — backlog rastreável 1.0
-[v0.6.38 — Legacy readiness](WORKSPACE_LEGACY_READINESS_v0.6.38.md): candidato de leitura por bundle histórico autorizado, com validação SQL→store e recebimento/replay explícitos; não conclui migração, outras categorias ou R01/R03. [PR #148](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/pull/148) permanece gate E0/recovery independente.
+[v0.6.38 — Legacy readiness](WORKSPACE_LEGACY_READINESS_v0.6.38.md): leitura limitada por bundle histórico autorizado, com revalidação SQL→store e recibo imutável. CI e integração não encerram migração completa, outras categorias ou R01/R03. A homologação E0/recovery da PR #148 permanece gate operacional independente.
+
+[Auditoria R01–R06 e critérios E0 (08/10)](validation/ALPHA_R01_R06_GATE_MATRIX_2026-10-08.md) · [Roteiro E0/recovery R1](LAB_ALPHA_E0_AND_RECOVERY_R1.md). São artefatos para qualificação, não aceite de LAB, fechamento Alpha ou release. O preflight offline verifica somente integridade dos artefatos, não executa restore.
 [v0.6.36](WORKSPACE_CATEGORY_SIGNAL_COVERAGE_v0.6.36.md) — candidata: visão limitada de sinais efetivamente registrados por categoria e filtros, sem inferir cobertura de rede; CI/EVE-NG/Alpha separados.
 [v0.6.35](WORKSPACE_OBSERVATION_COMPARISON_v0.6.35.md) — integrada via PR #146: comparação de dois lotes de recebimento por tipo de sinal com proveniência e sem inferência de drift; R03/R05 seguem parciais, EVE-NG/Product Alpha independentes.
 [v0.6.34](WORKSPACE_SIGNAL_QUALITY_v0.6.34.md) — CI aprovado e PR #145 integrado à main; diagnósticos de conflito/proveniência, sem validar cobertura real.
