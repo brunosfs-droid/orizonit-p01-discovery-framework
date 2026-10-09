@@ -1,5 +1,7 @@
 # Cancã — backlog rastreável 1.0
 
+[v0.6.71 — leitor sem INSERT direto](WORKSPACE_LEDGER_READER_DIRECT_WRITE_v0.6.71.md): leitura reconcedida não permite gravar decisão SQL; v0.6.70 integrada no PR #181; E0 pendente.
+
 [v0.6.70 — leitor sem escrita terminal](WORKSPACE_LEDGER_TERMINAL_READER_WRITE_DENIAL_v0.6.70.md): role com leitura reconcedida não altera intenção consumida; v0.6.69 integrada no PR #180; E0 pendente.
 
 [v0.6.69 — replay terminal conflitante](WORKSPACE_LEDGER_TERMINAL_CONFLICT_REGRANT_v0.6.69.md): reuso divergente do request ID é bloqueado sem mudar decisões; v0.6.68 integrada no PR #179; E0 pendente.
