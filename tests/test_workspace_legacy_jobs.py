@@ -188,6 +188,47 @@ class LegacyJobsTests(unittest.TestCase):
         self.assert_not_running(pid)
         self.assertFalse(self.c._jobs)
 
+    @unittest.skipUnless(os.name == "posix" and sys.platform.startswith("linux"),
+                         "POSIX Linux process-group qualification")
+    def test_close_waits_until_child_process_group_is_terminated(self):
+        token = self.opened()
+        script, source, adapter = self.configured()
+        marker = script.parent / "grandchild.pid"
+        script.write_text(
+            "import subprocess,sys,time\n"
+            "from pathlib import Path\n"
+            "child=subprocess.Popen([sys.executable, '-c', 'import time;time.sleep(60)'],"
+            "stdin=subprocess.DEVNULL,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)\n"
+            f"Path({str(marker)!r}).write_text(str(child.pid))\n"
+            "time.sleep(60)\n", encoding="utf-8")
+        errors = []
+        with patch.object(jobs, "SCRIPT", script):
+            def run():
+                try:
+                    adapter.legacy_checkpoint("reader", token, timeout=15)
+                except pg.PersistenceError as exc:
+                    errors.append(str(exc))
+            worker = threading.Thread(target=run)
+            worker.start()
+            try:
+                deadline = time.monotonic() + 3
+                while not marker.exists() and time.monotonic() < deadline:
+                    time.sleep(0.02)
+                self.assertTrue(marker.exists())
+                pid = int(marker.read_text())
+                self.addCleanup(self._kill_if_running, pid)
+                self.c.close("writer", "A", token.generation, timeout=3)
+                worker.join(3)
+                self.assertFalse(worker.is_alive())
+                self.assertEqual(errors, ["workspace_generation_stale"])
+                self.assert_not_running(pid)
+                self.assertFalse(self.c._jobs)
+                self.assertEqual(self.c.state, "closed")
+            finally:
+                if worker.is_alive():
+                    self.c._cancel.set()
+                    worker.join(5)
+
     @staticmethod
     def _kill_if_running(pid):
         try:
