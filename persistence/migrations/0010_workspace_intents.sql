@@ -72,9 +72,9 @@ BEGIN
         END IF;
         SELECT decision,sequence INTO last_event,last_sequence FROM canca.workspace_scan_decisions
           WHERE workspace_id=NEW.workspace_id AND intent_id=NEW.intent_id ORDER BY sequence DESC LIMIT 1;
-        IF NEW.sequence<>COALESCE(last_sequence,0)+1 OR NOT (
+        IF NEW.sequence<>COALESCE(last_sequence,0)+1 OR NOT COALESCE((
             (last_event IS NULL AND NEW.decision IN ('approved','rejected','revoked'))
-            OR (last_event='approved' AND NEW.decision IN ('revoked','consumed'))) THEN
+            OR (last_event='approved' AND NEW.decision IN ('revoked','consumed'))),false) THEN
             RAISE EXCEPTION 'intent transition denied' USING ERRCODE='55000';
         END IF;
         NEW.created_at:=clock_timestamp();
