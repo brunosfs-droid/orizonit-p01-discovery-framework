@@ -720,3 +720,8 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 
 - [Contrato](WORKSPACE_LEDGER_HTTP_AUDIT_DENIALS_v0.6.53.md): auditar negação por query e sessão revogada sem vazar token, intenção ou rota.
 - v0.6.52 integrada pelo PR #163; R02/R06 e E0 ainda abertos.
+
+## v0.6.54 — revogação de leitor do ledger (CANDIDATE)
+
+- [Gate SQL](WORKSPACE_LEDGER_READER_REVOCATION_v0.6.54.md): revogação de role no workspace A nega histórico em PG16/17 sem afetar leitores autorizados.
+- v0.6.53 integrada no PR #164; E0 e R02/R06 seguem pendentes.

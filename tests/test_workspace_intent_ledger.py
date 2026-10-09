@@ -130,6 +130,21 @@ class LedgerTests(unittest.TestCase):
         with self.role('canca_ws_writer'),self.assertRaises(pg.PersistenceError):
             self.service.scan_intent_history(self.conn,b,ident)
 
+    def test_revoked_workspace_reader_cannot_retrieve_ledger_history(self):
+        ident=self.record()['intent_id']
+        with self.role('canca_ws_a'):
+            history=self.service.scan_intent_history(self.conn,self.token,ident)
+            self.assertEqual(history['intent_id'],ident)
+            self.assertFalse(history['execution_authorized'])
+        self.conn.execute(
+            "DELETE FROM canca.workspace_grants WHERE workspace_id='A' AND principal_role='canca_ws_a'")
+        with self.role('canca_ws_a'),self.assertRaises(pg.PersistenceError):
+            self.service.scan_intent_history(self.conn,self.token,ident)
+        with self.role('canca_ws_writer'):
+            allowed=self.service.scan_intent_history(self.conn,self.token,ident)
+            self.assertEqual(allowed['intent_id'],ident)
+            self.assertFalse(allowed['execution_authorized'])
+
     def test_append_only_and_sql_transition_guard(self):
         from psycopg import errors
         ident=self.record()['intent_id']
