@@ -1,5 +1,7 @@
 # Cancã — backlog rastreável 1.0
 
+[v0.6.65 — integridade com regrant](WORKSPACE_LEDGER_REGRANT_INTEGRITY_v0.6.65.md): decisões persistidas não mudam após revogação/reconcessão; v0.6.64 integrada pelo PR #175; E0 pendente.
+
 [v0.6.64 — decisões imutáveis na revogação](WORKSPACE_LEDGER_REVOCATION_IMMUTABILITY_v0.6.64.md): revogação de leitor não altera decisão histórica; v0.6.63 integrada pelo PR #174; E0 pendente.
 
 [v0.6.63 — regrant seletivo A/B](WORKSPACE_LEDGER_SELECTIVE_REGRANT_v0.6.63.md): revogação e nova concessão em B não revelam intenção de A; v0.6.62 integrada no PR #173; E0 pendente.
