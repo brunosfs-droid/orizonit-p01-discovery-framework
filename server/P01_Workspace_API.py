@@ -21,20 +21,20 @@ import P01_Workspace_Service as backend
 import P01_Workspace_Audit as workspace_audit
 import P01_Workspace_Category_Reader as category_reader
 pg,ws,runtime,model=backend.pg,backend.ws,backend.runtime,backend.model
-VERSION='0.6.36'
+VERSION='0.6.43'
 MAX_BODY=128*1024
 BASE='/api/v1/workspaces'
-ROUTE=re.compile(BASE+r'/([A-Za-z0-9][A-Za-z0-9._-]{0,127})/(open|close|categories/(?:compute|network|services|components)(?:/(?:coverage|signal-coverage))?|objects|objects/([A-Za-z0-9][A-Za-z0-9._-]{0,127})(?:/signals(?:/(?:summary|quality|comparison))?)?|graph/([A-Za-z0-9][A-Za-z0-9._-]{0,127})|declarations|relationships|imports/preview|imports/apply|legacy/preview|legacy/apply|legacy/(bnd-[0-9a-f]{20})/(?:report|readiness))')
+ROUTE=re.compile(BASE+r'/([A-Za-z0-9][A-Za-z0-9._-]{0,127})/(open|close|categories/(?:compute|network|services|components)(?:/(?:coverage|signal-coverage))?|objects|objects/([A-Za-z0-9][A-Za-z0-9._-]{0,127})(?:/signals(?:/(?:summary|quality|comparison))?)?|graph/([A-Za-z0-9][A-Za-z0-9._-]{0,127})|declarations|relationships|imports/preview|imports/apply|scan-intents/preview|legacy/preview|legacy/apply|legacy/(bnd-[0-9a-f]{20})/(?:report|readiness))')
 
 class BindingPolicy:
     """Immutable server configuration, never request-supplied role or path."""
-    __slots__=('roles','coordinator_role','sources','legacy_sources')
+    __slots__=('roles','coordinator_role','sources','legacy_sources','approved_scan_scopes')
     def __init__(self,raw,accounts):
         try:
             if not isinstance(raw,bytes) or not 1<=len(raw)<=256*1024:raise ValueError()
             doc=json.loads(raw.decode('utf-8'),object_pairs_hook=authn.unique_object)
             required={'binding_version','coordinator_role','bindings','sources'}
-            if type(doc) is not dict or not required<=set(doc) or set(doc)-required-{'legacy_sources'} or doc['binding_version']!='1':raise ValueError()
+            if type(doc) is not dict or not required<=set(doc) or set(doc)-required-{'legacy_sources','approved_scan_scopes'} or doc['binding_version']!='1':raise ValueError()
             role=ws.identifier(doc['coordinator_role']);rows=doc['bindings']
             if type(rows) is not list or not 1<=len(rows)<=1024:raise ValueError()
             operators={a.operator_id for a in accounts.accounts.values()};roles={};used={role}
@@ -47,6 +47,7 @@ class BindingPolicy:
             object.__setattr__(self,'roles',MappingProxyType(roles))
             object.__setattr__(self,'coordinator_role',role);object.__setattr__(self,'sources',sources)
             object.__setattr__(self,'legacy_sources',backend.LegacySources(doc.get('legacy_sources',{})))
+            object.__setattr__(self,'approved_scan_scopes',backend.live_intent.ApprovedScopes(doc.get('approved_scan_scopes',{})))
         except (ValueError,TypeError,UnicodeError,RecursionError,KeyError,OSError,pg.PersistenceError):
             raise ValueError('invalid workspace binding policy') from None
     def __setattr__(self,key,value):raise AttributeError('workspace bindings are immutable')
@@ -122,7 +123,8 @@ class HumanWorkspaceService:
                 functions={'objects':self.workspace.objects,'object':self.workspace.object,
                     'graph':self.workspace.graph,'categories':self.workspace.categories,'category_coverage':self.workspace.category_coverage,'category_signal_coverage':self.workspace.category_signal_coverage,'observed_signals':self.workspace.observed_signals,'signal_summary':self.workspace.signal_summary,'signal_quality':self.workspace.signal_quality,'observation_comparison':self.workspace.observation_comparison,'declare_object':self.workspace.declare_object,
                     'declare_attribute':self.workspace.declare_attribute,'relationship':self.workspace.relationship,
-                    'preview_import':self.workspace.preview_import,'apply_import':self.workspace.apply_import}
+                    'preview_import':self.workspace.preview_import,'apply_import':self.workspace.apply_import,
+                    'live_scan_intent':self.workspace.live_scan_intent}
                 functions.update(preview_legacy=self.workspace.preview_legacy,apply_legacy=self.workspace.apply_legacy,
                                  legacy_report=self.workspace.legacy_report,legacy_readiness=self.workspace.legacy_readiness)
                 pg.require(action in functions,'workspace_input_invalid')
@@ -220,6 +222,10 @@ class WorkspaceHandler(http.OperatorHandler):
                             fields['decisions']={int(k):v for k,v in decisions.items()}
                     elif route=='imports/apply':
                         action='apply_import';fields=self._fields(doc,('generation','plan_id','request_id'))
+                    elif route=='scan-intents/preview':
+                        if getattr(self.server,'audit',None) is None:
+                            raise authn.AccessError('workspace_audit_unavailable',503)
+                        action='live_scan_intent';fields=self._fields(doc,('generation','scope_id','mode','ack_authorized_access'))
                     elif route=='legacy/preview':
                         action='preview_legacy';fields=self._fields(doc,('generation','bundle_id'),('mode','categories','decisions','site_id','environment_id'))
                         if 'decisions' in fields:
@@ -287,6 +293,10 @@ class WorkspaceHandler(http.OperatorHandler):
             value=fields.get('limit',20)
             model.require(type(value) is int and 1<=value<=20)
         if action=='close':runtime.Coordinator._deadline(fields.get('timeout',5))
+        if action=='live_scan_intent':
+            backend.live_intent._scope_id(fields.get('scope_id'))
+            model.require(type(fields.get('mode')) is str and fields['mode'] in backend.live_intent.MODES)
+            model.require(type(fields.get('ack_authorized_access')) is bool and fields['ack_authorized_access'])
         if action=='graph':
             for key,low,high in (('depth',0,4),('node_limit',1,100),('edge_limit',1,200)):
                 value=fields.get(key,{'depth':2,'node_limit':100,'edge_limit':200}[key])
@@ -331,7 +341,8 @@ def create_server(accounts_path,bindings_path,host='127.0.0.1',port=8879,*,tls_c
     coordinator=runtime.Coordinator(runtime.SessionLease(control));server=None
     try:
         coordinator.start()
-        service=HumanWorkspaceService(authn.LocalAuth(accounts),connections,backend.WorkspaceService(coordinator,bindings.sources,bindings.legacy_sources))
+        service=HumanWorkspaceService(authn.LocalAuth(accounts),connections,backend.WorkspaceService(coordinator,bindings.sources,bindings.legacy_sources,
+                            approved_scan_scopes=bindings.approved_scan_scopes))
         server=WorkspaceServer((str(address),port),service);server._owns_coordinator=True
         if audit_path is not None:server.audit=workspace_audit.FileAudit(audit_path)
         if context:server.tls_context=context
