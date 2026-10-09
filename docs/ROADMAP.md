@@ -730,3 +730,8 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 
 - [Gate SQL](WORKSPACE_LEDGER_READER_REGRANT_v0.6.55.md): revogação seguida de regrant permite apenas leitura histórica, sem autorizar scanner.
 - v0.6.54 integrada no PR #165; E0, R02/R06 permanecem abertos.
+
+## v0.6.56 — regrant conserva privilégios mínimos (CANDIDATE)
+
+- [Gate SQL](WORKSPACE_LEDGER_REGRANT_READONLY_v0.6.56.md): leitor reautorizado não pode consumir intenção aprovada e não altera histórico.
+- v0.6.55 integrada no PR #166; E0, R02/R06 permanecem abertos.
