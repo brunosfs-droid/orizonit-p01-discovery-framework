@@ -1,4 +1,6 @@
 # Cancã — backlog rastreável 1.0
+
+[v0.6.40 — Process group fence](WORKSPACE_LEGACY_PROCESS_GROUP_v0.6.40.md) — candidato R02: encerramento de grupo de subprocessos locais POSIX no checkpoint somente-leitura, com testes de órfãos e de fechamento concorrente; Windows, scanners ativos, EVE-NG e R02 completo continuam pendentes.
 [v0.6.38 — Legacy readiness](WORKSPACE_LEGACY_READINESS_v0.6.38.md): leitura limitada por bundle histórico autorizado, com revalidação SQL→store e recibo imutável. CI e integração não encerram migração completa, outras categorias ou R01/R03. A homologação E0/recovery da PR #148 permanece gate operacional independente.
 
 [Auditoria R01–R06 e critérios E0 (08/10)](validation/ALPHA_R01_R06_GATE_MATRIX_2026-10-08.md) · [Roteiro E0/recovery R1](LAB_ALPHA_E0_AND_RECOVERY_R1.md). São artefatos para qualificação, não aceite de LAB, fechamento Alpha ou release. O preflight offline verifica somente integridade dos artefatos, não executa restore.
