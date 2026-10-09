@@ -289,5 +289,29 @@ class HTTPScanPreviewTests(unittest.TestCase):
         self.assertEqual(self.service.execute.call_args.args[1],'scan_intent_history')
 
 
+    def test_history_audit_redacts_workspace_intent_and_query_values(self):
+        intent='intent-'+'f'*32
+        path=api.BASE+'/A/scan-intents/'+intent+'?generation=2'
+        audit_path=self.with_audit()
+        headers=self.login()
+        self.service.execute.return_value=dict(
+            status='historical_review_only',context_current=False,
+            execution_authorized=False,network_activity_performed=False,
+            decisions=[])
+        code,body=self.request('GET',path,headers=headers)
+        self.assertEqual(code,200,body)
+        self.assertFalse(body['execution_authorized'])
+        raw=audit_path.read_text()
+        self.assertIn('"operation":"scan_intent_history"',raw)
+        self.assertNotIn(intent,raw)
+        self.assertNotIn('"generation"',raw)
+        self.assertNotIn('scan-intents/',raw)
+        # The audit log records only a fixed operation label and trusted IDs.
+        self.assertNotIn('"query"',raw)
+        self.assertNotIn('"password"',raw)
+        self.assertEqual(self.service.execute.call_args.args[1],'scan_intent_history')
+
+
+
 if __name__=="__main__":
     unittest.main()
