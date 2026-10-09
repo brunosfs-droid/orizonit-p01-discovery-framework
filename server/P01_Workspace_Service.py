@@ -12,6 +12,7 @@ import P01_Workspace_Model as model
 import P01_Workspace_Legacy as legacy
 import P01_Workspace_Legacy_Readiness as legacy_readiness
 import P01_Workspace_Legacy_Jobs as legacy_jobs
+import P01_Workspace_Live_Intent as live_intent
 import P01_Workspace_Category_Reader as category_reader
 import P01_Workspace_Observed_Signals as observed_signals
 import P01_Workspace_Signal_Summary as signal_summary
@@ -49,13 +50,15 @@ class SourceRoots:
 
 
 class WorkspaceService:
-    def __init__(self,coordinator,source_roots,legacy_roots=None,legacy_runs=None):
+    def __init__(self,coordinator,source_roots,legacy_roots=None,legacy_runs=None,approved_scan_scopes=None):
         pg.require(isinstance(coordinator,runtime.Coordinator) and isinstance(source_roots,SourceRoots),'model_input_invalid')
         self.coordinator,self.sources=coordinator,source_roots
         pg.require(legacy_roots is None or isinstance(legacy_roots,LegacySources),'model_input_invalid')
         self.legacy_sources=legacy_roots or LegacySources({})
         pg.require(legacy_runs is None or isinstance(legacy_runs,legacy_jobs.LegacyRunRoots),'workspace_input_invalid')
         self.legacy_runs=legacy_runs or legacy_jobs.LegacyRunRoots({})
+        pg.require(approved_scan_scopes is None or isinstance(approved_scan_scopes,live_intent.ApprovedScopes),'workspace_input_invalid')
+        self.approved_scan_scopes=approved_scan_scopes or live_intent.ApprovedScopes({})
 
     def registry(self,actor,*,after='',limit=100):
         pg.require(runtime.connection_target(actor)==self.coordinator.lease.target,'workspace_connection_mismatch')
@@ -121,6 +124,14 @@ class WorkspaceService:
             result=model.preview_import(actor,token.workspace_id,token,projection,**selection)
             operation.check()
             return dict(result,generation=token.generation)
+
+    def live_scan_intent(self,actor,token,scope_id,mode,*,ack_authorized_access=False):
+        # Preview only. No scanner, network API, credentials, or persistent job.
+        with self.coordinator.borrow(actor,token,'workspace:write') as operation:
+            result=live_intent.preview(operation,self.approved_scan_scopes,scope_id,mode,
+                                       ack_authorized_access=ack_authorized_access)
+            operation.check()
+            return result
 
     def legacy_checkpoint(self,actor,token,*,timeout=10):
         # Only the trusted, offline status command is allowed in v0.6.39.
