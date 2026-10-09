@@ -678,6 +678,13 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 
 - v0.6.45 integrada pelo PR #156: [ledger](WORKSPACE_INTENT_LEDGER_v0.6.45.md)
   schema10 opt-in, TTL, autoria SQL, RLS e transições serializadas; não executável.
-- v0.6.46 candidata: [dump/restore schema10](WORKSPACE_LEDGER_RECOVERY_v0.6.46.md)
+- v0.6.46 integrada no PR #157: [dump/restore schema10](WORKSPACE_LEDGER_RECOVERY_v0.6.46.md)
   preserva história e recusa consumo em geração/lease novos, PG16/17.
 - R02/R06 e E0 permanecem parciais; próximos gates de produto não são promovidos.
+
+## v0.6.47 — concorrência de decisões do ledger (CANDIDATE)
+
+- [Contrato e teste adversarial](WORKSPACE_LEDGER_CONCURRENCY_v0.6.47.md): decisões
+  conflitantes e terminais simultâneas; idempotência e revisão única por corrida.
+- SQL PG16/17 via Workspace Foundation CI, sem atividades no EVE-NG.
+- Nenhuma transição do ledger autoriza execução. R02/R06, Alpha e E0 ainda abertos.

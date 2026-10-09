@@ -175,3 +175,85 @@ class LedgerTests(unittest.TestCase):
             results=list(executor.map(consume,['race-1','race-2']))
         self.assertCountEqual(results,['consumed_recorded_only','intent_transition_denied'])
         self.assertEqual(self.conn.execute("SELECT count(*) FROM canca.workspace_scan_decisions WHERE decision='consumed'").fetchone()[0],1)
+
+    def _race_decisions(self, intent_id, attempts):
+        """Simultaneous same-ledger decisions with separate SQL connections."""
+        import concurrent.futures
+        import threading
+        barrier = threading.Barrier(len(attempts))
+
+        def attempt(values):
+            decision, request_id = values
+            with pg.open_connection() as conn:
+                conn.execute('SET ROLE canca_ws_writer')
+                barrier.wait(timeout=10)
+                try:
+                    result = self.service.decide_scan_intent(
+                        conn, self.token, 'lab', 'auth_only', self.digest,
+                        intent_id, decision, request_id, ack_authorized_access=True)
+                    return (result['status'], result['replayed'])
+                except pg.PersistenceError as exc:
+                    return (str(exc), None)
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=len(attempts)) as pool:
+            return list(pool.map(attempt, attempts))
+
+    def test_concurrent_conflicting_pending_decisions_commit_one(self):
+        ident = self.record('pending-race')['intent_id']
+        before = self.conn.execute(
+            "SELECT revision FROM canca.workspace_revisions WHERE workspace_id='A'").fetchone()[0]
+        results = self._race_decisions(
+            ident, [('approved', 'race-approve'), ('rejected', 'race-reject')])
+        statuses = [status for status, _ in results]
+        self.assertEqual(statuses.count('intent_transition_denied'), 1)
+        self.assertEqual(len([status for status in statuses
+                              if status in ('approved_recorded_only', 'rejected_recorded_only')]), 1)
+        events = self.conn.execute(
+            "SELECT sequence, decision FROM canca.workspace_scan_decisions "
+            "WHERE workspace_id='A' AND intent_id=%s ORDER BY sequence", (ident,)).fetchall()
+        self.assertEqual(len(events), 1)
+        self.assertEqual(events[0][0], 1)
+        self.assertIn(events[0][1], ('approved', 'rejected'))
+        after = self.conn.execute(
+            "SELECT revision FROM canca.workspace_revisions WHERE workspace_id='A'").fetchone()[0]
+        self.assertEqual(after, before + 1)
+        with self.role('canca_ws_a'):
+            history = self.service.scan_intent_history(self.conn, self.token, ident)
+        self.assertFalse(history['execution_authorized'])
+
+    def test_concurrent_same_request_replays_without_extra_revision(self):
+        ident = self.record('same-request-race')['intent_id']
+        before = self.conn.execute(
+            "SELECT revision FROM canca.workspace_revisions WHERE workspace_id='A'").fetchone()[0]
+        results = self._race_decisions(
+            ident, [('approved', 'approve-once'), ('approved', 'approve-once')])
+        self.assertCountEqual(results, [
+            ('approved_recorded_only', False), ('approved_recorded_only', True)])
+        rows = self.conn.execute(
+            "SELECT decision FROM canca.workspace_scan_decisions "
+            "WHERE workspace_id='A' AND intent_id=%s", (ident,)).fetchall()
+        self.assertEqual(rows, [('approved',)])
+        after = self.conn.execute(
+            "SELECT revision FROM canca.workspace_revisions WHERE workspace_id='A'").fetchone()[0]
+        self.assertEqual(after, before + 1)
+
+    def test_concurrent_approved_terminal_decisions_commit_one(self):
+        ident = self.record('terminal-race')['intent_id']
+        self.decide(ident, 'approved', 'terminal-approve')
+        results = self._race_decisions(
+            ident, [('revoked', 'terminal-revoke'), ('consumed', 'terminal-consume')])
+        statuses = [status for status, _ in results]
+        self.assertEqual(statuses.count('intent_transition_denied'), 1)
+        self.assertEqual(len([status for status in statuses
+                              if status in ('revoked_recorded_only', 'consumed_recorded_only')]), 1)
+        rows = self.conn.execute(
+            "SELECT sequence, decision FROM canca.workspace_scan_decisions "
+            "WHERE workspace_id='A' AND intent_id=%s ORDER BY sequence", (ident,)).fetchall()
+        self.assertEqual(len(rows), 2)
+        self.assertEqual(rows[0], (1, 'approved'))
+        self.assertEqual(rows[1][0], 2)
+        self.assertIn(rows[1][1], ('revoked', 'consumed'))
+        with self.role('canca_ws_a'):
+            history = self.service.scan_intent_history(self.conn, self.token, ident)
+        self.assertFalse(history['execution_authorized'])
+
