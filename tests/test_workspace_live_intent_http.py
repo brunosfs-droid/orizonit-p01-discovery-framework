@@ -149,5 +149,46 @@ class HTTPScanPreviewTests(unittest.TestCase):
         self.assertEqual(audit.operation("POST",URL+"?scope_id=PRIVATE"),"scan_intent_preview")
 
 
+    def test_ledger_history_requires_audit_and_authenticated_read(self):
+        intent='intent-'+'a'*32
+        route=api.BASE+'/A/scan-intents/'+intent+'?generation=2'
+        h=self.login()
+        status,doc=self.request('GET',route,headers=h)
+        self.assertEqual((status,doc['error_code']),(503,'workspace_audit_unavailable'))
+        self.service.execute.assert_not_called()
+        log=self.with_audit()
+        self.service.execute.return_value=dict(status='historical_review_only',
+            context_current=False,execution_authorized=False,
+            network_activity_performed=False,decisions=[])
+        status,doc=self.request('GET',route,headers=h)
+        self.assertEqual(status,200,doc)
+        self.assertFalse(doc['execution_authorized'])
+        self.assertEqual(self.service.execute.call_args.args[1],'scan_intent_history')
+        self.assertEqual(self.service.execute.call_args.kwargs,
+                         dict(generation=2,intent_id=intent))
+        self.assertIn('"operation":"scan_intent_history"',log.read_text())
+        self.assertNotIn(intent,log.read_text())
+        self.service.execute.reset_mock()
+        for invalid in (
+            api.BASE+'/A/scan-intents/'+intent,
+            route+'&scope_id=lab',
+            route+'&password=private',
+            route.replace('generation=2','generation=abc'),
+            api.BASE+'/B/scan-intents/'+intent+'/consume?generation=2',
+            api.BASE+'/A/scan-intents/intent-xyz?generation=2'):
+            code,_=self.request('GET',invalid,headers=h)
+            self.assertIn(code,(400,404))
+        self.service.execute.assert_not_called()
+        self.assertEqual(self.request('POST',route,{},h)[0],404)
+        self.assertEqual(self.request('GET',route,headers={'Content-Type':'application/json'})[0],401)
+
+    def test_history_audit_classification_does_not_capture_identifier(self):
+        intent='intent-'+'a'*32
+        route=api.BASE+'/A/scan-intents/'+intent
+        self.assertEqual(audit.operation('GET',route),'scan_intent_history')
+        self.assertEqual(audit.operation('POST',route),'other')
+        self.assertEqual(audit.operation('GET',route+'?password=private'),'scan_intent_history')
+
+
 if __name__=="__main__":
     unittest.main()

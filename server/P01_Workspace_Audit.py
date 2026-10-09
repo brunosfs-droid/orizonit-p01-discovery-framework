@@ -21,7 +21,7 @@ OPERATIONS = frozenset({
     'login', 'logout', 'health', 'workspace_directory', 'workspace_open',
     'workspace_close', 'object_list', 'object_read', 'graph_read',
     'category_coverage', 'category_signal_coverage', 'observed_signals', 'signal_summary', 'signal_quality', 'observation_comparison', 'object_declare', 'declaration_write', 'relationship_write',
-    'import_preview', 'import_apply', 'scan_intent_preview', 'legacy_preview', 'legacy_apply', 'legacy_readiness',
+    'import_preview', 'import_apply', 'scan_intent_preview', 'scan_intent_history', 'legacy_preview', 'legacy_apply', 'legacy_readiness',
     'historical_report', 'other',
 })
 OUTCOMES = frozenset({'response_written', 'delivery_failed', 'handler_failed'})
@@ -30,7 +30,7 @@ RESOURCE = re.compile(
     r'/api/v1/workspaces/[A-Za-z0-9][A-Za-z0-9._-]{0,127}/'
     r'(?P<route>open|close|categories/(?:compute|network|services|components)(?:/(?:coverage|signal-coverage))?|objects|objects/[A-Za-z0-9][A-Za-z0-9._-]{0,127}(?:/signals(?:/(?:summary|quality|comparison))?)?|'
     r'graph/[A-Za-z0-9][A-Za-z0-9._-]{0,127}|declarations|relationships|'
-    r'imports/preview|imports/apply|scan-intents/preview|legacy/preview|legacy/apply|'
+    r'imports/preview|imports/apply|scan-intents/preview|scan-intents/intent-[0-9a-f]{32}|legacy/preview|legacy/apply|'
     r'legacy/bnd-[0-9a-f]{20}/(?:report|readiness))'
 )
 
@@ -87,6 +87,8 @@ def operation(method, target):
             return 'import_apply' if method == 'POST' else 'other'
         if item == 'scan-intents/preview':
             return 'scan_intent_preview' if method == 'POST' else 'other'
+        if item.startswith('scan-intents/intent-'):
+            return 'scan_intent_history' if method == 'GET' else 'other'
         if item == 'legacy/preview':
             return 'legacy_preview' if method == 'POST' else 'other'
         if item == 'legacy/apply':
