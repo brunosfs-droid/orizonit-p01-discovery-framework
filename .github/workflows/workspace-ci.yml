@@ -97,3 +97,7 @@ jobs:
         env:
           CANCA_WORKSPACE_CONTAINER_ID: ${{ job.services.postgres.id }}
         run: python tests/workspace_backup_restore_smoke.py --container-id "$CANCA_WORKSPACE_CONTAINER_ID" --reviewed-legacy
+      - name: Qualify schema10 review ledger restore without reauthorization
+        env:
+          CANCA_WORKSPACE_CONTAINER_ID: ${{ job.services.postgres.id }}
+        run: python tests/workspace_backup_restore_smoke.py --container-id "$CANCA_WORKSPACE_CONTAINER_ID" --intent-ledger

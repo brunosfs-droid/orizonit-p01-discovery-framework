@@ -673,3 +673,11 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 - Python CI e Workspace Foundation PG16/17 verificam o incremento.
 - Próximo: contrato e persistência transacional do ledger de decisões.
   R02/R06 e E0 continuam abertos; sem autorização ou execução de scanner.
+
+## v0.6.45–46 — decisões persistidas e recuperação sem retomada
+
+- v0.6.45 integrada pelo PR #156: [ledger](WORKSPACE_INTENT_LEDGER_v0.6.45.md)
+  schema10 opt-in, TTL, autoria SQL, RLS e transições serializadas; não executável.
+- v0.6.46 candidata: [dump/restore schema10](WORKSPACE_LEDGER_RECOVERY_v0.6.46.md)
+  preserva história e recusa consumo em geração/lease novos, PG16/17.
+- R02/R06 e E0 permanecem parciais; próximos gates de produto não são promovidos.
