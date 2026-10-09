@@ -740,3 +740,8 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 
 - [Gate SQL](WORKSPACE_LEDGER_CROSS_READER_v0.6.57.md): leitores de B não acessam decisões `approved` originadas em A.
 - v0.6.56 integrada no PR #167; E0 e R02/R06 continuam pendentes.
+
+## v0.6.58 — histórico após troca A–B–A (CANDIDATE)
+
+- [Gate SQL](WORKSPACE_LEDGER_SWITCHBACK_v0.6.58.md): histórico reaparece em A, mas nunca pode ser consumido sob nova lease.
+- v0.6.57 integrada no PR #168; E0, R02/R06 ainda abertos.
