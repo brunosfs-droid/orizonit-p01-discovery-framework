@@ -765,3 +765,8 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 
 - [Gate SQL](WORKSPACE_LEDGER_SELECTIVE_REVOCATION_v0.6.62.md): revogar o leitor em B não elimina leitura autorizada em A; acesso em B permanece negado.
 - v0.6.61 integrada no PR #172; E0 e R02/R06 continuam pendentes.
+
+## v0.6.63 — reconcessão seletiva não revela histórico (CANDIDATE)
+
+- [Gate SQL](WORKSPACE_LEDGER_SELECTIVE_REGRANT_v0.6.63.md): após revogação/regrant em B, aprovação de A continua inacessível em B.
+- v0.6.62 integrada pelo PR #173; R02/R06 e E0 ainda abertos.
