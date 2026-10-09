@@ -775,3 +775,8 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 
 - [Gate SQL](WORKSPACE_LEDGER_REVOCATION_IMMUTABILITY_v0.6.64.md): leitor perde acesso sem alterar decisões aprovadas já persistidas.
 - v0.6.63 integrada no PR #174; E0 e R02/R06 continuam abertos.
+
+## v0.6.65 — integridade após regrant do leitor (CANDIDATE)
+
+- [Gate SQL](WORKSPACE_LEDGER_REGRANT_INTEGRITY_v0.6.65.md): revogação e reconcessão preservam decisões aprovadas sem permitir execução.
+- v0.6.64 integrada pelo PR #175; E0 e R02/R06 seguem abertos.
