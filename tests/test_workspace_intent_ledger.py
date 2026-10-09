@@ -320,6 +320,24 @@ class LedgerTests(unittest.TestCase):
         self.assertEqual([x['decision'] for x in after['decisions']],['approved'])
         self.assertFalse(after['execution_authorized'])
 
+    def test_reader_regrant_preserves_approved_history_integrity(self):
+        ident=self.record()['intent_id']
+        self.decide(ident,'approved','approve')
+        with self.role('canca_ws_a'):
+            before=self.service.scan_intent_history(self.conn,self.token,ident)
+        self.conn.execute(
+            "DELETE FROM canca.workspace_grants WHERE workspace_id='A' AND principal_role='canca_ws_a'")
+        with self.role('canca_ws_a'),self.assertRaises(pg.PersistenceError):
+            self.service.scan_intent_history(self.conn,self.token,ident)
+        self.conn.execute(
+            "INSERT INTO canca.workspace_grants VALUES ('A','canca_ws_a','workspace:read')")
+        with self.role('canca_ws_a'):
+            after=self.service.scan_intent_history(self.conn,self.token,ident)
+        self.assertEqual(before['decisions'],after['decisions'])
+        self.assertEqual([e['decision'] for e in after['decisions']],['approved'])
+        self.assertFalse(after['execution_authorized'])
+        self.assertFalse(after['network_activity_performed'])
+
     def test_append_only_and_sql_transition_guard(self):
         from psycopg import errors
         ident=self.record()['intent_id']
