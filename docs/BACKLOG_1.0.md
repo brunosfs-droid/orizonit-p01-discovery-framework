@@ -1,5 +1,7 @@
 # Cancã — backlog rastreável 1.0
 
+[v0.6.41 — Live scan intent preview](WORKSPACE_LIVE_INTENT_v0.6.41.md) — candidate R02: escopos IPv4 privados em política imutável, geração/lease, grant write e digest sem credenciais/targets; nenhuma execução AUTH/FULL ou varredura. Gates de segurança, EVE-NG e Alpha permanecem abertos.
+
 [v0.6.40 — Process group fence](WORKSPACE_LEGACY_PROCESS_GROUP_v0.6.40.md) — candidato R02: encerramento de grupo de subprocessos locais POSIX no checkpoint somente-leitura, com testes de órfãos e de fechamento concorrente; Windows, scanners ativos, EVE-NG e R02 completo continuam pendentes.
 [v0.6.39 — Legacy job fence](WORKSPACE_LEGACY_JOB_FENCE_v0.6.39.md) — integrado via PR #150: checkpoint read-only sob geração/lease/cancelamento do coordenador; ainda não habilita scanners ativos, encerramento de grupos ou R02 completo.
 [v0.6.37 — E0/recovery preflight](LAB_ALPHA_E0_AND_RECOVERY_R1.md) — integrado via PR #148: roteiro e verificação offline, sem homologação operacional/restore cross-cluster.
