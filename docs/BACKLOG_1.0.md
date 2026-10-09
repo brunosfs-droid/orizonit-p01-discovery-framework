@@ -1,5 +1,7 @@
 # Cancã — backlog rastreável 1.0
 
+[v0.6.62 — revogação seletiva A/B](WORKSPACE_LEDGER_SELECTIVE_REVOCATION_v0.6.62.md): revogar leitura em B preserva a leitura legítima em A; v0.6.61 integrada pelo PR #172; E0 pendente.
+
 [v0.6.61 — grants adicionais sem vazamento](WORKSPACE_LEDGER_GRANT_EXPANSION_v0.6.61.md): ampliação explícita de leitura A/B não expõe histórico fora do workspace; v0.6.60 integrada pelo PR #171; E0 pendente.
 
 [v0.6.60 — grants isolados por workspace](WORKSPACE_LEDGER_CROSS_GRANT_v0.6.60.md): acesso concedido em A não autoriza B; v0.6.59 integrada no PR #170; E0 pendente.
