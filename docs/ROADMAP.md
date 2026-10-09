@@ -725,3 +725,8 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 
 - [Gate SQL](WORKSPACE_LEDGER_READER_REVOCATION_v0.6.54.md): revogação de role no workspace A nega histórico em PG16/17 sem afetar leitores autorizados.
 - v0.6.53 integrada no PR #164; E0 e R02/R06 seguem pendentes.
+
+## v0.6.55 — recuperação de leitura após regrant (CANDIDATE)
+
+- [Gate SQL](WORKSPACE_LEDGER_READER_REGRANT_v0.6.55.md): revogação seguida de regrant permite apenas leitura histórica, sem autorizar scanner.
+- v0.6.54 integrada no PR #165; E0, R02/R06 permanecem abertos.
