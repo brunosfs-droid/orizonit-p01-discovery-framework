@@ -13,6 +13,7 @@ import P01_Workspace_Legacy as legacy
 import P01_Workspace_Legacy_Readiness as legacy_readiness
 import P01_Workspace_Legacy_Jobs as legacy_jobs
 import P01_Workspace_Live_Intent as live_intent
+import P01_Workspace_Intent_Receipts as review_receipts
 import P01_Workspace_Category_Reader as category_reader
 import P01_Workspace_Observed_Signals as observed_signals
 import P01_Workspace_Signal_Summary as signal_summary
@@ -59,6 +60,7 @@ class WorkspaceService:
         self.legacy_runs=legacy_runs or legacy_jobs.LegacyRunRoots({})
         pg.require(approved_scan_scopes is None or isinstance(approved_scan_scopes,live_intent.ApprovedScopes),'workspace_input_invalid')
         self.approved_scan_scopes=approved_scan_scopes or live_intent.ApprovedScopes({})
+        self.scan_reviews=review_receipts.ReviewReceipts()
 
     def registry(self,actor,*,after='',limit=100):
         pg.require(runtime.connection_target(actor)==self.coordinator.lease.target,'workspace_connection_mismatch')
@@ -130,6 +132,23 @@ class WorkspaceService:
         with self.coordinator.borrow(actor,token,'workspace:write') as operation:
             result=live_intent.preview(operation,self.approved_scan_scopes,scope_id,mode,
                                        ack_authorized_access=ack_authorized_access)
+            operation.check()
+            return result
+
+    def record_scan_review(self,actor,token,scope_id,mode,expected_digest,
+                           *,ack_authorized_access=False):
+        with self.coordinator.borrow(actor,token,'workspace:write') as operation:
+            result=self.scan_reviews.issue(operation,self.approved_scan_scopes,
+                scope_id,mode,expected_digest,
+                ack_authorized_access=ack_authorized_access)
+            operation.check()
+            return result
+
+    def consume_scan_review(self,actor,token,scope_id,mode,expected_digest,
+                            review_receipt):
+        with self.coordinator.borrow(actor,token,'workspace:write') as operation:
+            result=self.scan_reviews.consume(operation,self.approved_scan_scopes,
+                scope_id,mode,expected_digest,review_receipt)
             operation.check()
             return result
 
