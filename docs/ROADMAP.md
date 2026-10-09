@@ -785,3 +785,8 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 
 - [Gate SQL](WORKSPACE_LEDGER_DECISION_CHAIN_v0.6.66.md): duas decisões terminais persistem com sequências e metadados inalterados após revogação/regrant.
 - v0.6.65 integrada pelo PR #176; E0, R02/R06 ainda abertos.
+
+## v0.6.67 — fechamento terminal após reconcessão (CANDIDATE)
+
+- [Gate SQL](WORKSPACE_LEDGER_TERMINAL_REGRANT_FENCE_v0.6.67.md): a intenção consumida não admite novo consumo após regrant do leitor.
+- v0.6.66 integrada pelo PR #177; E0 e R02/R06 permanecem abertos.
