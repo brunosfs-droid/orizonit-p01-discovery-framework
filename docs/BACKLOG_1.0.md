@@ -1,5 +1,7 @@
 # Cancã — backlog rastreável 1.0
 
+[v0.6.58 — histórico sob troca A–B–A](WORKSPACE_LEDGER_SWITCHBACK_v0.6.58.md): decisões antigas preservadas como evidência sem autorização na nova lease; v0.6.57 integrada pelo PR #168; E0 pendente.
+
 [v0.6.57 — isolamento de leitura A/B](WORKSPACE_LEDGER_CROSS_READER_v0.6.57.md): intenção aprovada em A permanece invisível em B; v0.6.56 integrada no PR #167; E0 pendente.
 
 [v0.6.56 — regrant continua somente leitura](WORKSPACE_LEDGER_REGRANT_READONLY_v0.6.56.md): reader não altera decisões após nova concessão de leitura; v0.6.55 integrada pelo PR #166; E0 pendente.
