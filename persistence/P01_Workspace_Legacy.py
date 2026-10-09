@@ -26,7 +26,7 @@ def require(value):pg.require(value,'legacy_source_conflict')
 @contextmanager
 def scope(conn,workspace_id,token,*,writing=False):
     with model.scope(conn,workspace_id,token,writing=writing) as revision:
-        pg.schema_check(conn,minimum=9,legacy=True)
+        pg.schema_check(conn,minimum=9,intents=True)
         yield revision
 
 def _snapshot(conn,bundle_id):

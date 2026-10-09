@@ -14,6 +14,7 @@ import P01_Workspace_Legacy_Readiness as legacy_readiness
 import P01_Workspace_Legacy_Jobs as legacy_jobs
 import P01_Workspace_Live_Intent as live_intent
 import P01_Workspace_Intent_Receipts as review_receipts
+import P01_Workspace_Intent_Ledger as intent_ledger
 import P01_Workspace_Category_Reader as category_reader
 import P01_Workspace_Observed_Signals as observed_signals
 import P01_Workspace_Signal_Summary as signal_summary
@@ -151,6 +152,23 @@ class WorkspaceService:
                 scope_id,mode,expected_digest,review_receipt)
             operation.check()
             return result
+
+    def persist_scan_intent(self,actor,token,scope_id,mode,expected_digest,request_id,**options):
+        with self.coordinator.borrow(actor,token,'workspace:write') as operation:
+            result=intent_ledger.record(operation,self.approved_scan_scopes,scope_id,mode,
+                                        expected_digest,request_id,**options)
+            operation.check()
+            return result
+
+    def decide_scan_intent(self,actor,token,scope_id,mode,expected_digest,intent_id,decision,request_id,**options):
+        with self.coordinator.borrow(actor,token,'workspace:write') as operation:
+            result=intent_ledger.decide(operation,self.approved_scan_scopes,scope_id,mode,
+                                        expected_digest,intent_id,decision,request_id,**options)
+            operation.check()
+            return result
+
+    def scan_intent_history(self,actor,token,intent_id):
+        return self._call(actor,token,'workspace:read',intent_ledger.history,intent_id)
 
     def legacy_checkpoint(self,actor,token,*,timeout=10):
         # Only the trusted, offline status command is allowed in v0.6.39.
