@@ -1,5 +1,7 @@
 # Cancã — backlog rastreável 1.0
 
+[v0.6.74 — negação de TRUNCATE CASCADE](WORKSPACE_LEDGER_READER_INTENTS_TRUNCATE_v0.6.74.md): leitor não pode truncar intenções e decisões dependentes; v0.6.73 integrada pelo PR #184; E0 pendente.
+
 [v0.6.73 — negação de TRUNCATE ao leitor](WORKSPACE_LEDGER_READER_TRUNCATE_DENIAL_v0.6.73.md): role read-only reconcedida não pode truncar decisões; v0.6.72 integrada no PR #183; E0 pendente.
 
 [v0.6.72 — bloqueio de UPDATE/DELETE do leitor](WORKSPACE_LEDGER_READER_UPDATE_DELETE_DENIAL_v0.6.72.md): role de leitura reconcedida não altera nem remove decisões SQL; v0.6.71 integrada pelo PR #182; E0 pendente.
