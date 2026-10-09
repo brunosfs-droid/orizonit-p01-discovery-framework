@@ -414,6 +414,25 @@ class LedgerTests(unittest.TestCase):
         self.assertEqual([x['decision'] for x in after['decisions']],['approved','consumed'])
         self.assertFalse(after['execution_authorized'])
 
+    def test_regranted_reader_cannot_change_consumed_intent(self):
+        ident=self.record()['intent_id']
+        self.decide(ident,'approved','approve')
+        self.decide(ident,'consumed','consume')
+        self.conn.execute(
+            "DELETE FROM canca.workspace_grants WHERE workspace_id='A' AND principal_role='canca_ws_a'")
+        self.conn.execute(
+            "INSERT INTO canca.workspace_grants VALUES ('A','canca_ws_a','workspace:read')")
+        with self.role('canca_ws_a'):
+            history=self.service.scan_intent_history(self.conn,self.token,ident)
+            with self.assertRaises(pg.PersistenceError):
+                self.service.decide_scan_intent(
+                    self.conn,self.token,'lab','auth_only',self.digest,
+                    ident,'rejected','reader-terminal-attempt',ack_authorized_access=True)
+        with self.role('canca_ws_writer'):
+            unchanged=self.service.scan_intent_history(self.conn,self.token,ident)
+        self.assertEqual(unchanged['decisions'],history['decisions'])
+        self.assertFalse(unchanged['execution_authorized'])
+
     def test_append_only_and_sql_transition_guard(self):
         from psycopg import errors
         ident=self.record()['intent_id']
