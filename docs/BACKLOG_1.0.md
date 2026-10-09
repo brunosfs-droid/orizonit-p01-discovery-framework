@@ -1,5 +1,7 @@
 # Cancã — backlog rastreável 1.0
 
+[v0.6.54 — revogação SQL do histórico](WORKSPACE_LEDGER_READER_REVOCATION_v0.6.54.md): leitor revogado é bloqueado, outro leitor mantém acesso; v0.6.53 integrada no PR #164; E0 pendente.
+
 [v0.6.53 — auditoria de negações HTTP](WORKSPACE_LEDGER_HTTP_AUDIT_DENIALS_v0.6.53.md): proteger logs de requisições com parâmetros indevidos e sessões revogadas; v0.6.52 integrada no PR #163; E0 pendente.
 
 [v0.6.52 — auditoria HTTP sem vazamentos](WORKSPACE_LEDGER_HTTP_AUDIT_REDACTION_v0.6.52.md): teste de não exposição de intenção, rota ou parâmetros da query; v0.6.51 integrada no PR #162; E0 pendente.
