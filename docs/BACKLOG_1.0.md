@@ -1,5 +1,7 @@
 # Cancã — backlog rastreável 1.0
 
+[v0.6.76 — negação de UPDATE direto da intenção](WORKSPACE_LEDGER_READER_INTENT_UPDATE_DENIAL_v0.6.76.md): leitor reconcedido não pode alterar o workspace de intenções; v0.6.75 integrada pelo PR #186; E0 pendente.
+
 [v0.6.75 — negação de DELETE direto da intenção](WORKSPACE_LEDGER_READER_INTENT_DELETE_DENIAL_v0.6.75.md): leitor reconcedido não pode apagar a intenção e seu histórico; v0.6.74 integrada pelo PR #185; E0 pendente.
 
 [v0.6.74 — negação de TRUNCATE CASCADE](WORKSPACE_LEDGER_READER_INTENTS_TRUNCATE_v0.6.74.md): leitor não pode truncar intenções e decisões dependentes; v0.6.73 integrada pelo PR #184; E0 pendente.
