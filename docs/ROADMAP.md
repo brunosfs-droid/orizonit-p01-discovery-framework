@@ -750,3 +750,8 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 
 - [Gate SQL](WORKSPACE_LEDGER_STALE_TOKEN_HISTORY_v0.6.59.md): token expirado de A não pode consultar após A–B–A; leitura com lease atual segue não executável.
 - v0.6.58 integrada no PR #169; E0 e R02/R06 permanecem abertos.
+
+## v0.6.60 — concessões de leitura não transitivas (CANDIDATE)
+
+- [Gate SQL](WORKSPACE_LEDGER_CROSS_GRANT_v0.6.60.md): leitor em A não herda permissões em B, nem recupera histórico de A por B.
+- v0.6.59 integrada pelo PR #170; E0, R02/R06 ainda abertos.
