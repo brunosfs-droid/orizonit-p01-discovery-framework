@@ -1,5 +1,7 @@
 # Cancã — backlog rastreável 1.0
 
+[v0.6.67 — terminal permanece fechado após regrant](WORKSPACE_LEDGER_TERMINAL_REGRANT_FENCE_v0.6.67.md): novo consumo é negado e histórico preservado; v0.6.66 integrada pelo PR #177; E0 pendente.
+
 [v0.6.66 — cadeia de decisões após regrant](WORKSPACE_LEDGER_DECISION_CHAIN_v0.6.66.md): histórico aprovado/consumido mantém sequência e metadados após reconcessão; v0.6.65 integrada no PR #176; E0 pendente.
 
 [v0.6.65 — integridade com regrant](WORKSPACE_LEDGER_REGRANT_INTEGRITY_v0.6.65.md): decisões persistidas não mudam após revogação/reconcessão; v0.6.64 integrada pelo PR #175; E0 pendente.
