@@ -705,3 +705,8 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 
 - [Contrato](WORKSPACE_LEDGER_HTTP_NEGATIVE_v0.6.50.md): query estrita, sessão revogada e IDs malformados rejeitados sem dispatch.
 - v0.6.49 integrada pelo PR #160; CI da nova entrega requerido; E0 e R02/R06 permanecem abertos.
+
+## v0.6.51 — fail-closed na admissão da auditoria (CANDIDATE)
+
+- [Gate de admissão HTTP](WORKSPACE_LEDGER_AUDIT_ADMISSION_v0.6.51.md): recusa do sink retorna 503 sem consulta SQL, seguida de recuperação em requisição nova.
+- v0.6.50 integrada pelo PR #161; E0, R02/R06 permanecem pendentes.
