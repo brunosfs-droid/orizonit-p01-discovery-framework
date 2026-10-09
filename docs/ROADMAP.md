@@ -745,3 +745,8 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 
 - [Gate SQL](WORKSPACE_LEDGER_SWITCHBACK_v0.6.58.md): histórico reaparece em A, mas nunca pode ser consumido sob nova lease.
 - v0.6.57 integrada no PR #168; E0, R02/R06 ainda abertos.
+
+## v0.6.59 — token de geração antiga recusado (CANDIDATE)
+
+- [Gate SQL](WORKSPACE_LEDGER_STALE_TOKEN_HISTORY_v0.6.59.md): token expirado de A não pode consultar após A–B–A; leitura com lease atual segue não executável.
+- v0.6.58 integrada no PR #169; E0 e R02/R06 permanecem abertos.
