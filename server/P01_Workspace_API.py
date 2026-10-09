@@ -176,18 +176,18 @@ class WorkspaceHandler(http.OperatorHandler):
                 match=ROUTE.fullmatch(path.path)
                 if not match:raise authn.AccessError('route_not_found',404)
                 workspace_id,route=match[1],match[2]
-                if method=='GET' and match[5] is not None:
+                if method=='GET' and match[6] is not None:
                     action='legacy_readiness' if route.endswith('/readiness') else 'legacy_report'
                     fields=self._query(path.query,{'generation','expected_revision'} if action=='legacy_readiness' else {'generation','expected_revision','after_ordinal','limit','expected_scope_sha256'})
                     if 'generation' not in fields:raise authn.AccessError('workspace_input_invalid',400)
-                    fields['bundle_id' if action=='legacy_readiness' else 'collection_id']=match[5]
-                elif method=='GET' and match[6] is not None:
+                    fields['bundle_id' if action=='legacy_readiness' else 'collection_id']=match[6]
+                elif method=='GET' and match[5] is not None:
                     if getattr(self.server,'audit',None) is None:
                         raise authn.AccessError('workspace_audit_unavailable',503)
                     action='scan_intent_history'
                     fields=self._query(path.query,{'generation'})
                     if 'generation' not in fields:raise authn.AccessError('workspace_input_invalid',400)
-                    fields['intent_id']=match[6]
+                    fields['intent_id']=match[5]
                 elif method=='GET' and route.startswith('categories/'):
                     action='category_signal_coverage' if route.endswith('/signal-coverage') else 'category_coverage' if route.endswith('/coverage') else 'categories'
                     allowed={'generation','expected_revision','after','site_id','environment_id','kind','origin'}
