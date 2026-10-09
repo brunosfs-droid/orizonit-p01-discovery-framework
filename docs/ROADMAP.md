@@ -770,3 +770,8 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 
 - [Gate SQL](WORKSPACE_LEDGER_SELECTIVE_REGRANT_v0.6.63.md): após revogação/regrant em B, aprovação de A continua inacessível em B.
 - v0.6.62 integrada pelo PR #173; R02/R06 e E0 ainda abertos.
+
+## v0.6.64 — integridade do histórico após revogação (CANDIDATE)
+
+- [Gate SQL](WORKSPACE_LEDGER_REVOCATION_IMMUTABILITY_v0.6.64.md): leitor perde acesso sem alterar decisões aprovadas já persistidas.
+- v0.6.63 integrada no PR #174; E0 e R02/R06 continuam abertos.
