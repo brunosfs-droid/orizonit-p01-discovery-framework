@@ -805,3 +805,8 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 
 - [Gate SQL](WORKSPACE_LEDGER_TERMINAL_READER_WRITE_DENIAL_v0.6.70.md): regrant de leitura mantém intenção consumida imutável, sem decisão adicional.
 - v0.6.69 integrada pelo PR #180; E0 e R02/R06 continuam abertos.
+
+## v0.6.71 — bloqueio de escrita SQL direta por leitor (CANDIDATE)
+
+- [Gate SQL](WORKSPACE_LEDGER_READER_DIRECT_WRITE_v0.6.71.md): role somente leitura reconcedida não pode inserir decisões diretamente.
+- v0.6.70 integrada pelo PR #181; E0 e R02/R06 continuam abertos.
