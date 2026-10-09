@@ -455,6 +455,29 @@ class LedgerTests(unittest.TestCase):
         self.assertEqual([e['decision'] for e in history['decisions']],['approved'])
         self.assertFalse(history['execution_authorized'])
 
+    def test_regranted_reader_cannot_update_or_delete_ledger_decisions(self):
+        from psycopg import errors
+        ident=self.record()['intent_id']
+        self.decide(ident,'approved','approve')
+        self.conn.execute(
+            "DELETE FROM canca.workspace_grants WHERE workspace_id='A' AND principal_role='canca_ws_a'")
+        self.conn.execute(
+            "INSERT INTO canca.workspace_grants VALUES ('A','canca_ws_a','workspace:read')")
+        with self.role('canca_ws_a'),model.scope(self.conn,'A',self.token,writing=False):
+            for statement in (
+                "UPDATE canca.workspace_scan_decisions SET decision='rejected' "
+                "WHERE workspace_id='A' AND intent_id=%s",
+                "DELETE FROM canca.workspace_scan_decisions "
+                "WHERE workspace_id='A' AND intent_id=%s",
+            ):
+                with self.assertRaises(errors.InsufficientPrivilege):
+                    with self.conn.transaction():
+                        self.conn.execute(statement,(ident,))
+        with self.role('canca_ws_writer'):
+            history=self.service.scan_intent_history(self.conn,self.token,ident)
+        self.assertEqual([e['decision'] for e in history['decisions']],['approved'])
+        self.assertFalse(history['execution_authorized'])
+
     def test_append_only_and_sql_transition_guard(self):
         from psycopg import errors
         ident=self.record()['intent_id']
