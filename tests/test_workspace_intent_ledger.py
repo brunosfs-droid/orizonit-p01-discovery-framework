@@ -305,6 +305,21 @@ class LedgerTests(unittest.TestCase):
         self.assertFalse(history['context_current'])
         self.assertFalse(history['execution_authorized'])
 
+    def test_reader_revocation_does_not_mutate_persisted_decisions(self):
+        ident=self.record()['intent_id']
+        self.decide(ident,'approved','approve')
+        with self.role('canca_ws_a'):
+            before=self.service.scan_intent_history(self.conn,self.token,ident)
+        self.conn.execute(
+            "DELETE FROM canca.workspace_grants WHERE workspace_id='A' AND principal_role='canca_ws_a'")
+        with self.role('canca_ws_a'),self.assertRaises(pg.PersistenceError):
+            self.service.scan_intent_history(self.conn,self.token,ident)
+        with self.role('canca_ws_writer'):
+            after=self.service.scan_intent_history(self.conn,self.token,ident)
+        self.assertEqual(before['decisions'],after['decisions'])
+        self.assertEqual([x['decision'] for x in after['decisions']],['approved'])
+        self.assertFalse(after['execution_authorized'])
+
     def test_append_only_and_sql_transition_guard(self):
         from psycopg import errors
         ident=self.record()['intent_id']
