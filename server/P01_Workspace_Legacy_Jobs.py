@@ -76,7 +76,7 @@ def checkpoint(operation, workspace_root, *, timeout=10):
     """
     pg.require(type(operation) is coordinator.Operation, "workspace_input_invalid")
     pg.require(type(timeout) is int and 1 <= timeout <= 30, "workspace_input_invalid")
-    pg.require(type(workspace_root) is Path, "workspace_input_invalid")
+    pg.require(isinstance(workspace_root, Path), "workspace_input_invalid")
     origin = _directory(workspace_root)
     pg.require(SCRIPT == SCRIPT.resolve() and SCRIPT.is_file(), "workspace_input_invalid")
     operation.check()
@@ -97,7 +97,7 @@ def checkpoint(operation, workspace_root, *, timeout=10):
                 operation.check()
                 pg.require(result == 0, "workspace_legacy_job_failed")
                 pg.require(_directory(workspace_root) == origin, "workspace_legacy_job_failed")
-                return dict(status="checkpoint_verified",
+                return dict(status="checkpoint_executed",
                             job="legacy_runtime_status", version=VERSION,
                             network_activity_performed=False,
                             authentication_performed=False,

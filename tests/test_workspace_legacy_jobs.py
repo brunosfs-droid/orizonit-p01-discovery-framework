@@ -40,7 +40,7 @@ class LegacyJobsTests(unittest.TestCase):
             "print('SECRET-DO-NOT-LEAK'); import sys; sys.exit(0)")
         with patch.object(jobs, "SCRIPT", script):
             result = adapter.legacy_checkpoint("reader", token, timeout=2)
-        self.assertEqual(result["status"], "checkpoint_verified")
+        self.assertEqual(result["status"], "checkpoint_executed")
         self.assertEqual(result["workspace_id"], "A")
         self.assertFalse(result["network_activity_performed"])
         self.assertFalse(result["authentication_performed"])

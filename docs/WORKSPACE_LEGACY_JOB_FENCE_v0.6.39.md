@@ -24,3 +24,8 @@ token antigo, grant revogado, roots incorretas e nenhum subprocesso após
 falha de pré-condição. Requer Python CI e Workspace Foundation PG16/17 no
 último commit, depois LAB autorizado para integração ativa. A aprovação
 automática não qualifica nenhum scanner/vendor.
+
+Um exit 0 comprova somente a execução do comando legado de status dentro do
+prazo e da geração autorizada. Não confirma `state_integrity=true`, nem a
+correção de todos os dados; por isso a saída é `checkpoint_executed` e nunca
+um PASS de homologação operacional.
