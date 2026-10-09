@@ -1,5 +1,7 @@
 # Cancã — backlog rastreável 1.0
 
+[v0.6.51 — admissão HTTP auditada](WORKSPACE_LEDGER_AUDIT_ADMISSION_v0.6.51.md): negação fail-closed antes do backend e recuperação após restabelecimento do sink; v0.6.50 integrada pelo PR #161, E0 pendente.
+
 [v0.6.50 — gate negativo HTTP](WORKSPACE_LEDGER_HTTP_NEGATIVE_v0.6.50.md): proteger histórico de ledger contra query duplicada, credenciais em parâmetro, sessão encerrada e identificadores inválidos; v0.6.49 integrada no PR #160; E0 pendente.
 
 
