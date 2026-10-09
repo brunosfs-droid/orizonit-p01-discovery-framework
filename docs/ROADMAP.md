@@ -800,3 +800,8 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 
 - [Gate SQL](WORKSPACE_LEDGER_TERMINAL_CONFLICT_REGRANT_v0.6.69.md): request terminal reutilizado com decisão conflitante é negado e não altera histórico.
 - v0.6.68 integrada pelo PR #179; E0 e R02/R06 permanecem abertos.
+
+## v0.6.70 — leitor não altera intenção terminal (CANDIDATE)
+
+- [Gate SQL](WORKSPACE_LEDGER_TERMINAL_READER_WRITE_DENIAL_v0.6.70.md): regrant de leitura mantém intenção consumida imutável, sem decisão adicional.
+- v0.6.69 integrada pelo PR #180; E0 e R02/R06 continuam abertos.
