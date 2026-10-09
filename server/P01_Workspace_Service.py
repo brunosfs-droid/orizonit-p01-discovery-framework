@@ -11,6 +11,7 @@ sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'persistence'))
 import P01_Workspace_Model as model
 import P01_Workspace_Legacy as legacy
 import P01_Workspace_Legacy_Readiness as legacy_readiness
+import P01_Workspace_Legacy_Jobs as legacy_jobs
 import P01_Workspace_Category_Reader as category_reader
 import P01_Workspace_Observed_Signals as observed_signals
 import P01_Workspace_Signal_Summary as signal_summary
@@ -48,11 +49,13 @@ class SourceRoots:
 
 
 class WorkspaceService:
-    def __init__(self,coordinator,source_roots,legacy_roots=None):
+    def __init__(self,coordinator,source_roots,legacy_roots=None,legacy_runs=None):
         pg.require(isinstance(coordinator,runtime.Coordinator) and isinstance(source_roots,SourceRoots),'model_input_invalid')
         self.coordinator,self.sources=coordinator,source_roots
         pg.require(legacy_roots is None or isinstance(legacy_roots,LegacySources),'model_input_invalid')
         self.legacy_sources=legacy_roots or LegacySources({})
+        pg.require(legacy_runs is None or isinstance(legacy_runs,legacy_jobs.LegacyRunRoots),'workspace_input_invalid')
+        self.legacy_runs=legacy_runs or legacy_jobs.LegacyRunRoots({})
 
     def registry(self,actor,*,after='',limit=100):
         pg.require(runtime.connection_target(actor)==self.coordinator.lease.target,'workspace_connection_mismatch')
@@ -118,6 +121,16 @@ class WorkspaceService:
             result=model.preview_import(actor,token.workspace_id,token,projection,**selection)
             operation.check()
             return dict(result,generation=token.generation)
+
+    def legacy_checkpoint(self,actor,token,*,timeout=10):
+        # Only the trusted, offline status command is allowed in v0.6.39.
+        with self.coordinator.borrow(actor,token,'workspace:read') as operation:
+            operation.check()
+            root=self.legacy_runs.get(token.workspace_id)
+            operation.check()
+            result=legacy_jobs.checkpoint(operation,root,timeout=timeout)
+            operation.check()
+            return dict(result,workspace_id=token.workspace_id,generation=token.generation)
 
     def legacy_readiness(self,actor,token,bundle_id,*,expected_revision=None):
         # SQL mapping/authorization MUST precede any original-store I/O.
