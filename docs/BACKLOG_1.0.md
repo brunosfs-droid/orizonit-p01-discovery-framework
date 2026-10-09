@@ -1,5 +1,7 @@
 # Cancã — backlog rastreável 1.0
 
+[v0.6.50 — gate negativo HTTP](WORKSPACE_LEDGER_HTTP_NEGATIVE_v0.6.50.md): proteger histórico de ledger contra query duplicada, credenciais em parâmetro, sessão encerrada e identificadores inválidos; v0.6.49 integrada no PR #160; E0 pendente.
+
 
 [v0.6.49 — regressão HTTP](WORKSPACE_HTTP_ROUTE_REGRESSION_v0.6.49.md): proteção dos captures de legacy/report/readiness e do histórico do ledger; nenhuma execução ou autorização. v0.6.48 integrada pelo PR #159; E0 pendente.
 

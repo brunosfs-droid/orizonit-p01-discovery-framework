@@ -700,3 +700,8 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 
 - [Gate de compatibilidade HTTP](WORKSPACE_HTTP_ROUTE_REGRESSION_v0.6.49.md): índices de identificadores, método de leitura e auditoria fail-closed.
 - v0.6.48 integrada pelo PR #159; R02/R06/E0 continuam abertos, sem teste no EVE-NG.
+
+## v0.6.50 — gate negativo do histórico HTTP (CANDIDATE)
+
+- [Contrato](WORKSPACE_LEDGER_HTTP_NEGATIVE_v0.6.50.md): query estrita, sessão revogada e IDs malformados rejeitados sem dispatch.
+- v0.6.49 integrada pelo PR #160; CI da nova entrega requerido; E0 e R02/R06 permanecem abertos.

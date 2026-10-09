@@ -224,5 +224,50 @@ class HTTPScanPreviewTests(unittest.TestCase):
         self.service.execute.assert_not_called()
 
 
+    def test_history_denies_duplicate_queries_and_credentials_before_service(self):
+        intent='intent-'+'c'*32
+        base=api.BASE+'/A/scan-intents/'+intent
+        self.with_audit()
+        h=self.login()
+        self.service.execute.reset_mock()
+        for query in (
+            'generation=2&generation=2',
+            'generation=2&password=private',
+            'generation=2&token=private',
+            'generation=2&scope_id=lab',
+            'generation=2&intent_id='+intent,
+            'generation=2&request_id=test',
+            'generation=2&after=1',
+            'generation=2&limit=10',
+            'generation=2&expected_revision=1',
+            'generation=abc',
+            'generation=-1',
+            'generation=2.0',
+            'generation=',
+            '',
+        ):
+            with self.subTest(query=query):
+                path=base+('?'+query if query else '')
+                status,_=self.request('GET',path,headers=h)
+                self.assertIn(status,(400,404))
+        self.service.execute.assert_not_called()
+
+    def test_history_rejects_logged_out_bearer_and_unknown_ids_without_dispatch(self):
+        intent='intent-'+'d'*32
+        base=api.BASE+'/A/scan-intents/'
+        self.with_audit()
+        h=self.login()
+        self.auth.logout(h['Authorization'].split(' ',1)[1])
+        status,_=self.request('GET',base+intent+'?generation=2',headers=h)
+        self.assertEqual(status,401)
+        h=self.login()
+        for invalid in ('intent-'+('z'*32), 'intent-'+('a'*31),
+                        'intent-'+('a'*33), 'intent-../../B'):
+            with self.subTest(invalid=invalid):
+                code,_=self.request('GET',base+invalid+'?generation=2',headers=h)
+                self.assertEqual(code,404)
+        self.service.execute.assert_not_called()
+
+
 if __name__=="__main__":
     unittest.main()
