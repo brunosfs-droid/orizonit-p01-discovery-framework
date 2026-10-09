@@ -688,3 +688,10 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
   conflitantes e terminais simultâneas; idempotência e revisão única por corrida.
 - SQL PG16/17 via Workspace Foundation CI, sem atividades no EVE-NG.
 - Nenhuma transição do ledger autoriza execução. R02/R06, Alpha e E0 ainda abertos.
+
+## v0.6.48 — histórico de ledger por HTTP (CANDIDATE)
+
+- [Contrato](WORKSPACE_LEDGER_HISTORY_HTTP_v0.6.48.md): rota GET autenticada, auditada,
+  escopo SQL/RLS, parâmetros estritos e nenhuma ação de execução.
+- Suite HTTP e suite SQL PG16/17 em CI; EVE-NG e Product Alpha separados.
+- v0.6.47 integrada no PR #158 após oito workflows aprovados.
