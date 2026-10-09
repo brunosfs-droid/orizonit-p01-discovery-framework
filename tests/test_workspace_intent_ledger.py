@@ -247,6 +247,25 @@ class LedgerTests(unittest.TestCase):
         with self.role('canca_ws_b'),self.assertRaisesRegex(pg.PersistenceError,'intent_not_found'):
             self.service.scan_intent_history(self.conn,b,ident)
 
+    def test_new_workspace_b_read_grant_does_not_expose_a_history(self):
+        ident=self.record()['intent_id']
+        self.decide(ident,'approved','approve')
+        self.conn.execute(
+            "INSERT INTO canca.workspace_grants VALUES ('B','canca_ws_a','workspace:read')")
+        with self.role('canca_ws_writer'):
+            self.c.close(self.conn,'A',self.token.generation)
+            b=self.c.open(self.conn,'B',self.c.generation)
+        with self.role('canca_ws_a'),self.assertRaisesRegex(pg.PersistenceError,'intent_not_found'):
+            self.service.scan_intent_history(self.conn,b,ident)
+        with self.role('canca_ws_writer'):
+            self.c.close(self.conn,'B',b.generation)
+            reopened=self.c.open(self.conn,'A',self.c.generation)
+        with self.role('canca_ws_a'):
+            history=self.service.scan_intent_history(self.conn,reopened,ident)
+        self.assertEqual([x['decision'] for x in history['decisions']],['approved'])
+        self.assertFalse(history['context_current'])
+        self.assertFalse(history['execution_authorized'])
+
     def test_append_only_and_sql_transition_guard(self):
         from psycopg import errors
         ident=self.record()['intent_id']
