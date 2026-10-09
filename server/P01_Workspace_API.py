@@ -24,7 +24,7 @@ pg,ws,runtime,model=backend.pg,backend.ws,backend.runtime,backend.model
 VERSION='0.6.36'
 MAX_BODY=128*1024
 BASE='/api/v1/workspaces'
-ROUTE=re.compile(BASE+r'/([A-Za-z0-9][A-Za-z0-9._-]{0,127})/(open|close|categories/(?:compute|network|services|components)(?:/(?:coverage|signal-coverage))?|objects|objects/([A-Za-z0-9][A-Za-z0-9._-]{0,127})(?:/signals(?:/(?:summary|quality|comparison))?)?|graph/([A-Za-z0-9][A-Za-z0-9._-]{0,127})|declarations|relationships|imports/preview|imports/apply|legacy/preview|legacy/apply|legacy/(bnd-[0-9a-f]{20})/report)')
+ROUTE=re.compile(BASE+r'/([A-Za-z0-9][A-Za-z0-9._-]{0,127})/(open|close|categories/(?:compute|network|services|components)(?:/(?:coverage|signal-coverage))?|objects|objects/([A-Za-z0-9][A-Za-z0-9._-]{0,127})(?:/signals(?:/(?:summary|quality|comparison))?)?|graph/([A-Za-z0-9][A-Za-z0-9._-]{0,127})|declarations|relationships|imports/preview|imports/apply|legacy/preview|legacy/apply|legacy/(bnd-[0-9a-f]{20})/(?:report|readiness))')
 
 class BindingPolicy:
     """Immutable server configuration, never request-supplied role or path."""
@@ -124,7 +124,7 @@ class HumanWorkspaceService:
                     'declare_attribute':self.workspace.declare_attribute,'relationship':self.workspace.relationship,
                     'preview_import':self.workspace.preview_import,'apply_import':self.workspace.apply_import}
                 functions.update(preview_legacy=self.workspace.preview_legacy,apply_legacy=self.workspace.apply_legacy,
-                                 legacy_report=self.workspace.legacy_report)
+                                 legacy_report=self.workspace.legacy_report,legacy_readiness=self.workspace.legacy_readiness)
                 pg.require(action in functions,'workspace_input_invalid')
                 result=functions[action](conn,token,**fields)
             # Logout/expiry can race a committed mutation; suppress delivery and
@@ -175,9 +175,10 @@ class WorkspaceHandler(http.OperatorHandler):
                 if not match:raise authn.AccessError('route_not_found',404)
                 workspace_id,route=match[1],match[2]
                 if method=='GET' and match[5] is not None:
-                    action='legacy_report';fields=self._query(path.query,{'generation','expected_revision','after_ordinal','limit','expected_scope_sha256'})
+                    action='legacy_readiness' if route.endswith('/readiness') else 'legacy_report'
+                    fields=self._query(path.query,{'generation','expected_revision'} if action=='legacy_readiness' else {'generation','expected_revision','after_ordinal','limit','expected_scope_sha256'})
                     if 'generation' not in fields:raise authn.AccessError('workspace_input_invalid',400)
-                    fields['collection_id']=match[5]
+                    fields['bundle_id' if action=='legacy_readiness' else 'collection_id']=match[5]
                 elif method=='GET' and route.startswith('categories/'):
                     action='category_signal_coverage' if route.endswith('/signal-coverage') else 'category_coverage' if route.endswith('/coverage') else 'categories'
                     allowed={'generation','expected_revision','after','site_id','environment_id','kind','origin'}
