@@ -183,6 +183,20 @@ class LedgerTests(unittest.TestCase):
             final=self.service.scan_intent_history(self.conn,self.token,ident)
         self.assertEqual(final['decisions'],before['decisions'])
 
+    def test_workspace_b_reader_never_sees_workspace_a_intent(self):
+        intent=self.record()['intent_id']
+        self.decide(intent,'approved','approve')
+        with self.role('canca_ws_a'):
+            visible=self.service.scan_intent_history(self.conn,self.token,intent)
+        self.assertEqual([row['decision'] for row in visible['decisions']],['approved'])
+        with self.role('canca_ws_writer'):
+            self.c.close(self.conn,'A',self.token.generation)
+            b=self.c.open(self.conn,'B',self.c.generation)
+        with self.role('canca_ws_b'),self.assertRaisesRegex(pg.PersistenceError,'intent_not_found'):
+            self.service.scan_intent_history(self.conn,b,intent)
+        with self.role('canca_ws_writer'),self.assertRaisesRegex(pg.PersistenceError,'intent_not_found'):
+            self.service.scan_intent_history(self.conn,b,intent)
+
     def test_append_only_and_sql_transition_guard(self):
         from psycopg import errors
         ident=self.record()['intent_id']
