@@ -1,5 +1,7 @@
 # Cancã — backlog rastreável 1.0
 
+[v0.6.56 — regrant continua somente leitura](WORKSPACE_LEDGER_REGRANT_READONLY_v0.6.56.md): reader não altera decisões após nova concessão de leitura; v0.6.55 integrada pelo PR #166; E0 pendente.
+
 [v0.6.55 — regrant de leitor do ledger](WORKSPACE_LEDGER_READER_REGRANT_v0.6.55.md): acesso histórico recuperado somente com regrant SQL; v0.6.54 integrada pelo PR #165; E0 pendente.
 
 [v0.6.54 — revogação SQL do histórico](WORKSPACE_LEDGER_READER_REVOCATION_v0.6.54.md): leitor revogado é bloqueado, outro leitor mantém acesso; v0.6.53 integrada no PR #164; E0 pendente.
