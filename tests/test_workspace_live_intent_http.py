@@ -313,5 +313,37 @@ class HTTPScanPreviewTests(unittest.TestCase):
 
 
 
+    def test_history_denial_audit_never_records_untrusted_query(self):
+        intent='intent-'+'1'*32
+        audit_path=self.with_audit()
+        h=self.login()
+        self.service.execute.reset_mock()
+        path=api.BASE+'/A/scan-intents/'+intent+'?generation=2&password=PRIVATE_SENTINEL'
+        status,body=self.request('GET',path,headers=h)
+        self.assertEqual(status,400,body)
+        self.assertEqual(body['error_code'],'workspace_input_invalid')
+        self.service.execute.assert_not_called()
+        raw=audit_path.read_text()
+        self.assertIn('"operation":"scan_intent_history"',raw)
+        self.assertNotIn(intent,raw)
+        self.assertNotIn('PRIVATE_SENTINEL',raw)
+        self.assertNotIn('password=',raw)
+        self.assertNotIn('scan-intents/',raw)
+
+    def test_history_denial_after_logout_redacts_identifier_and_bearer(self):
+        intent='intent-'+'2'*32
+        audit_path=self.with_audit()
+        h=self.login()
+        token=h['Authorization'].split(' ',1)[1]
+        self.auth.logout(token)
+        status,body=self.request('GET',api.BASE+'/A/scan-intents/'+intent+'?generation=2',headers=h)
+        self.assertEqual(status,401,body)
+        self.service.execute.assert_not_called()
+        raw=audit_path.read_text()
+        self.assertIn('"operation":"scan_intent_history"',raw)
+        self.assertNotIn(intent,raw)
+        self.assertNotIn(token,raw)
+
+
 if __name__=="__main__":
     unittest.main()

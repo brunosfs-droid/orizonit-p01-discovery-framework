@@ -715,3 +715,8 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 
 - [Gate de redaction](WORKSPACE_LEDGER_HTTP_AUDIT_REDACTION_v0.6.52.md): logs classificam a leitura sem expor IDs de intenção, parâmetros ou rota.
 - v0.6.51 integrada pelo PR #162; E0 e R02/R06 permanecem abertos.
+
+## v0.6.53 — redaction de requisições negadas (CANDIDATE)
+
+- [Contrato](WORKSPACE_LEDGER_HTTP_AUDIT_DENIALS_v0.6.53.md): auditar negação por query e sessão revogada sem vazar token, intenção ou rota.
+- v0.6.52 integrada pelo PR #163; R02/R06 e E0 ainda abertos.
