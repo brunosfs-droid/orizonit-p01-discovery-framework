@@ -790,3 +790,8 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 
 - [Gate SQL](WORKSPACE_LEDGER_TERMINAL_REGRANT_FENCE_v0.6.67.md): a intenção consumida não admite novo consumo após regrant do leitor.
 - v0.6.66 integrada pelo PR #177; E0 e R02/R06 permanecem abertos.
+
+## v0.6.68 — replay terminal idempotente após regrant (CANDIDATE)
+
+- [Gate SQL](WORKSPACE_LEDGER_TERMINAL_REPLAY_REGRANT_v0.6.68.md): mesmo request terminal após regrant não acrescenta decisões nem autoriza scanner.
+- v0.6.67 integrada no PR #178; E0 e R02/R06 continuam abertos.

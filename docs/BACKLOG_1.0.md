@@ -1,5 +1,7 @@
 # Cancã — backlog rastreável 1.0
 
+[v0.6.68 — replay terminal após regrant](WORKSPACE_LEDGER_TERMINAL_REPLAY_REGRANT_v0.6.68.md): mesmo request de consumo permanece idempotente sem nova decisão; v0.6.67 integrada pelo PR #178; E0 pendente.
+
 [v0.6.67 — terminal permanece fechado após regrant](WORKSPACE_LEDGER_TERMINAL_REGRANT_FENCE_v0.6.67.md): novo consumo é negado e histórico preservado; v0.6.66 integrada pelo PR #177; E0 pendente.
 
 [v0.6.66 — cadeia de decisões após regrant](WORKSPACE_LEDGER_DECISION_CHAIN_v0.6.66.md): histórico aprovado/consumido mantém sequência e metadados após reconcessão; v0.6.65 integrada no PR #176; E0 pendente.
