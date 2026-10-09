@@ -63,9 +63,8 @@ class HTTPScanPreviewTests(unittest.TestCase):
     def stop(self):
         self.server.shutdown()
         self.worker.join(5)
+        # OperatorServer.server_close already finalizes the private audit file.
         self.server.server_close()
-        if self.server.audit is not None:
-            self.server.audit.close()
 
     def request(self,method,path,doc=None,headers=None):
         data=None if doc is None else json.dumps(doc)
