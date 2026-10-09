@@ -1,5 +1,8 @@
 # Cancã — backlog rastreável 1.0
 
+
+[v0.6.49 — regressão HTTP](WORKSPACE_HTTP_ROUTE_REGRESSION_v0.6.49.md): proteção dos captures de legacy/report/readiness e do histórico do ledger; nenhuma execução ou autorização. v0.6.48 integrada pelo PR #159; E0 pendente.
+
 [v0.6.48 — histórico HTTP do ledger](WORKSPACE_LEDGER_HISTORY_HTTP_v0.6.48.md): candidato R02/R06; consulta autenticada e auditada do histórico, sem aprovação ou execução via HTTP. v0.6.47 integrada no PR #158; EVE-NG e Product Alpha não homologados.
 
 [v0.6.47 — concorrência do ledger](WORKSPACE_LEDGER_CONCURRENCY_v0.6.47.md): candidata R02/R06; três corridas reais de decisões, transições terminais e replay idempotente em PG16/17. Apenas histórico, sem executar scanner. v0.6.46 integrada via PR #157; E0/cross-cluster ainda não homologados.

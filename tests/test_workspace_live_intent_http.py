@@ -190,5 +190,39 @@ class HTTPScanPreviewTests(unittest.TestCase):
         self.assertEqual(audit.operation('GET',route+'?password=private'),'scan_intent_history')
 
 
+    def test_new_history_route_preserves_legacy_capture_indexes(self):
+        intent='intent-'+'a'*32
+        bundle='bnd-'+'b'*20
+        history=api.ROUTE.fullmatch(api.BASE+'/A/scan-intents/'+intent)
+        readiness=api.ROUTE.fullmatch(api.BASE+'/A/legacy/'+bundle+'/readiness')
+        report=api.ROUTE.fullmatch(api.BASE+'/A/legacy/'+bundle+'/report')
+        self.assertIsNotNone(history)
+        self.assertIsNotNone(readiness)
+        self.assertIsNotNone(report)
+        self.assertEqual(history[6],intent)
+        self.assertIsNone(history[5])
+        for old in (readiness,report):
+            self.assertEqual(old[5],bundle)
+            self.assertIsNone(old[6])
+        self.assertEqual(audit.operation('GET',api.BASE+'/A/scan-intents/'+intent),
+                         'scan_intent_history')
+        for method in ('POST','PUT','PATCH','DELETE'):
+            self.assertEqual(audit.operation(method,api.BASE+'/A/scan-intents/'+intent),'other')
+
+    def test_no_audit_history_denied_before_service_and_no_mutating_route(self):
+        intent='intent-'+'b'*32
+        path=api.BASE+'/A/scan-intents/'+intent
+        h=self.login()
+        code,body=self.request('GET',path+'?generation=2',headers=h)
+        self.assertEqual(code,503,body)
+        self.assertEqual(body['error_code'],'workspace_audit_unavailable')
+        for method in ('POST','PUT','PATCH','DELETE'):
+            code,_=self.request(method,path+'?generation=2',{},h)
+            # Handled methods must never reach the service; base-handler rejection
+            # may be 404 (explicit route denial) or 501 (unsupported verb).
+            self.assertIn(code,(404,501))
+        self.service.execute.assert_not_called()
+
+
 if __name__=="__main__":
     unittest.main()

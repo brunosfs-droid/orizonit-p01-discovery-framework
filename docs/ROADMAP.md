@@ -695,3 +695,8 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
   escopo SQL/RLS, parâmetros estritos e nenhuma ação de execução.
 - Suite HTTP e suite SQL PG16/17 em CI; EVE-NG e Product Alpha separados.
 - v0.6.47 integrada no PR #158 após oito workflows aprovados.
+
+## v0.6.49 — regressão de rotas de histórico e legado (CANDIDATE)
+
+- [Gate de compatibilidade HTTP](WORKSPACE_HTTP_ROUTE_REGRESSION_v0.6.49.md): índices de identificadores, método de leitura e auditoria fail-closed.
+- v0.6.48 integrada pelo PR #159; R02/R06/E0 continuam abertos, sem teste no EVE-NG.
