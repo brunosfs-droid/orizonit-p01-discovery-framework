@@ -197,6 +197,27 @@ class LedgerTests(unittest.TestCase):
         with self.role('canca_ws_writer'),self.assertRaisesRegex(pg.PersistenceError,'intent_not_found'):
             self.service.scan_intent_history(self.conn,b,intent)
 
+    def test_switchback_history_is_nonexecuting_and_fenced(self):
+        ident=self.record()['intent_id']
+        self.decide(ident,'approved','approve')
+        old_token=self.token
+        with self.role('canca_ws_writer'):
+            self.c.close(self.conn,'A',old_token.generation)
+            other=self.c.open(self.conn,'B',self.c.generation)
+        with self.role('canca_ws_b'),self.assertRaisesRegex(pg.PersistenceError,'intent_not_found'):
+            self.service.scan_intent_history(self.conn,other,ident)
+        with self.role('canca_ws_writer'):
+            self.c.close(self.conn,'B',other.generation)
+            new_token=self.c.open(self.conn,'A',self.c.generation)
+            history=self.service.scan_intent_history(self.conn,new_token,ident)
+        self.assertEqual([x['decision'] for x in history['decisions']],['approved'])
+        self.assertFalse(history['context_current'])
+        self.assertFalse(history['execution_authorized'])
+        with self.role('canca_ws_writer'),self.assertRaisesRegex(pg.PersistenceError,'intent_stale'):
+            self.service.decide_scan_intent(
+                self.conn,new_token,'lab','auth_only',self.digest,ident,
+                'consumed','switchback-consume',ack_authorized_access=True)
+
     def test_append_only_and_sql_transition_guard(self):
         from psycopg import errors
         ident=self.record()['intent_id']
