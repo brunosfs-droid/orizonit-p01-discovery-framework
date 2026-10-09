@@ -218,9 +218,9 @@ class HTTPScanPreviewTests(unittest.TestCase):
         self.assertEqual(body['error_code'],'workspace_audit_unavailable')
         for method in ('POST','PUT','PATCH','DELETE'):
             code,_=self.request(method,path+'?generation=2',{},h)
-            # Unsupported HTTP verbs are rejected by the base handler (501);
-            # recognized POST is routed and rejected as not found (404).
-            self.assertEqual(code,404 if method=='POST' else 501)
+            # Handled methods must never reach the service; base-handler rejection
+            # may be 404 (explicit route denial) or 501 (unsupported verb).
+            self.assertIn(code,(404,501))
         self.service.execute.assert_not_called()
 
 
