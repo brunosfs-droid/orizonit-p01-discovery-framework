@@ -760,3 +760,8 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 
 - [Gate SQL](WORKSPACE_LEDGER_GRANT_EXPANSION_v0.6.61.md): leitor autorizado em A e B não enxerga a intenção de A quando está em B; histórico em A segue não executável.
 - v0.6.60 integrada pelo PR #171; E0 e R02/R06 ainda abertos.
+
+## v0.6.62 — revogação seletiva de leitor (CANDIDATE)
+
+- [Gate SQL](WORKSPACE_LEDGER_SELECTIVE_REVOCATION_v0.6.62.md): revogar o leitor em B não elimina leitura autorizada em A; acesso em B permanece negado.
+- v0.6.61 integrada no PR #172; E0 e R02/R06 continuam pendentes.
