@@ -442,11 +442,14 @@ class LedgerTests(unittest.TestCase):
         self.conn.execute(
             "INSERT INTO canca.workspace_grants VALUES ('A','canca_ws_a','workspace:read')")
         with self.role('canca_ws_a'),model.scope(self.conn,'A',self.token,writing=False):
+            # Isolate the expected SQL error in a nested transaction/savepoint:
+            # the enclosing role and model scopes must remain usable.
             with self.assertRaises(errors.InsufficientPrivilege):
-                self.conn.execute(
-                    "INSERT INTO canca.workspace_scan_decisions "
-                    "(workspace_id,intent_id,sequence,request_id,decision,created_revision) "
-                    "VALUES('A',%s,2,'reader-forged','consumed',0)",(ident,))
+                with self.conn.transaction():
+                    self.conn.execute(
+                        "INSERT INTO canca.workspace_scan_decisions "
+                        "(workspace_id,intent_id,sequence,request_id,decision,created_revision) "
+                        "VALUES('A',%s,2,'reader-forged','consumed',0)",(ident,))
         with self.role('canca_ws_writer'):
             history=self.service.scan_intent_history(self.conn,self.token,ident)
         self.assertEqual([e['decision'] for e in history['decisions']],['approved'])
