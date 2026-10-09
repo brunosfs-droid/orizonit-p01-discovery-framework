@@ -815,3 +815,8 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 
 - [Gate SQL](WORKSPACE_LEDGER_READER_UPDATE_DELETE_DENIAL_v0.6.72.md): role read-only não pode atualizar nem excluir histórico após regrant.
 - v0.6.71 integrada pelo PR #182; E0 e R02/R06 seguem pendentes.
+
+## v0.6.73 — leitor sem TRUNCATE no ledger (CANDIDATE)
+
+- [Gate SQL](WORKSPACE_LEDGER_READER_TRUNCATE_DENIAL_v0.6.73.md): role de leitura reconcedida não pode apagar a tabela de decisões via TRUNCATE.
+- v0.6.72 integrada no PR #183; E0 e R02/R06 permanecem abertos.
