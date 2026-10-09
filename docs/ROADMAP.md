@@ -780,3 +780,8 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 
 - [Gate SQL](WORKSPACE_LEDGER_REGRANT_INTEGRITY_v0.6.65.md): revogação e reconcessão preservam decisões aprovadas sem permitir execução.
 - v0.6.64 integrada pelo PR #175; E0 e R02/R06 seguem abertos.
+
+## v0.6.66 — integridade da cadeia de decisões (CANDIDATE)
+
+- [Gate SQL](WORKSPACE_LEDGER_DECISION_CHAIN_v0.6.66.md): duas decisões terminais persistem com sequências e metadados inalterados após revogação/regrant.
+- v0.6.65 integrada pelo PR #176; E0, R02/R06 ainda abertos.
