@@ -269,5 +269,25 @@ class HTTPScanPreviewTests(unittest.TestCase):
         self.service.execute.assert_not_called()
 
 
+    def test_history_audit_admission_failure_blocks_service_and_recovers(self):
+        intent='intent-'+'e'*32
+        path=api.BASE+'/A/scan-intents/'+intent+'?generation=2'
+        self.with_audit()
+        headers=self.login()
+        self.service.execute.reset_mock()
+        # An exhausted/unavailable audit sink must deny before touching SQL.
+        from unittest.mock import patch
+        with patch.object(self.server.audit,'begin',side_effect=audit.AuditError()):
+            status,body=self.request('GET',path,headers=headers)
+        self.assertEqual((status,body['error_code']),(503,'workspace_audit_unavailable'))
+        self.service.execute.assert_not_called()
+        self.service.execute.return_value=dict(status='historical_review_only',
+            execution_authorized=False,context_current=False,decisions=[])
+        status,body=self.request('GET',path,headers=headers)
+        self.assertEqual(status,200,body)
+        self.assertFalse(body['execution_authorized'])
+        self.assertEqual(self.service.execute.call_args.args[1],'scan_intent_history')
+
+
 if __name__=="__main__":
     unittest.main()
