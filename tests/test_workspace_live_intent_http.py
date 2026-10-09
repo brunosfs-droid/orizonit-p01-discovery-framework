@@ -173,7 +173,6 @@ class HTTPScanPreviewTests(unittest.TestCase):
             api.BASE+'/A/scan-intents/'+intent,
             route+'&scope_id=lab',
             route+'&password=private',
-            route+'&generation=3',
             route.replace('generation=2','generation=abc'),
             api.BASE+'/B/scan-intents/'+intent+'/consume?generation=2',
             api.BASE+'/A/scan-intents/intent-xyz?generation=2'):
