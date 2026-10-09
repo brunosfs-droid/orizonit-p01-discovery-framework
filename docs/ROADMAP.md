@@ -664,3 +664,12 @@ ações em dispositivos. Gates adicionais: drift/replay, sessão perdida/rollbac
 close durante commit/preparação, autoria/RLS/FKs A/B e isolamento de sources.
 R03–R05 continuam parciais. API humana foi entregue em v0.6.26 e recovery isolado
 em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates operacionais.
+
+## v0.6.44 — revisão estrutural da auditoria workspace (CANDIDATE)
+
+- [Contrato e recuperação](WORKSPACE_AUDIT_REVIEW_v0.6.44.md), PR #155.
+- Schema exato, pares e sequência, replay após conclusão, snapshot privado
+  estável e contagem de pedidos pendentes; somente leitura.
+- Python CI e Workspace Foundation PG16/17 verificam o incremento.
+- Próximo: contrato e persistência transacional do ledger de decisões.
+  R02/R06 e E0 continuam abertos; sem autorização ou execução de scanner.
