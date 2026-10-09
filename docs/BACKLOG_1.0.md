@@ -1,5 +1,9 @@
 # Cancã — backlog rastreável 1.0
-[v0.6.38 — Legacy readiness](WORKSPACE_LEGACY_READINESS_v0.6.38.md): leitura limitada por bundle histórico autorizado, com revalidação SQL→store e recibo imutável. CI e integração não encerram migração completa, outras categorias ou R01/R03. A homologação E0/recovery da PR #148 permanece gate operacional independente.
+
+[v0.6.40 — Process group fence](WORKSPACE_LEGACY_PROCESS_GROUP_v0.6.40.md) — candidato R02: encerramento de grupo de subprocessos locais POSIX no checkpoint somente-leitura, com testes de órfãos e de fechamento concorrente; Windows, scanners ativos, EVE-NG e R02 completo continuam pendentes.
+[v0.6.39 — Legacy job fence](WORKSPACE_LEGACY_JOB_FENCE_v0.6.39.md) — integrado via PR #150: checkpoint read-only sob geração/lease/cancelamento do coordenador; ainda não habilita scanners ativos, encerramento de grupos ou R02 completo.
+[v0.6.37 — E0/recovery preflight](LAB_ALPHA_E0_AND_RECOVERY_R1.md) — integrado via PR #148: roteiro e verificação offline, sem homologação operacional/restore cross-cluster.
+[v0.6.38 — Legacy readiness](WORKSPACE_LEGACY_READINESS_v0.6.38.md): integrada via PR #149; leitura limitada por bundle histórico autorizado, com revalidação SQL→store e recibo imutável. CI e integração não encerram migração completa, outras categorias ou R01/R03. A homologação E0/recovery da PR #148 permanece gate operacional independente.
 
 [Auditoria R01–R06 e critérios E0 (08/10)](validation/ALPHA_R01_R06_GATE_MATRIX_2026-10-08.md) · [Roteiro E0/recovery R1](LAB_ALPHA_E0_AND_RECOVERY_R1.md). São artefatos para qualificação, não aceite de LAB, fechamento Alpha ou release. O preflight offline verifica somente integridade dos artefatos, não executa restore.
 [v0.6.36](WORKSPACE_CATEGORY_SIGNAL_COVERAGE_v0.6.36.md) — candidata: visão limitada de sinais efetivamente registrados por categoria e filtros, sem inferir cobertura de rede; CI/EVE-NG/Alpha separados.

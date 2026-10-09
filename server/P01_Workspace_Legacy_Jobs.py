@@ -5,6 +5,7 @@ Only the local `P01_Discovery_Node.py status --json` subprocess is permitted.
 There is deliberately NO scanner, AUTH, FULL, export, upload, or public HTTP API.
 """
 import os
+import signal
 from pathlib import Path
 import stat
 import subprocess
@@ -15,7 +16,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import P01_Workspace_Coordinator as coordinator
 
 pg, ws = coordinator.pg, coordinator.ws
-VERSION = "0.6.39"
+VERSION = "0.6.40"
 SCRIPT = Path(__file__).resolve().parents[1] / "runtime" / "P01_Discovery_Node.py"
 CHECK_INTERVAL = 0.05
 
@@ -55,7 +56,44 @@ class LegacyRunRoots:
 
 
 def _stop(process):
-    """Never leave the trusted child running after cancellation or timeout."""
+    """Bounded best-effort process-group cleanup before releasing the workspace job.
+
+    On POSIX the child owns a fresh session/group. Signal its *entire group*
+    even when its leader has already exited; otherwise orphaned subprocesses
+    could survive a successful status command or workspace close. Child
+    processes that explicitly detach to other sessions remain out of scope.
+    On Windows only direct-child termination is currently supported.
+    """
+    if os.name == "posix":
+        pgid = process.pid
+        try:
+            os.killpg(pgid, signal.SIGTERM)
+        except ProcessLookupError:
+            pass
+        except OSError:
+            raise pg.PersistenceError("workspace_legacy_job_failed") from None
+        # The parent may exit before its descendants. Inspect the whole group,
+        # not process.poll(), and escalate after a strictly bounded grace.
+        deadline = time.monotonic() + 0.35
+        while time.monotonic() < deadline:
+            try:
+                os.killpg(pgid, 0)
+            except ProcessLookupError:
+                break
+            except OSError:
+                raise pg.PersistenceError("workspace_legacy_job_failed") from None
+            time.sleep(0.025)
+        try:
+            os.killpg(pgid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        except OSError:
+            raise pg.PersistenceError("workspace_legacy_job_failed") from None
+        try:
+            process.wait(timeout=1)
+        except (OSError, subprocess.TimeoutExpired):
+            raise pg.PersistenceError("workspace_legacy_job_failed") from None
+        return
     if process.poll() is not None:
         return
     try:
@@ -72,7 +110,7 @@ def checkpoint(operation, workspace_root, *, timeout=10):
 
     Its stdout/stderr are discarded, not parsed, persisted, cached or echoed;
     a nonzero exit is a redacted failure. No external command/argv supplied by
-    a client. This does not qualify cancellation of live credentialed scanners.
+    a client. On POSIX even orphaned children still in the session are terminated; this\n    does not qualify cancellation of live credentialed scanners.
     """
     pg.require(type(operation) is coordinator.Operation, "workspace_input_invalid")
     pg.require(type(timeout) is int and 1 <= timeout <= 30, "workspace_input_invalid")
