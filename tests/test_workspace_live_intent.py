@@ -22,6 +22,17 @@ class PolicyInputTests(unittest.TestCase):
                 with self.assertRaises(pg.PersistenceError):
                     intent.ApprovedScopes({"A":{"s":{"networks":[bad],"modes":["auth_only"]}}})
 
+    def test_explicit_canonical_host_prefix_is_accepted(self):
+        valid=intent.ApprovedScopes({"A":{"host":{
+            "networks":["192.168.100.20/32"],"modes":["auth_only"]}}})
+        self.assertEqual(valid._lookup("A","host")["hosts"],1)
+        for bad in ("192.168.100.20", "192.168.100.20/033",
+                    "192.168.100.20/32 ", "192.168.100.20/24"):
+            with self.subTest(value=bad):
+                with self.assertRaises(pg.PersistenceError):
+                    intent.ApprovedScopes({"A":{"host":{
+                        "networks":[bad],"modes":["auth_only"]}}})
+
     def test_ambiguous_scope_and_privileged_fields_rejected(self):
         bad_specs=(
             {"networks":["192.168.100.0/24"],"modes":["full_enrichment"]},
