@@ -80,7 +80,7 @@ def token_args(workspace_id,token):
 def scope(conn,workspace_id,token,*,writing=False):
     token_args(workspace_id,token)
     with ws.scope(conn,workspace_id,'workspace:write' if writing else 'workspace:read'):
-        pg.schema_check(conn,minimum=7,legacy=True)
+        pg.schema_check(conn,minimum=7,intents=True)
         conn.execute("SELECT set_config('canca.workspace_generation',%s,true)",(str(token.generation),))
         conn.execute("SELECT set_config('canca.workspace_lease',%s,true)",(token.lease_id,))
         allowed=conn.execute('SELECT canca.workspace_model_allowed(%s)',(writing,)).fetchone()[0]

@@ -85,6 +85,8 @@ jobs:
         run: python -m unittest discover -s tests -p "test_workspace_intent_receipts.py" -v
       - name: Test authenticated opt-in audited preview over HTTP
         run: python -m unittest discover -s tests -p "test_workspace_live_intent_http.py" -v
+      - name: Test durable non-executing review ledger
+        run: python -m unittest discover -s tests -p "test_workspace_intent_ledger.py" -v
       - name: Test destructive workspace harness guard
         run: python -m unittest discover -s tests -p "test_workspace_backup_guard.py" -v
       - name: Qualify isolated schema8 database and store restore
