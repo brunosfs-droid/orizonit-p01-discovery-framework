@@ -1,5 +1,7 @@
 # Cancã — backlog rastreável 1.0
 
+[v0.6.43 — HTTP audited scan preview](WORKSPACE_AUDITED_SCAN_PREVIEW_v0.6.43.md) — candidato R02: endpoint somente-prévia com grant write e trilha de auditoria obrigatória, sem CIDRs/credenciais/client targets. Não autoriza AUTH/FULL nem fecha R02/EVE-NG.
+
 [v0.6.42 — Intent review receipts](WORKSPACE_INTENT_RECEIPTS_v0.6.42.md) — candidato R02 empilhado sobre v0.6.41: comprovante efêmero de revisão TTL/consumo único, ligado a escopo, lease e geração; nunca autoriza execução nem substitui ledger persistente/assinatura/LAB.
 
 [v0.6.41 — Live scan intent preview](WORKSPACE_LIVE_INTENT_v0.6.41.md) — candidate R02: escopos IPv4 privados em política imutável, geração/lease, grant write e digest sem credenciais/targets; nenhuma execução AUTH/FULL ou varredura. Gates de segurança, EVE-NG e Alpha permanecem abertos.
