@@ -218,6 +218,22 @@ class LedgerTests(unittest.TestCase):
                 self.conn,new_token,'lab','auth_only',self.digest,ident,
                 'consumed','switchback-consume',ack_authorized_access=True)
 
+    def test_old_generation_token_cannot_read_after_workspace_switchback(self):
+        ident=self.record()['intent_id']
+        old_token=self.token
+        with self.role('canca_ws_writer'):
+            self.c.close(self.conn,'A',old_token.generation)
+            b=self.c.open(self.conn,'B',self.c.generation)
+            self.c.close(self.conn,'B',b.generation)
+            fresh=self.c.open(self.conn,'A',self.c.generation)
+        with self.role('canca_ws_writer'),self.assertRaises(pg.PersistenceError):
+            self.service.scan_intent_history(self.conn,old_token,ident)
+        with self.role('canca_ws_writer'):
+            restored=self.service.scan_intent_history(self.conn,fresh,ident)
+        self.assertEqual(restored['intent_id'],ident)
+        self.assertFalse(restored['context_current'])
+        self.assertFalse(restored['execution_authorized'])
+
     def test_append_only_and_sql_transition_guard(self):
         from psycopg import errors
         ident=self.record()['intent_id']
