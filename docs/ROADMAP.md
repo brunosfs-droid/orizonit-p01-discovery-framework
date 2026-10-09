@@ -755,3 +755,8 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 
 - [Gate SQL](WORKSPACE_LEDGER_CROSS_GRANT_v0.6.60.md): leitor em A não herda permissões em B, nem recupera histórico de A por B.
 - v0.6.59 integrada pelo PR #170; E0, R02/R06 ainda abertos.
+
+## v0.6.61 — expansão de grants não mistura workspaces (CANDIDATE)
+
+- [Gate SQL](WORKSPACE_LEDGER_GRANT_EXPANSION_v0.6.61.md): leitor autorizado em A e B não enxerga a intenção de A quando está em B; histórico em A segue não executável.
+- v0.6.60 integrada pelo PR #171; E0 e R02/R06 ainda abertos.

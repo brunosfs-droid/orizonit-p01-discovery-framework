@@ -1,5 +1,7 @@
 # Cancã — backlog rastreável 1.0
 
+[v0.6.61 — grants adicionais sem vazamento](WORKSPACE_LEDGER_GRANT_EXPANSION_v0.6.61.md): ampliação explícita de leitura A/B não expõe histórico fora do workspace; v0.6.60 integrada pelo PR #171; E0 pendente.
+
 [v0.6.60 — grants isolados por workspace](WORKSPACE_LEDGER_CROSS_GRANT_v0.6.60.md): acesso concedido em A não autoriza B; v0.6.59 integrada no PR #170; E0 pendente.
 
 [v0.6.59 — token obsoleto e histórico SQL](WORKSPACE_LEDGER_STALE_TOKEN_HISTORY_v0.6.59.md): token de geração antiga não pode consultar ledger após troca de workspace; v0.6.58 integrada pelo PR #169; E0 pendente.
