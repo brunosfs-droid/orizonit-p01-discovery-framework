@@ -65,11 +65,16 @@ def role(conn,name):
     try:yield
     finally:conn.execute('RESET ROLE')
 
-def run(container,*,reviewed_legacy=False):
+def run(container,*,reviewed_legacy=False,intent_ledger=False):
     guard(container)
     started=time.monotonic()
     tables=TABLES
-    if reviewed_legacy:
+    require(not (reviewed_legacy and intent_ledger))
+    if intent_ledger:
+        import test_workspace_intent_ledger as intents
+        case=intents.LedgerTests('test_restart_preserves_history_but_never_rearms')
+        tables+=('workspace_legacy_plans','workspace_legacy_imports','workspace_scan_intents','workspace_scan_decisions')
+    elif reviewed_legacy:
         import test_workspace_legacy as reviewed
         case=reviewed.LegacyPostgreSQLTests('test_atomic_backfill_report_preserves_stored_evaluations_and_legacy_ids')
         tables+=('workspace_legacy_plans','workspace_legacy_imports')
@@ -85,6 +90,11 @@ def run(container,*,reviewed_legacy=False):
             require(not preflight.execute('SELECT 1 FROM pg_database WHERE datname=%s',(RESTORE_DB,)).fetchone())
         case.setUp();conn=case.conn
         initial_revision=0
+        if intent_ledger:
+            recorded=case.record(ttl_seconds=300)['intent_id']
+            case.decide(recorded,'approved','restore-approved')
+            pending=case.record('restore-pending',ttl_seconds=300)['intent_id']
+            initial_revision=conn.execute("SELECT revision FROM canca.workspace_revisions WHERE workspace_id='A'").fetchone()[0]
         if reviewed_legacy:
             legacy_plan=case.preview();backfilled=case.apply(legacy_plan,'restore-legacy')
             initial_revision=backfilled['revision']
@@ -102,7 +112,7 @@ def run(container,*,reviewed_legacy=False):
             with case.role('canca_ws_writer'):
                 before_report=reviewed.legacy.report(conn,'A',case.token,case.bid)
         old_token=case.token;case.c.shutdown(timeout=0)
-        require(pg.migrate(conn,legacy=reviewed_legacy,recovery=True)['migration']==(9 if reviewed_legacy else 8))
+        require(pg.migrate(conn,intents=intent_ledger,legacy=reviewed_legacy,recovery=True)['migration']==(10 if intent_ledger else 9 if reviewed_legacy else 8))
         before=snapshot(conn,tables);before_policies=policies(conn)
         current_revision=conn.execute("SELECT revision FROM canca.workspace_revisions WHERE workspace_id='A'").fetchone()[0]
         generation=conn.execute('SELECT generation FROM canca.workspace_runtime').fetchone()[0]
@@ -125,7 +135,7 @@ def run(container,*,reviewed_legacy=False):
                 # Existing synthetic roles are deliberately retained; preserve ACLs.
                 docker(container,['pg_restore','-U','canca_ci','-d',RESTORE_DB,'--single-transaction','--exit-on-error','--no-owner'],source=input_file)
             target=open_restored()
-            require(pg.migrate(target,legacy=reviewed_legacy,recovery=True)['status']=='already_migrated')
+            require(pg.migrate(target,intents=intent_ledger,legacy=reviewed_legacy,recovery=True)['status']=='already_migrated')
             require(snapshot(target,tables)==before and policies(target)==before_policies)
             require(model.prepare_source(restored_stores[1],restored_stores[1]/relative)==projection)
             prepared=recovery.prepare_restored(target,generation)
@@ -149,6 +159,17 @@ def run(container,*,reviewed_legacy=False):
                     require(restored_projection==case.projection)
                     replay=reviewed.legacy.apply(target,'A',token,legacy_plan['plan_id'],'restore-legacy',restored_projection)
                     require(replay['replayed'] and replay['revision']==backfilled['revision'])
+                if intent_ledger:
+                    for intent_id in (recorded,pending):
+                        history=intents.ledger.history(target,'A',token,intent_id)
+                        require(not history['context_current'] and not history['execution_authorized'])
+                    with coordinator.borrow(target,token,'workspace:write') as operation:
+                        new_digest=intents.ledger.live.preview(operation,case.service.approved_scan_scopes,
+                            'lab','auth_only',ack_authorized_access=True)['scope_digest_sha256']
+                        try:intents.ledger.decide(operation,case.service.approved_scan_scopes,'lab','auth_only',
+                            new_digest,recorded,'consumed','restore-no-resume',ack_authorized_access=True)
+                        except pg.PersistenceError as exc:require(str(exc)=='intent_stale')
+                        else:raise SmokeError('workspace_backup_restore_failed')
                 try:model.list_objects(target,'A',old_token)
                 except pg.PersistenceError as exc:require(str(exc)=='model_context_denied')
                 else:raise SmokeError('workspace_backup_restore_failed')
@@ -173,13 +194,14 @@ def run(container,*,reviewed_legacy=False):
                 changed=model.declare_attribute(target,'A',token,current_revision,'restore-after','manual','description','After restore','CI restore')
                 require(changed['revision']==current_revision+1)
             require(snapshot(conn,tables)==before)
-            return dict(status='WORKSPACE BACKUP RESTORE PASS',recovery_version='0.6.28' if reviewed_legacy else VERSION,
-                schema_migration=9 if reviewed_legacy else 8,server_version_num=conn.info.server_version,
+            return dict(status='WORKSPACE BACKUP RESTORE PASS',recovery_version='0.6.46' if intent_ledger else '0.6.28' if reviewed_legacy else VERSION,
+                schema_migration=10 if intent_ledger else 9 if reviewed_legacy else 8,server_version_num=conn.info.server_version,
                 tables_compared=len(tables)-1,model_revision_preserved=True,next_revision_incremented=True,
                 runtime_reset_closed=True,transaction_markers_reset=True,old_token_rejected=True,
                 graph_state_preserved=True,idempotent_receipts_preserved=True,force_rls_and_existing_role_acls_preserved=True,
                 source_bytes_revalidated=True,receipt_corruption_rejected=True,exclusive_synthetic_fixture=True,
                 legacy_report_and_receipt_preserved=reviewed_legacy,
+                intent_ledger_preserved_without_reauthorization=intent_ledger,
                 same_cluster_existing_roles=True,dump_sha256=legacy.digest_file(archive),
                 logical_snapshot_sha256=pg.digest(pg.canonical(before)),elapsed_seconds=round(time.monotonic()-started,3),
                 evidence_retained=False)
@@ -194,10 +216,10 @@ def run(container,*,reviewed_legacy=False):
 
 def cli(argv=None):
     parser=argparse.ArgumentParser();parser.add_argument('--container-id',required=True)
-    parser.add_argument('--reviewed-legacy',action='store_true');args=parser.parse_args(argv)
-    try:print(json.dumps(run(args.container_id,reviewed_legacy=args.reviewed_legacy)));return 0
+    parser.add_argument('--reviewed-legacy',action='store_true');parser.add_argument('--intent-ledger',action='store_true');args=parser.parse_args(argv)
+    try:print(json.dumps(run(args.container_id,reviewed_legacy=args.reviewed_legacy,intent_ledger=args.intent_ledger)));return 0
     except Exception:
         print(json.dumps(dict(status='failed',error_code='workspace_backup_restore_failed',
-            recovery_version='0.6.28' if args.reviewed_legacy else VERSION)));return 2
+            recovery_version='0.6.46' if args.intent_ledger else '0.6.28' if args.reviewed_legacy else VERSION)));return 2
 
 if __name__=='__main__':raise SystemExit(cli())
