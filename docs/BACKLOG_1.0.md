@@ -1,5 +1,7 @@
 # Cancã — backlog rastreável 1.0
 
+[v0.6.60 — grants isolados por workspace](WORKSPACE_LEDGER_CROSS_GRANT_v0.6.60.md): acesso concedido em A não autoriza B; v0.6.59 integrada no PR #170; E0 pendente.
+
 [v0.6.59 — token obsoleto e histórico SQL](WORKSPACE_LEDGER_STALE_TOKEN_HISTORY_v0.6.59.md): token de geração antiga não pode consultar ledger após troca de workspace; v0.6.58 integrada pelo PR #169; E0 pendente.
 
 [v0.6.58 — histórico sob troca A–B–A](WORKSPACE_LEDGER_SWITCHBACK_v0.6.58.md): decisões antigas preservadas como evidência sem autorização na nova lease; v0.6.57 integrada pelo PR #168; E0 pendente.
