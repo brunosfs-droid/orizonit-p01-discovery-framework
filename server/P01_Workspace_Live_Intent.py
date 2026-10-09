@@ -32,13 +32,14 @@ def _scope_id(value):
 
 
 def _network(value):
-    pg.require(type(value) is str and len(value) <= 18,
+    pg.require(type(value) is str and "/" in value and len(value) <= 18,
                "workspace_input_invalid")
     try:
         net = ipaddress.ip_network(value, strict=True)
     except (ValueError, TypeError):
         raise pg.PersistenceError("workspace_input_invalid") from None
     pg.require(type(net) is ipaddress.IPv4Network and
+               value == net.with_prefixlen and
                any(net.subnet_of(parent) for parent in PRIVATE),
                "workspace_input_invalid")
     pg.require(net.prefixlen >= 24, "workspace_input_invalid")
