@@ -160,6 +160,29 @@ class LedgerTests(unittest.TestCase):
         self.assertFalse(restored['execution_authorized'])
         self.assertFalse(restored['network_activity_performed'])
 
+    def test_regranted_reader_cannot_change_approved_ledger(self):
+        ident=self.record()['intent_id']
+        self.decide(ident,'approved','approve')
+        with self.role('canca_ws_a'):
+            before=self.service.scan_intent_history(self.conn,self.token,ident)
+        self.conn.execute(
+            "DELETE FROM canca.workspace_grants WHERE workspace_id='A' AND principal_role='canca_ws_a'")
+        with self.role('canca_ws_a'),self.assertRaises(pg.PersistenceError):
+            self.service.scan_intent_history(self.conn,self.token,ident)
+        self.conn.execute(
+            "INSERT INTO canca.workspace_grants VALUES ('A','canca_ws_a','workspace:read')")
+        with self.role('canca_ws_a'):
+            after=self.service.scan_intent_history(self.conn,self.token,ident)
+            with self.assertRaises(pg.PersistenceError):
+                self.service.decide_scan_intent(
+                    self.conn,self.token,'lab','auth_only',self.digest,
+                    ident,'consumed','reader-attempt',ack_authorized_access=True)
+        self.assertEqual(before['decisions'],after['decisions'])
+        self.assertFalse(after['execution_authorized'])
+        with self.role('canca_ws_writer'):
+            final=self.service.scan_intent_history(self.conn,self.token,ident)
+        self.assertEqual(final['decisions'],before['decisions'])
+
     def test_append_only_and_sql_transition_guard(self):
         from psycopg import errors
         ident=self.record()['intent_id']
