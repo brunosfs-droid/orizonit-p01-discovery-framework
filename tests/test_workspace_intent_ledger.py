@@ -234,6 +234,19 @@ class LedgerTests(unittest.TestCase):
         self.assertFalse(restored['context_current'])
         self.assertFalse(restored['execution_authorized'])
 
+    def test_workspace_a_reader_grant_does_not_authorize_workspace_b(self):
+        ident=self.record()['intent_id']
+        with self.role('canca_ws_a'):
+            visible=self.service.scan_intent_history(self.conn,self.token,ident)
+        self.assertEqual(visible['intent_id'],ident)
+        with self.role('canca_ws_writer'):
+            self.c.close(self.conn,'A',self.token.generation)
+            b=self.c.open(self.conn,'B',self.c.generation)
+        with self.role('canca_ws_a'),self.assertRaises(pg.PersistenceError):
+            self.service.scan_intent_history(self.conn,b,ident)
+        with self.role('canca_ws_b'),self.assertRaisesRegex(pg.PersistenceError,'intent_not_found'):
+            self.service.scan_intent_history(self.conn,b,ident)
+
     def test_append_only_and_sql_transition_guard(self):
         from psycopg import errors
         ident=self.record()['intent_id']
