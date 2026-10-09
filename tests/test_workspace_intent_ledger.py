@@ -396,6 +396,24 @@ class LedgerTests(unittest.TestCase):
         self.assertEqual([x['sequence'] for x in after['decisions']],[1,2])
         self.assertFalse(after['network_activity_performed'])
 
+    def test_terminal_replay_conflict_after_reader_regrant_is_denied(self):
+        ident=self.record()['intent_id']
+        self.decide(ident,'approved','approve')
+        self.decide(ident,'consumed','consume')
+        with self.role('canca_ws_writer'):
+            before=self.service.scan_intent_history(self.conn,self.token,ident)
+        self.conn.execute(
+            "DELETE FROM canca.workspace_grants WHERE workspace_id='A' AND principal_role='canca_ws_a'")
+        self.conn.execute(
+            "INSERT INTO canca.workspace_grants VALUES ('A','canca_ws_a','workspace:read')")
+        with self.assertRaises(pg.PersistenceError):
+            self.decide(ident,'rejected','consume')
+        with self.role('canca_ws_a'):
+            after=self.service.scan_intent_history(self.conn,self.token,ident)
+        self.assertEqual(before['decisions'],after['decisions'])
+        self.assertEqual([x['decision'] for x in after['decisions']],['approved','consumed'])
+        self.assertFalse(after['execution_authorized'])
+
     def test_append_only_and_sql_transition_guard(self):
         from psycopg import errors
         ident=self.record()['intent_id']
