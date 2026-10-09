@@ -1,5 +1,6 @@
 """Read-only legacy process lifecycle and coordinator fencing tests."""
 import os
+import signal
 from pathlib import Path
 import sys
 import tempfile
@@ -132,14 +133,84 @@ class LegacyJobsTests(unittest.TestCase):
         def revoke_and_succeed(*args, **kwargs):
             self.grants["reader"].clear()
             return 0
-        with patch.object(jobs, "SCRIPT", script), patch.object(jobs.subprocess, "Popen") as spawned:
+        with patch.object(jobs, "SCRIPT", script), patch.object(jobs.subprocess, "Popen") as spawned, patch.object(jobs, "_stop") as cleanup:
             proc = spawned.return_value
             proc.poll.side_effect = revoke_and_succeed
             proc.wait.return_value = 0
             with self.assertRaisesRegex(pg.PersistenceError, "workspace_access_denied"):
                 adapter.legacy_checkpoint("reader", token, timeout=2)
+            cleanup.assert_called_once_with(proc)
         self.assertFalse(self.c._jobs)
 
+
+
+    @unittest.skipUnless(os.name == "posix" and sys.platform.startswith("linux"),
+                         "POSIX Linux process-group qualification")
+    def test_grandchild_cannot_survive_successful_parent_exit(self):
+        token = self.opened()
+        script, source, adapter = self.configured()
+        marker = script.parent / "grandchild.pid"
+        script.write_text(
+            "import subprocess,sys\n"
+            "from pathlib import Path\n"
+            "child=subprocess.Popen([sys.executable, '-c', 'import time;time.sleep(60)'],"
+            "stdin=subprocess.DEVNULL,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)\n"
+            f"Path({str(marker)!r}).write_text(str(child.pid))\n"
+            "sys.exit(0)\n", encoding="utf-8")
+        with patch.object(jobs, "SCRIPT", script):
+            result = adapter.legacy_checkpoint("reader", token, timeout=5)
+        self.assertEqual(result["status"], "checkpoint_executed")
+        self.assertTrue(marker.exists())
+        pid = int(marker.read_text())
+        self.addCleanup(self._kill_if_running, pid)
+        self.assert_not_running(pid)
+        self.assertFalse(self.c._jobs)
+
+    @unittest.skipUnless(os.name == "posix" and sys.platform.startswith("linux"),
+                         "POSIX Linux process-group qualification")
+    def test_timeout_reaps_parent_and_descendant_before_job_release(self):
+        token = self.opened()
+        script, source, adapter = self.configured()
+        marker = script.parent / "grandchild.pid"
+        script.write_text(
+            "import subprocess,sys,time\n"
+            "from pathlib import Path\n"
+            "child=subprocess.Popen([sys.executable, '-c', 'import time;time.sleep(60)'],"
+            "stdin=subprocess.DEVNULL,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)\n"
+            f"Path({str(marker)!r}).write_text(str(child.pid))\n"
+            "time.sleep(60)\n", encoding="utf-8")
+        with patch.object(jobs, "SCRIPT", script):
+            with self.assertRaisesRegex(pg.PersistenceError, "workspace_legacy_job_timeout"):
+                adapter.legacy_checkpoint("reader", token, timeout=2)
+        self.assertTrue(marker.exists())
+        pid = int(marker.read_text())
+        self.addCleanup(self._kill_if_running, pid)
+        self.assert_not_running(pid)
+        self.assertFalse(self.c._jobs)
+
+    @staticmethod
+    def _kill_if_running(pid):
+        try:
+            os.kill(pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+
+    def assert_not_running(self, pid):
+        # A reparented child can briefly remain a zombie in a CI PID namespace.
+        # Zombie state is not executing; Linux /proc avoids false failures.
+        deadline = time.monotonic() + 2
+        proc = Path("/proc") / str(pid) / "stat"
+        while time.monotonic() < deadline:
+            if not proc.exists():
+                return
+            try:
+                status = proc.read_text().split(") ", 1)[1][0]
+                if status in ("Z", "X"):
+                    return
+            except (OSError, IndexError):
+                return
+            time.sleep(0.03)
+        self.fail("a detached legacy subprocess is still running")
 
 if __name__ == "__main__":
     unittest.main()
