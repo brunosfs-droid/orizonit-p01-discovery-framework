@@ -201,3 +201,5 @@ restore same-cluster/roles existentes não qualifica recuperação cross-cluster
 [v0.6.91 — falhas assíncronas R02](validation/ALPHA_R02_LIVE_REVOCATION_v0.6.91.md): testes Linux com dois subprocessos e injeção de revogação de leitor ou perda de lease em execução; nenhum resultado tardio, sem reabertura de geração comprometida. v0.6.90 integrada no PR #201; E0 permanece NO-GO.
 
 [v0.6.92 — quarentena R02](validation/ALPHA_R02_CLEANUP_QUARANTINE_v0.6.92.md): erro de encerramento de subprocesso bloqueia nova geração/workspace, cancela outros jobs e limpa cache; exige investigação/recriação controlada. v0.6.91 integrada no PR #202, E0 continua NO-GO.
+
+[v0.6.93 — confirmação do encerramento de grupos R02](validation/ALPHA_R02_POST_SIGKILL_GROUP_CHECK_v0.6.93.md): após SIGKILL e wait do líder, verifica membros vivos Linux, falhando fechado se não houver quiescência; testes de descendente persistente e filho resistente ao SIGTERM. v0.6.92 integrada pelo PR #203; E0 NO-GO.
