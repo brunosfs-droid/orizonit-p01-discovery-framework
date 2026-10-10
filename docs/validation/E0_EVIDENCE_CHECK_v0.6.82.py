@@ -38,6 +38,28 @@ def load_register(path):
 
 
 GATE_IDS = tuple(f"E0-{i:02d}" for i in range(1, 11))
+GATE_DESCRIPTIONS = {
+    "E0-01": "Offline package and import",
+    "E0-02": "Windows WinRM authorized profiles",
+    "E0-03": "Linux authorized SSH collection",
+    "E0-04": "Denied/unreachable endpoints fail closed",
+    "E0-05": "Workspace scope and stale generation",
+    "E0-06": "Coordinator cancel/drain/lease (R02)",
+    "E0-07": "Import/reconciliation (R05/R06)",
+    "E0-08": "Same-cluster recovery (T13)",
+    "E0-09": "HTTP audit and secret redaction",
+    "E0-10": "Rollback and reproducibility",
+}
+REGISTER_FIELDS = frozenset({
+    "schema_version", "release_commit", "topology_sha256",
+    "scope_approval_ref", "operator", "executed_at_utc",
+    "security_reviewer", "release_reviewer", "gates",
+})
+GATE_FIELDS = frozenset({
+    "gate_id", "description", "result", "evidence_uri",
+    "evidence_sha256", "reviewer", "executed_at_utc",
+})
+OPTIONAL_TEXT_FIELDS = ("evidence_uri", "evidence_sha256", "reviewer", "executed_at_utc")
 STATES = frozenset({"PASS", "FAIL", "BLOCKED", "NOT RUN"})
 DIGEST = re.compile(r"^[0-9a-f]{64}$")
 COMMIT = re.compile(r"^[0-9a-f]{40}$")
@@ -71,8 +93,14 @@ def assess(document):
     counts = Counter()
     if not isinstance(document, dict):
         return False, False, {"errors": ["register must be an object"], "missing": [], "counts": {}}
-    if document.get("schema_version") != 1:
-        errors.append("schema_version must be 1")
+    if type(document.get("schema_version")) is not int or document["schema_version"] != 1:
+        errors.append("schema_version must be integer 1")
+    if set(document) != REGISTER_FIELDS:
+        errors.append("register fields differ from the schema contract")
+    for field in REQUIRED_METADATA:
+        value = document.get(field)
+        if value is not None and not isinstance(value, str):
+            errors.append(f"metadata: {field} must be a string or null")
     gates = document.get("gates")
     if not isinstance(gates, list):
         return False, False, {"errors": errors + ["gates must be an array"], "missing": [], "counts": {}}
@@ -86,13 +114,22 @@ def assess(document):
         gid = gate.get("gate_id")
         # Never echo arbitrary identifier data in stdout (potential secret input).
         safe_id = gid if isinstance(gid, str) and gid in GATE_IDS else f"gate[{index}]"
+        if set(gate) != GATE_FIELDS:
+            errors.append(f"{safe_id}: gate fields differ from the schema contract")
+        if isinstance(gid, str) and gid in GATE_DESCRIPTIONS:
+            if gate.get("description") != GATE_DESCRIPTIONS[gid]:
+                errors.append(f"{safe_id}: gate description differs from the pinned contract")
+        for field in OPTIONAL_TEXT_FIELDS:
+            value = gate.get(field)
+            if value is not None and not isinstance(value, str):
+                errors.append(f"{safe_id}: {field} must be a string or null")
         state = gate.get("result")
         if not isinstance(state, str) or state not in STATES:
             errors.append(f"{safe_id}: invalid result")
             continue
         counts[state] += 1
         if state != "PASS":
-            missing.append(f"{gid}: {state}")
+            missing.append(f"{safe_id}: {state}")
             continue
         for field in REQUIRED_EVIDENCE:
             if not nonempty(gate.get(field)):
