@@ -69,6 +69,12 @@ def assess(document):
             errors.append(f"{gid}: evidence_sha256 must be 64 lowercase hex chars")
         if nonempty(gate.get("executed_at_utc")) and not utc_timestamp(gate["executed_at_utc"]):
             errors.append(f"{gid}: executed_at_utc must be an ISO 8601 UTC timestamp")
+        # Evidence must be reviewed by somebody other than its executor.
+        # Compare normalized identities to prevent case/whitespace bypasses.
+        operator = document.get("operator")
+        reviewer = gate.get("reviewer")
+        if nonempty(operator) and nonempty(reviewer) and operator.strip().casefold() == reviewer.strip().casefold():
+            errors.append(f"{gid}: gate reviewer must differ from operator")
         uri = gate.get("evidence_uri")
         if nonempty(uri) and (any(c.isspace() for c in uri) or "@" in uri):
             errors.append(f"{gid}: evidence_uri contains whitespace or embedded credentials")
@@ -82,6 +88,11 @@ def assess(document):
         errors.append("topology_sha256 must be 64 lowercase hex chars")
     if nonempty(document.get("executed_at_utc")) and not utc_timestamp(document["executed_at_utc"]):
         errors.append("executed_at_utc must be an ISO 8601 UTC timestamp")
+    # The lab executor, security reviewer and release approver are separate actors.
+    actors = [document.get(field) for field in ("operator", "security_reviewer", "release_reviewer")]
+    if all(nonempty(actor) for actor in actors):
+        if len({actor.strip().casefold() for actor in actors}) != len(actors):
+            errors.append("operator, security_reviewer and release_reviewer must be distinct")
     valid = not errors
     go = valid and not missing and counts["PASS"] == 10
     return valid, go, {
