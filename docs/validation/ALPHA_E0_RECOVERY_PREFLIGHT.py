@@ -203,10 +203,10 @@ def _tree_secure(root, root_stat):
         if files == 0:
             raise GateError("empty_directory")
         digest = hashlib.sha256()
-        digest.update(("ROOT\\0" + oct(stat.S_IMODE(root_stat.st_mode)) +
-                       "\\n").encode())
+        digest.update(("ROOT\0" + oct(stat.S_IMODE(root_stat.st_mode)) +
+                       "\n").encode())
         for _, line in sorted(entries, key=lambda item: item[0]):
-            digest.update(("\\0".join(line) + "\\n").encode("utf-8"))
+            digest.update(("\0".join(line) + "\n").encode("utf-8"))
         return {"sha256": digest.hexdigest(), "files": files,
                 "directories": dirs, "bytes": bytes_total}
     finally:
