@@ -75,6 +75,16 @@ class E0EvidenceGateTests(unittest.TestCase):
         self.assertFalse(valid)
         self.assertFalse(go)
 
+    def test_malformed_gate_fields_are_rejected_without_crashing(self):
+        for field, value in (("gate_id", ["E0-01"]), ("result", ["PASS"])):
+            with self.subTest(field=field):
+                d = copy.deepcopy(self.document)
+                d["gates"][0][field] = value
+                valid, go, summary = checker.assess(d)
+                self.assertFalse(valid)
+                self.assertFalse(go)
+                self.assertTrue(summary["errors"])
+
     def test_invalid_hash_and_timestamp_rejected(self):
         d = self.complete()
         d["gates"][0]["evidence_sha256"] = "not-a-sha"
