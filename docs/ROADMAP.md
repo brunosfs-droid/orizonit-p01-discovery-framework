@@ -895,3 +895,8 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 
 - [Contrato E0](validation/E0_PINNED_GATE_SCHEMA_v0.6.88.md): campos exatos, versão inteira, tipagem estrita, descrições E0-01..E0-10 fixadas e IDs de entrada não confiável redigidos nos diagnósticos.
 - v0.6.87 integrada pelo PR #198; E0/EVE-NG, R02/R06 e T13/R20 seguem pendentes.
+
+## v0.6.89 — carga sintética do coordenador R02 (CANDIDATE)
+
+- [Ensaio e limitações](validation/ALPHA_R02_COORDINATOR_LOAD_SMOKE_v0.6.89.md): ciclos A/B com cancelamento de jobs e rejeição de tokens antigos, métricas p50/p95 e pico de alocações Python sem metas de produção implícitas.
+- v0.6.88 integrada pelo PR #199. E0/EVE-NG e qualificação R02 com processos/collectors reais ainda pendentes; T14 permanece parcial.
