@@ -6,9 +6,9 @@ Operação em vendors/LAB reais: **CANDIDATE**, sem novo teste manual solicitado
 ## Revisão qualificada
 
 - Base: `e9250e12d53bb2e941c9e6bb888561166f69b94e`.
-- Fonte: [`6a55039efad54b9746a11f0616bdddc449cf5fc0`](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/commit/6a55039efad54b9746a11f0616bdddc449cf5fc0).
+- Fonte: [`6a55039efad54b9746a11f0616bdddc449cf5fc0`](https://github.com/brunosfs-droid/canca/commit/6a55039efad54b9746a11f0616bdddc449cf5fc0).
 - Árvore completa: `cbd60047f85a708988b3d2af6efd24d55580a28a`, idêntica a `git write-tree` e ao checkout remoto.
-- [PR 123](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/pull/123): 21 arquivos de implementação/contrato/tests/CI.
+- [PR 123](https://github.com/brunosfs-droid/canca/pull/123): 21 arquivos de implementação/contrato/tests/CI.
 - Adapter `P01_SNMP_Enricher.py` v0.4b.7 intacto; defaults do scheduler,
   Web, contas, SQL e transporte mTLS preservados.
 
@@ -20,13 +20,13 @@ conferida pela árvore completa, incluindo assets binários preexistentes.
 
 | Workflow | Jobs push + PR | Etapas críticas | Runs |
 | --- | ---: | ---: | --- |
-| Python CI | 2 | 10 | [pull_request](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37308088413) / [push](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37308049315) |
-| JSON Parse Validation | 2 | 2 | [pull_request](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37308088285) / [push](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37308049256) |
-| PostgreSQL CI | 4 | 16 | [pull_request](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37308088297) / [push](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37308049303) |
-| Operator Web CI | 2 | 2 | [pull_request](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37308088473) / [push](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37308049391) |
-| Operator Accounts CI | 8 | 48 | [pull_request](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37308088679) / [push](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37308049371) |
-| Optional Agent CI | 8 | 48 | [pull_request](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37308088475) / [push](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37308049766) |
-| Read-only SNMP CI | 12 | 72 | [pull_request](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37308088380) / [push](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37308049323) |
+| Python CI | 2 | 10 | [pull_request](https://github.com/brunosfs-droid/canca/actions/runs/37308088413) / [push](https://github.com/brunosfs-droid/canca/actions/runs/37308049315) |
+| JSON Parse Validation | 2 | 2 | [pull_request](https://github.com/brunosfs-droid/canca/actions/runs/37308088285) / [push](https://github.com/brunosfs-droid/canca/actions/runs/37308049256) |
+| PostgreSQL CI | 4 | 16 | [pull_request](https://github.com/brunosfs-droid/canca/actions/runs/37308088297) / [push](https://github.com/brunosfs-droid/canca/actions/runs/37308049303) |
+| Operator Web CI | 2 | 2 | [pull_request](https://github.com/brunosfs-droid/canca/actions/runs/37308088473) / [push](https://github.com/brunosfs-droid/canca/actions/runs/37308049391) |
+| Operator Accounts CI | 8 | 48 | [pull_request](https://github.com/brunosfs-droid/canca/actions/runs/37308088679) / [push](https://github.com/brunosfs-droid/canca/actions/runs/37308049371) |
+| Optional Agent CI | 8 | 48 | [pull_request](https://github.com/brunosfs-droid/canca/actions/runs/37308088475) / [push](https://github.com/brunosfs-droid/canca/actions/runs/37308049766) |
+| Read-only SNMP CI | 12 | 72 | [pull_request](https://github.com/brunosfs-droid/canca/actions/runs/37308088380) / [push](https://github.com/brunosfs-droid/canca/actions/runs/37308049323) |
 
 ## SNMP sem skips
 
@@ -36,18 +36,18 @@ obrigatórias nessa matriz. Logs confirmam contagem e conclusão efetiva.
 
 | Evento | Matriz | Job | Adapter / plano / integração | Skips |
 | --- | --- | --- | --- | ---: |
-| pull_request | snmp-loopback (ubuntu-latest, 3.10) | [111756537332](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37308088380/job/111756537332) | 26 / 28 / 34 | 0 |
-| pull_request | snmp-loopback (ubuntu-latest, 3.12) | [111756536969](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37308088380/job/111756536969) | 26 / 28 / 34 | 0 |
-| pull_request | snmp-loopback (ubuntu-latest, 3.13) | [111756537418](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37308088380/job/111756537418) | 26 / 28 / 34 | 0 |
-| pull_request | snmp-loopback (windows-latest, 3.10) | [111756537202](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37308088380/job/111756537202) | 26 / 28 / 34 | 0 |
-| pull_request | snmp-loopback (windows-latest, 3.12) | [111756537414](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37308088380/job/111756537414) | 26 / 28 / 34 | 0 |
-| pull_request | snmp-loopback (windows-latest, 3.13) | [111756537231](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37308088380/job/111756537231) | 26 / 28 / 34 | 0 |
-| push | snmp-loopback (ubuntu-latest, 3.10) | [111756407493](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37308049323/job/111756407493) | 26 / 28 / 34 | 0 |
-| push | snmp-loopback (ubuntu-latest, 3.12) | [111756407342](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37308049323/job/111756407342) | 26 / 28 / 34 | 0 |
-| push | snmp-loopback (ubuntu-latest, 3.13) | [111756407421](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37308049323/job/111756407421) | 26 / 28 / 34 | 0 |
-| push | snmp-loopback (windows-latest, 3.10) | [111756407147](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37308049323/job/111756407147) | 26 / 28 / 34 | 0 |
-| push | snmp-loopback (windows-latest, 3.12) | [111756407424](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37308049323/job/111756407424) | 26 / 28 / 34 | 0 |
-| push | snmp-loopback (windows-latest, 3.13) | [111756407335](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37308049323/job/111756407335) | 26 / 28 / 34 | 0 |
+| pull_request | snmp-loopback (ubuntu-latest, 3.10) | [111756537332](https://github.com/brunosfs-droid/canca/actions/runs/37308088380/job/111756537332) | 26 / 28 / 34 | 0 |
+| pull_request | snmp-loopback (ubuntu-latest, 3.12) | [111756536969](https://github.com/brunosfs-droid/canca/actions/runs/37308088380/job/111756536969) | 26 / 28 / 34 | 0 |
+| pull_request | snmp-loopback (ubuntu-latest, 3.13) | [111756537418](https://github.com/brunosfs-droid/canca/actions/runs/37308088380/job/111756537418) | 26 / 28 / 34 | 0 |
+| pull_request | snmp-loopback (windows-latest, 3.10) | [111756537202](https://github.com/brunosfs-droid/canca/actions/runs/37308088380/job/111756537202) | 26 / 28 / 34 | 0 |
+| pull_request | snmp-loopback (windows-latest, 3.12) | [111756537414](https://github.com/brunosfs-droid/canca/actions/runs/37308088380/job/111756537414) | 26 / 28 / 34 | 0 |
+| pull_request | snmp-loopback (windows-latest, 3.13) | [111756537231](https://github.com/brunosfs-droid/canca/actions/runs/37308088380/job/111756537231) | 26 / 28 / 34 | 0 |
+| push | snmp-loopback (ubuntu-latest, 3.10) | [111756407493](https://github.com/brunosfs-droid/canca/actions/runs/37308049323/job/111756407493) | 26 / 28 / 34 | 0 |
+| push | snmp-loopback (ubuntu-latest, 3.12) | [111756407342](https://github.com/brunosfs-droid/canca/actions/runs/37308049323/job/111756407342) | 26 / 28 / 34 | 0 |
+| push | snmp-loopback (ubuntu-latest, 3.13) | [111756407421](https://github.com/brunosfs-droid/canca/actions/runs/37308049323/job/111756407421) | 26 / 28 / 34 | 0 |
+| push | snmp-loopback (windows-latest, 3.10) | [111756407147](https://github.com/brunosfs-droid/canca/actions/runs/37308049323/job/111756407147) | 26 / 28 / 34 | 0 |
+| push | snmp-loopback (windows-latest, 3.12) | [111756407424](https://github.com/brunosfs-droid/canca/actions/runs/37308049323/job/111756407424) | 26 / 28 / 34 | 0 |
+| push | snmp-loopback (windows-latest, 3.13) | [111756407335](https://github.com/brunosfs-droid/canca/actions/runs/37308049323/job/111756407335) | 26 / 28 / 34 | 0 |
 
 Os seis casos de integração com agente real cobrem v2c FULL, v3 authPriv FULL,
 FULL parcial exportável, AUTH falho/retry explícito com nova saída, drift após
