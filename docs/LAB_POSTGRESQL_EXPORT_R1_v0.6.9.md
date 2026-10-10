@@ -13,7 +13,7 @@ Executar sem outros escritores na fixture. Não usa AUTH/FULL/POST, migrations o
 
 ## 1. Enviar somente o exportador novo
 
-Windows PowerShell, no repositório C:\GitHub\orizonit-p01-discovery-framework:
+Windows PowerShell, no repositório C:\GitHub\canca:
 
 ```powershell
 git fetch origin
