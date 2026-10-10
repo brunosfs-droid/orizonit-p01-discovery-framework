@@ -905,3 +905,8 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 
 - [Ensaio Linux/POSIX](validation/ALPHA_R02_LEGACY_MULTIPROCESS_SMOKE_v0.6.90.md): processos Python locais sob adapter de checkpoint real, cancelamento simultâneo, limpeza de grupos, tokens obsoletos negados e medidas de fechamento p50/p95.
 - v0.6.89 integrada pelo PR #200; scanners reais/WinRM/SNMP, E0/EVE-NG e benchmark T14 continuam pendentes.
+
+## v0.6.91 — revogação de acesso e perda de lease durante subprocessos R02 (CANDIDATE)
+
+- [Procedimento e limites](validation/ALPHA_R02_LIVE_REVOCATION_v0.6.91.md): exercita adaptador de checkpoint com processos Python sintéticos reais sob revogação de leitor ou perda de lease, validando cancelamento e ausência de publicação tardia.
+- v0.6.90 integrada pelo PR #201; EVE-NG e R02 com credenciais/coletores reais, regrant atômico e multi-host continuam pendentes.
