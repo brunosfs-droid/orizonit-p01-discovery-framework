@@ -885,3 +885,8 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 
 - [Contrato de comparação](validation/E0_PINNED_SNAPSHOT_COMPARISON_v0.6.86.md): revalidação local dos arquivos e comparação constante com SHA-256 fixado em registro externo; diferenças bloqueiam o avanço e impedem aceitação implícita.
 - v0.6.85 integrada pelo PR #196; sem execução EVE-NG. R02/R06/T13/R20 e E0 permanecem abertos.
+
+## v0.6.87 — parser JSON estrito e limitado para evidências E0 (CANDIDATE)
+
+- [Contrato de segurança](validation/E0_STRICT_JSON_INTAKE_v0.6.87.md): nega chaves JSON duplicadas, NaN/Infinity, arquivos maiores que 1 MiB e UTF-8 inválido nos três CLIs E0, antes de acessar evidências.
+- v0.6.86 integrada via PR #197; EVE-NG e R02/R06/T13/R20 permanecem pendentes.
