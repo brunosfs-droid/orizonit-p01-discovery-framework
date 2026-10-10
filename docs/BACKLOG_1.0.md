@@ -183,3 +183,5 @@ restore same-cluster/roles existentes não qualifica recuperação cross-cluster
 [v0.6.82 — validador automatizado E0](validation/E0_EVIDENCE_MACHINE_GATE_v0.6.82.md): validador offline e testes fail-closed, CLI 0/1/2, CI apenas estrutural, estado E0 permanece NO-GO; v0.6.81 integrada pelo PR #192.
 
 [v0.6.83 — separação de revisão E0](validation/E0_MAKER_CHECKER_GATE_v0.6.83.md): bloqueio de autoaprovação por operador, revisão de segurança/release independente e diagnósticos sem IDs arbitrários. v0.6.82 integrada via PR #193; E0 operacional ainda NO-GO.
+
+[v0.6.84 — integridade local das evidências E0](validation/E0_ARTIFACT_INTEGRITY_v0.6.84.md): verificação real de arquivos por SHA-256, confinamento seguro de diretórios e teste adversarial. v0.6.83 integrada no PR #194; E0 operacional permanece NO-GO.
