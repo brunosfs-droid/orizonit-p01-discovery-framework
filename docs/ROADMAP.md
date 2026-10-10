@@ -870,3 +870,8 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 
 - [Contrato e testes](validation/E0_MAKER_CHECKER_GATE_v0.6.83.md): validação de funções separadas, comparação de identidades normalizadas, bloqueio de autoaprovação e sanitização de IDs malformados.
 - v0.6.82 integrada pelo PR #193; E0 no EVE-NG, verificação de identidade externa, R02/R06 e T13/R20 permanecem pendentes.
+
+## v0.6.84 — verificação offline dos arquivos de evidência E0 (CANDIDATE)
+
+- [Contrato e testes](validation/E0_ARTIFACT_INTEGRITY_v0.6.84.md): arquivos locais conferidos byte a byte por SHA-256; URIs controladas, sem traversal, symlinks ou downloads remotos.
+- v0.6.83 integrada no PR #194; E0/EVE-NG, R02/R06, T13/R20 e prova de autenticidade das evidências continuam pendentes.
