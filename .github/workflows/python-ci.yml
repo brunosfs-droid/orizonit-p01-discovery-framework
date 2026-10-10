@@ -79,3 +79,8 @@ jobs:
 
       - name: Unit tests
         run: python -m unittest discover -s tests -p "test_*.py" -v
+
+      - name: Validate E0 evidence register structure (NO-GO is expected until EVE-NG)
+        run: |
+          python -m json.tool docs/validation/E0_EVIDENCE_REGISTER_v0.6.82.json > /dev/null
+          python docs/validation/E0_EVIDENCE_CHECK_v0.6.82.py --check docs/validation/E0_EVIDENCE_REGISTER_v0.6.82.json --allow-no-go

@@ -179,3 +179,5 @@ restore same-cluster/roles existentes não qualifica recuperação cross-cluster
 [v0.6.80 — matriz E0/EVE-NG](validation/E0_OPERATIONAL_ACCEPTANCE_v0.6.80.md): formaliza evidências e critérios de aceite sem alegar execução operacional. v0.6.79 integrada pelo PR #190; gates E0/R02/R06/T13/R20 ainda pendentes.
 
 [v0.6.81 — registro de evidências E0](validation/E0_EVIDENCE_REGISTER_v0.6.81.md): matriz operacional inicialmente NOT RUN, com assinaturas e controle go/no-go; v0.6.80 integrada pelo PR #191; EVE-NG ainda pendente.
+
+[v0.6.82 — validador automatizado E0](validation/E0_EVIDENCE_MACHINE_GATE_v0.6.82.md): validador offline e testes fail-closed, CLI 0/1/2, CI apenas estrutural, estado E0 permanece NO-GO; v0.6.81 integrada pelo PR #192.
