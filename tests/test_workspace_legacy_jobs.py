@@ -177,6 +177,62 @@ class LegacyJobsTests(unittest.TestCase):
         with self.assertRaisesRegex(pg.PersistenceError, "workspace_lease_lost"):
             self.opened("B")
 
+    @unittest.skipUnless(os.name == "posix" and sys.platform.startswith("linux"),
+                         "post-SIGKILL group attestation is Linux-only")
+    def test_unverified_group_after_sigkill_quarantines_entire_workspace(self):
+        token = self.opened()
+        script, source, adapter = self.configured()
+        with (
+            patch.object(jobs, "SCRIPT", script),
+            patch.object(jobs.subprocess, "Popen") as spawned,
+            patch.object(jobs.os, "killpg"),
+            patch.object(jobs, "_linux_running_group_member", return_value=True),
+        ):
+            proc = spawned.return_value
+            proc.pid = 999999999
+            proc.poll.return_value = 0
+            proc.wait.return_value = 0
+            start = time.monotonic()
+            with self.assertRaisesRegex(
+                pg.PersistenceError, "workspace_legacy_job_failed"
+            ):
+                adapter.legacy_checkpoint("reader", token, timeout=2)
+            self.assertLess(time.monotonic() - start, 2.5)
+        self.assertEqual(self.c.state, "recovery_required")
+        self.assertTrue(self.c._cancel.is_set())
+        self.assertEqual(self.c._jobs, set())
+        with self.assertRaisesRegex(pg.PersistenceError, "workspace_lease_lost"):
+            self.opened("B")
+
+    @unittest.skipUnless(os.name == "posix" and sys.platform.startswith("linux"),
+                         "SIGTERM-resistant subprocess test is Linux-only")
+    def test_sigterm_resistant_child_is_killed_and_reopens_safely(self):
+        token = self.opened()
+        script, source, adapter = self.configured()
+        marker = script.parent / "resistant.pid"
+        script.write_text(
+            "import os, signal, time\n"
+            "from pathlib import Path\n"
+            "signal.signal(signal.SIGTERM, signal.SIG_IGN)\n"
+            f"Path({str(marker)!r}).write_text(str(os.getpid()))\n"
+            "while True: time.sleep(2)\n",
+            encoding="utf-8",
+        )
+        with patch.object(jobs, "SCRIPT", script):
+            with self.assertRaisesRegex(
+                pg.PersistenceError, "workspace_legacy_job_timeout"
+            ):
+                adapter.legacy_checkpoint("reader", token, timeout=1)
+        self.assertTrue(marker.exists())
+        pid = int(marker.read_text(encoding="utf-8"))
+        self.addCleanup(self._kill_if_running, pid)
+        self.assert_not_running(pid)
+        self.assertEqual(self.c.state, "open")
+        self.assertFalse(self.c._jobs)
+        self.c.close("writer", "A", token.generation)
+        reopened = self.opened("B")
+        self.assertEqual(reopened.workspace_id, "B")
+
     def test_revoked_reader_cannot_receive_result(self):
         token = self.opened()
         script, source, adapter = self.configured()
