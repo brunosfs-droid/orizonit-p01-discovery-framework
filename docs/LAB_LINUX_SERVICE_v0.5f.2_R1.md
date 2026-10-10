@@ -15,7 +15,7 @@ PowerShell na raiz do repositório. Após a integração da PR, atualizar main e
 exportar somente arquivos versionados necessários ao ensaio (sem PKI/secrets):
 
 ```powershell
-Set-Location "C:\GitHub\orizonit-p01-discovery-framework"
+Set-Location "C:\GitHub\canca"
 git pull origin main
 if ($LASTEXITCODE -ne 0) { throw "Falha no git pull." }
 $LinuxArchive = Join-Path $env:TEMP "canca-agent-v0.5f.2.tar"
