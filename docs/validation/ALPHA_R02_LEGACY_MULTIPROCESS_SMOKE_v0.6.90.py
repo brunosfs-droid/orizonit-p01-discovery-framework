@@ -89,6 +89,7 @@ def qualification(*, cycles=2, workers=2):
                     failures_this_cycle = []
                     completed = []
                     threads = []
+                    found = set()
 
                     def run():
                         try:
