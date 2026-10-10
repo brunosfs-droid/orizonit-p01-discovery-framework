@@ -569,6 +569,23 @@ class LedgerTests(unittest.TestCase):
         self.assertEqual([event['decision'] for event in history['decisions']],['approved'])
         self.assertFalse(history['execution_authorized'])
 
+    def test_regranted_reader_cannot_truncate_scan_intents_without_cascade(self):
+        from psycopg import errors
+        ident=self.record()['intent_id']
+        self.decide(ident,'approved','approve')
+        self.conn.execute(
+            "DELETE FROM canca.workspace_grants WHERE workspace_id='A' AND principal_role='canca_ws_a'")
+        self.conn.execute(
+            "INSERT INTO canca.workspace_grants VALUES ('A','canca_ws_a','workspace:read')")
+        with self.role('canca_ws_a'),model.scope(self.conn,'A',self.token,writing=False):
+            with self.assertRaises(errors.InsufficientPrivilege):
+                with self.conn.transaction():
+                    self.conn.execute("TRUNCATE TABLE canca.workspace_scan_intents")
+        with self.role('canca_ws_writer'):
+            history=self.service.scan_intent_history(self.conn,self.token,ident)
+        self.assertEqual([event['decision'] for event in history['decisions']],['approved'])
+        self.assertFalse(history['execution_authorized'])
+
     def test_append_only_and_sql_transition_guard(self):
         from psycopg import errors
         ident=self.record()['intent_id']
