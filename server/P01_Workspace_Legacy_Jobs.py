@@ -147,4 +147,11 @@ def checkpoint(operation, workspace_root, *, timeout=10):
         raise pg.PersistenceError("workspace_legacy_job_failed") from None
     finally:
         if child is not None:
-            _stop(child)
+            try:
+                _stop(child)
+            except Exception:
+                # If child/group termination cannot be confirmed, a later
+                # workspace must not start while an old child may still run.
+                # Quarantine the entire coordinator before its job is released.
+                operation.coordinator.fail_closed()
+                raise pg.PersistenceError("workspace_legacy_job_failed") from None
