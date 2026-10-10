@@ -83,8 +83,8 @@ def main(argv=None):
                           "error": "expected snapshot must be exactly 64 lowercase hex chars"}))
         return 2
     try:
-        document = json.loads(args.check.read_text(encoding="utf-8"))
-    except (OSError, UnicodeError, ValueError) as exc:
+        document = ARTIFACTS.CHECKER.load_register(args.check)
+    except (OSError, UnicodeError, ValueError, RecursionError) as exc:
         print(json.dumps({"verdict": "INVALID", "operational_go": False,
                           "error": type(exc).__name__}))
         return 2
