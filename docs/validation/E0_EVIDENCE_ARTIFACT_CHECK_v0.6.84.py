@@ -110,8 +110,8 @@ def main(argv=None):
     parser.add_argument("--evidence-root", type=Path, required=True)
     args = parser.parse_args(argv)
     try:
-        data = json.loads(args.check.read_text(encoding="utf-8"))
-    except (OSError, UnicodeError, ValueError) as exc:
+        data = CHECKER.load_register(args.check)
+    except (OSError, UnicodeError, ValueError, RecursionError) as exc:
         print(json.dumps({"verdict": "INVALID", "error": type(exc).__name__}))
         return 2
     valid, verified, details = verify(data, args.evidence_root)

@@ -146,6 +146,38 @@ class E0EvidenceGateTests(unittest.TestCase):
         self.assertTrue(go)
         self.assertEqual(detail["errors"], [])
 
+    def test_strict_json_rejects_duplicate_keys_at_any_level(self):
+        for value in (
+            '{"schema_version":1,"schema_version":2,"gates":[]}',
+            '{"schema_version":1,"gates":[{"gate_id":"E0-01","gate_id":"E0-02"}]}',
+        ):
+            with self.subTest(value=value[:32]):
+                with self.assertRaisesRegex(ValueError, "duplicate JSON object member"):
+                    checker.strict_json_loads(value)
+
+    def test_strict_json_rejects_non_finite_constants(self):
+        for token in ("NaN", "Infinity", "-Infinity"):
+            with self.subTest(token=token):
+                with self.assertRaisesRegex(ValueError, "non-finite JSON numeric constant"):
+                    checker.strict_json_loads('{"value":'+token+'}')
+
+    def test_strict_loader_limits_size_and_keeps_private_keys_out_of_errors(self):
+        from tempfile import TemporaryDirectory
+        with TemporaryDirectory() as folder:
+            path = Path(folder) / "private-register.json"
+            path.write_bytes(b" " * (checker.MAX_REGISTER_BYTES + 1))
+            with self.assertRaisesRegex(ValueError, "size limit"):
+                checker.load_register(path)
+            secret = "secret-do-not-log"
+            path.write_text('{"'+secret+'":1,"'+secret+'":2}', encoding="utf-8")
+            output = io.StringIO()
+            with redirect_stdout(output):
+                exit_code = checker.main(["--check", str(path), "--allow-no-go"])
+            self.assertEqual(exit_code, 2)
+            parsed = json.loads(output.getvalue())
+            self.assertEqual(parsed["verdict"], "INVALID")
+            self.assertNotIn(secret, output.getvalue())
+
     def test_cli_no_go_exit_code_and_ci_structure_mode(self):
         for ci_mode, expected in ((False, 1), (True, 0)):
             with self.subTest(ci_mode=ci_mode):

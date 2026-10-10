@@ -189,3 +189,5 @@ restore same-cluster/roles existentes não qualifica recuperação cross-cluster
 [v0.6.85 — snapshot de evidências E0](validation/E0_EVIDENCE_SNAPSHOT_CONTRACT_v0.6.85.md): hash canônico reproduzível após verificação dos arquivos; mantém NO-GO sem evidências e não representa autenticação externa de revisores. v0.6.84 integrada pelo PR #195.
 
 [v0.6.86 — comparação de snapshot com hash aprovado](validation/E0_PINNED_SNAPSHOT_COMPARISON_v0.6.86.md): revalida bytes e metadados E0 contra SHA-256 fixado externamente, com falha segura para divergência. v0.6.85 integrada no PR #196; E0 operacional continua NO-GO.
+
+[v0.6.87 — input E0 estrito](validation/E0_STRICT_JSON_INTAKE_v0.6.87.md): parsing comum fail-closed dos três CLIs, rejeitando chaves duplicadas, non-finite e oversized, com testes adversariais. v0.6.86 integrada pelo PR #197; E0 operacional permanece NO-GO.
