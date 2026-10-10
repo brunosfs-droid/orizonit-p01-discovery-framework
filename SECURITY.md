@@ -41,7 +41,7 @@ Use SHA-256 for collected artifacts. Hashes detect accidental or post-collection
 
 ## Vulnerability reporting
 
-Do not disclose repository or customer vulnerabilities in public issues. Use private communication approved by Orizon IT.
+Do not disclose repository or customer vulnerabilities in public issues. Use GitHub private vulnerability reporting when available, or contact the maintainers through a private channel.
 
 
 ## SSH credentialed enrichment
