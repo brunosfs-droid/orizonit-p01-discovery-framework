@@ -102,6 +102,50 @@ class E0EvidenceGateTests(unittest.TestCase):
         self.assertFalse(go)
         self.assertIn("metadata: release_commit", summary["missing"])
 
+    def test_lab_operator_cannot_review_own_pass_gate(self):
+        for candidate in ("lab-reviewer", "  LAB-REVIEWER  "):
+            with self.subTest(candidate=candidate):
+                d = self.complete()
+                d["gates"][0]["reviewer"] = candidate
+                valid, go, detail = checker.assess(d)
+                self.assertFalse(valid)
+                self.assertFalse(go)
+                self.assertIn("E0-01: gate reviewer must differ from operator", detail["errors"])
+
+    def test_security_and_release_reviewers_must_be_independent(self):
+        for field, value in (
+            ("security_reviewer", "  LAB-REVIEWER "),
+            ("release_reviewer", "lab-reviewer"),
+            ("release_reviewer", " SECURITY-REVIEWER "),
+        ):
+            with self.subTest(field=field, value=value):
+                d = self.complete()
+                d[field] = value
+                valid, go, detail = checker.assess(d)
+                self.assertFalse(valid)
+                self.assertFalse(go)
+                self.assertIn(
+                    "operator, security_reviewer and release_reviewer must be distinct",
+                    detail["errors"],
+                )
+
+    def test_untrusted_gate_id_never_echoes_suspected_secret(self):
+        d = self.complete()
+        d["gates"][0]["gate_id"] = "secret-value-should-never-appear"
+        d["gates"][0]["result"] = "not-a-state"
+        valid, go, detail = checker.assess(d)
+        self.assertFalse(valid)
+        self.assertFalse(go)
+        self.assertNotIn("secret-value-should-never-appear", json.dumps(detail))
+        self.assertIn("gate[1]: invalid result", detail["errors"])
+
+    def test_checkers_with_distinct_identities_still_go(self):
+        d = self.complete()
+        valid, go, detail = checker.assess(d)
+        self.assertTrue(valid)
+        self.assertTrue(go)
+        self.assertEqual(detail["errors"], [])
+
     def test_cli_no_go_exit_code_and_ci_structure_mode(self):
         for ci_mode, expected in ((False, 1), (True, 0)):
             with self.subTest(ci_mode=ci_mode):

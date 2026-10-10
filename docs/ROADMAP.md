@@ -865,3 +865,8 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 
 - [Validador e contrato](validation/E0_EVIDENCE_MACHINE_GATE_v0.6.82.md): JSON E0 com dez gates NOT RUN, verificação offline de campos, digests e revisão; CI assegura validade estrutural sem conferir GO operacional.
 - v0.6.81 integrada pelo PR #192; E0/R02/R06/T13/R20 continuam sem homologação de laboratório.
+
+## v0.6.83 — independência de revisão e saída segura do gate E0 (CANDIDATE)
+
+- [Contrato e testes](validation/E0_MAKER_CHECKER_GATE_v0.6.83.md): validação de funções separadas, comparação de identidades normalizadas, bloqueio de autoaprovação e sanitização de IDs malformados.
+- v0.6.82 integrada pelo PR #193; E0 no EVE-NG, verificação de identidade externa, R02/R06 e T13/R20 permanecem pendentes.
