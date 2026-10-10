@@ -875,3 +875,8 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 
 - [Contrato e testes](validation/E0_ARTIFACT_INTEGRITY_v0.6.84.md): arquivos locais conferidos byte a byte por SHA-256; URIs controladas, sem traversal, symlinks ou downloads remotos.
 - v0.6.83 integrada no PR #194; E0/EVE-NG, R02/R06, T13/R20 e prova de autenticidade das evidências continuam pendentes.
+
+## v0.6.85 — fingerprint determinístico do conjunto de evidências E0 (CANDIDATE)
+
+- [Contrato de snapshot](validation/E0_EVIDENCE_SNAPSHOT_CONTRACT_v0.6.85.md): prova local de integridade byte a byte seguida de hash canônico do registro E0 completo, ancorando commit, topologia, escopo, revisores e arquivos.
+- v0.6.84 integrada via PR #195. Fingerprint não equivale à assinatura digital ou aceite operacional; E0/R02/R06/T13/R20 continuam abertos.
