@@ -65,7 +65,7 @@ Registrar vendor/versão/OIDs/API/config/limitações. Ligar somente a rodada co
 para poupar recursos. MIB fixtures/agents ajudam sem firmware real. Impressora,
 UPS/câmera/storage começam em perfil genérico/fixture, com teste real para claim real.
 
-Secret Provider mantém credenciais. Outputs reais/capturas ficam em OneDrive;
+Secret Provider mantém credenciais. Outputs reais/capturas ficam em private evidence archive;
 Git guarda fixtures sanitizadas e qualificação técnica. “Ações” do LAB são planos
 e recomendações, não comandos automáticos de remediação.
 
