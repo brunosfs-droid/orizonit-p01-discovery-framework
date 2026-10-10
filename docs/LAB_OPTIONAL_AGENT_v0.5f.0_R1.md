@@ -225,7 +225,7 @@ Lock em duas janelas, na raiz do repositório. Definir os caminhos e ativar o
 ambiente em CADA janela: variáveis PowerShell não são compartilhadas. Janela 1:
 
 ```powershell
-Set-Location "C:\GitHub\orizonit-p01-discovery-framework"
+Set-Location "C:\GitHub\canca"
 . .\.venv\Scripts\Activate.ps1
 $AgentWorkspace = "C:\Canca\runs\P01LAB-CTX-R1\P01LAB-AGENT-R1"
 $HoldScript = @'
@@ -248,7 +248,7 @@ Windows PowerShell e gerou SyntaxError antes de adquirir o lock.
 Janela 2, enquanto a primeira mostra LOCK HELD:
 
 ```powershell
-Set-Location "C:\GitHub\orizonit-p01-discovery-framework"
+Set-Location "C:\GitHub\canca"
 . .\.venv\Scripts\Activate.ps1
 $AgentWorkspace = "C:\Canca\runs\P01LAB-CTX-R1\P01LAB-AGENT-R1"
 $AgentPolicy = Join-Path $AgentWorkspace "config/agent-policy.json"
