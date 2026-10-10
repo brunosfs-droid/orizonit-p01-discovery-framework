@@ -175,3 +175,5 @@ marcos após verificar a baseline v0.6.27 e seu CI.
 
 Nenhum R01–R06 é declarado integralmente concluído. T13/R20 continuam parciais:
 restore same-cluster/roles existentes não qualifica recuperação cross-cluster.
+
+[v0.6.80 — matriz E0/EVE-NG](validation/E0_OPERATIONAL_ACCEPTANCE_v0.6.80.md): formaliza evidências e critérios de aceite sem alegar execução operacional. v0.6.79 integrada pelo PR #190; gates E0/R02/R06/T13/R20 ainda pendentes.

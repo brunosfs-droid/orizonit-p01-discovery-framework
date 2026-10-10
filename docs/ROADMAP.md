@@ -850,3 +850,8 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 
 - [Gate SQL](WORKSPACE_LEDGER_REGRANT_CROSS_SCOPE_v0.6.79.md): reconcessão de leitura em A não expõe o histórico ao entrar no contexto B.
 - v0.6.78 integrada pelo PR #189; E0 e R02/R06 permanecem abertos.
+
+## v0.6.80 — homologação E0: contrato de evidências (CANDIDATE)
+
+- [Matriz operacional](validation/E0_OPERATIONAL_ACCEPTANCE_v0.6.80.md): dez gates reproduzíveis, classificação PASS/FAIL/BLOCKED/NOT RUN, trilha de evidências e regras de interrupção.
+- v0.6.79 integrada pelo PR #190. Publicar checklist não equivale a homologar o EVE-NG; R02/R06/T13/R20 seguem abertos.
