@@ -33,14 +33,14 @@ O manifesto executivo continua delivery v0.6.15, independente da versão da Web.
 
 | Evento | Workflow | Run |
 | --- | --- | --- |
-| pull_request | Python CI | [37149241771](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37149241771) |
-| pull_request | PostgreSQL CI | [37149241798](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37149241798) |
-| pull_request | Operator Web CI | [37149241772](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37149241772) |
-| pull_request | Optional Agent CI | [37149241767](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37149241767) |
-| push | Python CI | [37149223308](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37149223308) |
-| push | PostgreSQL CI | [37149223290](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37149223290) |
-| push | Operator Web CI | [37149223288](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37149223288) |
-| push | Optional Agent CI | [37149223291](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37149223291) |
+| pull_request | Python CI | [37149241771](https://github.com/brunosfs-droid/canca/actions/runs/37149241771) |
+| pull_request | PostgreSQL CI | [37149241798](https://github.com/brunosfs-droid/canca/actions/runs/37149241798) |
+| pull_request | Operator Web CI | [37149241772](https://github.com/brunosfs-droid/canca/actions/runs/37149241772) |
+| pull_request | Optional Agent CI | [37149241767](https://github.com/brunosfs-droid/canca/actions/runs/37149241767) |
+| push | Python CI | [37149223308](https://github.com/brunosfs-droid/canca/actions/runs/37149223308) |
+| push | PostgreSQL CI | [37149223290](https://github.com/brunosfs-droid/canca/actions/runs/37149223290) |
+| push | Operator Web CI | [37149223288](https://github.com/brunosfs-droid/canca/actions/runs/37149223288) |
+| push | Optional Agent CI | [37149223291](https://github.com/brunosfs-droid/canca/actions/runs/37149223291) |
 
 - Python CI: 462 casos, 355 executados / 107 skips opt-in, PASS.
 - PostgreSQL **16.15 / 17.11**: **186 casos cada, sem skips**, PASS. O caso novo
