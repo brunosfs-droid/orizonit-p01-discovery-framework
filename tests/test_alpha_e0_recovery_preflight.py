@@ -1,5 +1,6 @@
 """Non-destructive, cross-platform unit tests for the E0 offline artifact gate."""
 import json
+import hashlib
 import importlib.util
 import os
 from pathlib import Path
@@ -173,6 +174,114 @@ class E0RecoveryArtifactTests(unittest.TestCase):
         outcome, result = self.run_gate("verify")
         self.assertEqual(outcome.returncode, 0)
         self.assertEqual(result["status"], "PASS")
+
+    @unittest.skipUnless(os.name == "posix" and hasattr(os, "O_NOFOLLOW") and
+                         os.open in os.supports_dir_fd and
+                         os.stat in os.supports_dir_fd,
+                         "fd-anchored tree traversal requires POSIX")
+    def test_nested_tree_preserves_v1_manifest_digest(self):
+        nested = self.store / "assessments" / "nested"
+        nested.mkdir()
+        (nested / "inventory.json").write_bytes(b"synthetic-inventory")
+        expected = hashlib.sha256()
+        expected.update(("ROOT\\0" + oct(stat.S_IMODE(self.store.lstat().st_mode)) +
+                         "\\n").encode())
+        for path in sorted(self.store.rglob("*"),
+                           key=lambda p: p.relative_to(self.store).as_posix()):
+            info = path.lstat()
+            name = path.relative_to(self.store).as_posix()
+            if path.is_dir():
+                line = ["D", name, oct(stat.S_IMODE(info.st_mode))]
+            else:
+                line = ["F", name, str(info.st_size),
+                        hashlib.sha256(path.read_bytes()).hexdigest(),
+                        oct(stat.S_IMODE(info.st_mode))]
+            expected.update(("\\0".join(line) + "\\n").encode("utf-8"))
+        result = gate._directory(self.store)
+        self.assertEqual(result["sha256"], expected.hexdigest())
+        self.assertEqual(result["files"], 2)
+        self.assertEqual(result["directories"], 2)
+        self.assertEqual(self.capture()["artifacts"]["store"]["sha256"],
+                         expected.hexdigest())
+
+    @unittest.skipUnless(os.name == "posix" and hasattr(os, "O_NOFOLLOW") and
+                         os.open in os.supports_dir_fd and
+                         os.stat in os.supports_dir_fd,
+                         "fd-anchored tree traversal requires POSIX")
+    def test_nested_file_symlink_swap_before_open_is_blocked(self):
+        entry = self.store / "assessments" / "receipt.json"
+        original_file = self.root / "original-receipt"
+        target = self.root / "external-secret"
+        target.write_bytes(b"PRIVATE-TARGET-NOT-IN-SNAPSHOT")
+        opened = os.open
+        swapped = False
+
+        def swap_before_open(path, flags, *args, **kwargs):
+            nonlocal swapped
+            if path == "receipt.json" and kwargs.get("dir_fd") is not None and not swapped:
+                swapped = True
+                entry.rename(original_file)
+                entry.symlink_to(target)
+            return opened(path, flags, *args, **kwargs)
+
+        with (
+            patch.object(gate, "_secure_tree_supported", return_value=True),
+            patch.object(gate.os, "open", side_effect=swap_before_open),
+        ):
+            with self.assertRaisesRegex(gate.GateError, "input_unavailable"):
+                gate._directory(self.store)
+        self.assertTrue(swapped)
+        self.assertEqual(target.read_bytes(), b"PRIVATE-TARGET-NOT-IN-SNAPSHOT")
+
+    @unittest.skipUnless(os.name == "posix" and hasattr(os, "O_NOFOLLOW") and
+                         os.open in os.supports_dir_fd and
+                         os.stat in os.supports_dir_fd,
+                         "fd-anchored tree traversal requires POSIX")
+    def test_subdirectory_symlink_swap_before_open_is_blocked(self):
+        entry = self.store / "assessments"
+        old = self.root / "old-assessments"
+        target = self.root / "external-directory"
+        target.mkdir()
+        (target / "secret.key").write_bytes(b"PRIVATE-OUTSIDE-TREE")
+        opened = os.open
+        swapped = False
+
+        def swap_before_open(path, flags, *args, **kwargs):
+            nonlocal swapped
+            if path == "assessments" and kwargs.get("dir_fd") is not None and not swapped:
+                swapped = True
+                entry.rename(old)
+                entry.symlink_to(target, target_is_directory=True)
+            return opened(path, flags, *args, **kwargs)
+
+        with (
+            patch.object(gate, "_secure_tree_supported", return_value=True),
+            patch.object(gate.os, "open", side_effect=swap_before_open),
+        ):
+            with self.assertRaisesRegex(gate.GateError, "input_unavailable"):
+                gate._directory(self.store)
+        self.assertTrue(swapped)
+
+    @unittest.skipUnless(os.name == "posix" and hasattr(os, "O_NOFOLLOW") and
+                         os.open in os.supports_dir_fd and
+                         os.stat in os.supports_dir_fd,
+                         "fd-anchored tree traversal requires POSIX")
+    def test_new_entry_created_during_walk_invalidates_tree(self):
+        original_listdir = os.listdir
+        changed = False
+
+        def mutate_after_enumeration(fd):
+            nonlocal changed
+            names = original_listdir(fd)
+            if not changed:
+                changed = True
+                (self.store / "new-unlisted.txt").write_bytes(b"new-child")
+            return names
+
+        with patch.object(gate.os, "listdir", side_effect=mutate_after_enumeration):
+            with self.assertRaisesRegex(gate.GateError, "input_changed"):
+                gate._directory(self.store)
+        self.assertTrue(changed)
 
     def test_no_overwrite_and_no_output_inside_source_tree(self):
         self.capture()
