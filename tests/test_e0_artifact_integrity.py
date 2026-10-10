@@ -270,6 +270,51 @@ class E0ArtifactIntegrityTests(unittest.TestCase):
                 self.assertNotIn("lab-approval-01", out.getvalue())
                 self.assertNotIn(str(self.root), out.getvalue())
 
+    def test_all_three_e0_clis_reject_ambiguous_json_before_verification(self):
+        document = json.dumps(self.document)
+        cases = (
+            document.replace('"result": "PASS"', '"result": "PASS", "result": "FAIL"', 1),
+            document[:-1] + ', "non_finite": NaN}',
+            document[:-1] + ', "release_commit": "f" }',
+        )
+        path = Path(self.temp.name) / "untrusted.json"
+        expected = snapshot_checker.snapshot(self.document, self.root)[2]["snapshot_sha256"]
+        entrypoints = (
+            (checker.CHECKER.main, ["--check", str(path)]),
+            (checker.main, ["--check", str(path), "--evidence-root", str(self.root)]),
+            (snapshot_checker.main, ["--check", str(path),
+                                     "--evidence-root", str(self.root),
+                                     "--expected-sha256", expected]),
+        )
+        for i, raw in enumerate(cases):
+            path.write_text(raw, encoding="utf-8")
+            for cli, args in entrypoints:
+                with self.subTest(case=i, cli=cli.__module__):
+                    output = io.StringIO()
+                    with redirect_stdout(output):
+                        exit_code = cli(args)
+                    self.assertEqual(exit_code, 2)
+                    response = json.loads(output.getvalue())
+                    self.assertEqual(response["verdict"], "INVALID")
+                    self.assertNotIn("lab-operator", output.getvalue())
+                    self.assertNotIn(str(self.root), output.getvalue())
+
+    def test_all_three_e0_clis_reject_oversized_register(self):
+        path = Path(self.temp.name) / "untrusted-oversize.json"
+        path.write_bytes(b" " * (checker.CHECKER.MAX_REGISTER_BYTES + 1))
+        entrypoints = (
+            (checker.CHECKER.main, ["--check", str(path)]),
+            (checker.main, ["--check", str(path), "--evidence-root", str(self.root)]),
+            (snapshot_checker.main, ["--check", str(path), "--evidence-root", str(self.root)]),
+        )
+        for cli, args in entrypoints:
+            with self.subTest(cli=cli.__module__):
+                output = io.StringIO()
+                with redirect_stdout(output):
+                    exit_code = cli(args)
+                self.assertEqual(exit_code, 2)
+                self.assertEqual(json.loads(output.getvalue())["verdict"], "INVALID")
+
     def test_pinned_snapshot_pending_gate_stays_no_go(self):
         expected = snapshot_checker.snapshot(self.document, self.root)[2]["snapshot_sha256"]
         doc = copy.deepcopy(self.document)
