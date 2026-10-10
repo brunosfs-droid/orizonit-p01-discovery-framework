@@ -925,3 +925,8 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 
 - [Contrato e testes](validation/ALPHA_R06_PREFLIGHT_TOCTOU_v0.6.94.md): hash de artefatos via descritores O_NOFOLLOW em POSIX, verificação de inode/metadados antes/depois, testes de symlink no diretório ancestral e substituição entre lstat/open.
 - v0.6.93 integrada pelo PR #204 após reexecução aprovada do Optional Agent CI (Windows 3.13); risco de intermitência da temporização CI a investigar. EVE-NG E0 e R06 cross-cluster permanecem pendentes.
+
+## v0.6.95 — varredura de árvores R06 com descritores de diretório (CANDIDATE)
+
+- [Contrato R06](validation/ALPHA_R06_DESCRIPTOR_TREE_WALK_v0.6.95.md): impede leitura fora das árvores de store/config por troca de symlinks em Linux/POSIX, verifica identidades antes/depois e preserva digest v1 do manifesto.
+- v0.6.94 integrada pelo PR #205; EVE-NG E0 e restore cross-cluster real R06 permanecem NO-GO.
