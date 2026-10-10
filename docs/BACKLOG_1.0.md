@@ -197,3 +197,5 @@ restore same-cluster/roles existentes não qualifica recuperação cross-cluster
 [v0.6.89 — ensaio offline R02/T14](validation/ALPHA_R02_COORDINATOR_LOAD_SMOKE_v0.6.89.md): verificação sintética de drain, cancelamento de jobs, gerações antigas e métricas p50/p95/RAM. v0.6.88 integrada pelo PR #199; E0 operacional e R02 real permanecem abertos.
 
 [v0.6.90 — multi-processo R02](validation/ALPHA_R02_LEGACY_MULTIPROCESS_SMOKE_v0.6.90.md): adapter legado sob processos reais e fixture offline, encerramento de filhos na troca A/B e verificação de fence de geração; v0.6.89 integrada no PR #200. Não fecha R02/T14 nem E0.
+
+[v0.6.91 — falhas assíncronas R02](validation/ALPHA_R02_LIVE_REVOCATION_v0.6.91.md): testes Linux com dois subprocessos e injeção de revogação de leitor ou perda de lease em execução; nenhum resultado tardio, sem reabertura de geração comprometida. v0.6.90 integrada no PR #201; E0 permanece NO-GO.
