@@ -18,6 +18,11 @@ SPEC = importlib.util.spec_from_file_location("e0_artifact_verifier", SCRIPT)
 checker = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(checker)
 
+SNAPSHOT_SCRIPT = ROOT / "docs/validation/E0_EVIDENCE_SNAPSHOT_v0.6.85.py"
+SNAPSHOT_SPEC = importlib.util.spec_from_file_location("e0_snapshot_v085", SNAPSHOT_SCRIPT)
+snapshot_checker = importlib.util.module_from_spec(SNAPSHOT_SPEC)
+SNAPSHOT_SPEC.loader.exec_module(snapshot_checker)
+
 
 class E0ArtifactIntegrityTests(unittest.TestCase):
     def setUp(self):
@@ -132,6 +137,75 @@ class E0ArtifactIntegrityTests(unittest.TestCase):
         self.assertFalse(verified)
         self.assertEqual(report["verified_artifacts"], 0)
 
+
+    def test_snapshot_is_reproducible_and_gate_order_independent(self):
+        valid, ready, first = snapshot_checker.snapshot(self.document, self.root)
+        self.assertTrue(valid)
+        self.assertTrue(ready)
+        self.assertFalse(first["operational_go"])
+        self.assertEqual(len(first["snapshot_sha256"]), 64)
+        reordered = copy.deepcopy(self.document)
+        reordered["gates"].reverse()
+        valid, ready, second = snapshot_checker.snapshot(reordered, self.root)
+        self.assertTrue(valid)
+        self.assertTrue(ready)
+        self.assertEqual(first["snapshot_sha256"], second["snapshot_sha256"])
+
+    def test_snapshot_tracks_release_topology_and_reviewer_changes(self):
+        first = snapshot_checker.snapshot(self.document, self.root)[2]["snapshot_sha256"]
+        updates = (
+            ("release_commit", "d" * 40),
+            ("topology_sha256", "e" * 64),
+            ("security_reviewer", "new-independent-security-checker"),
+            ("scope_approval_ref", "lab-approval-02"),
+        )
+        for field, value in updates:
+            with self.subTest(field=field):
+                document = copy.deepcopy(self.document)
+                document[field] = value
+                valid, ready, report = snapshot_checker.snapshot(document, self.root)
+                self.assertTrue(valid)
+                self.assertTrue(ready)
+                self.assertNotEqual(first, report["snapshot_sha256"])
+
+    def test_snapshot_tracks_verified_artifact_change(self):
+        first = snapshot_checker.snapshot(self.document, self.root)[2]["snapshot_sha256"]
+        path = self.root / "E0-01" / "report.txt"
+        changed = b"altered synthetic evidence bytes\n"
+        path.write_bytes(changed)
+        amended = copy.deepcopy(self.document)
+        amended["gates"][0]["evidence_sha256"] = hashlib.sha256(changed).hexdigest()
+        valid, ready, report = snapshot_checker.snapshot(amended, self.root)
+        self.assertTrue(valid)
+        self.assertTrue(ready)
+        self.assertNotEqual(first, report["snapshot_sha256"])
+
+    def test_snapshot_is_absent_on_mismatch_or_pending_e0_gate(self):
+        (self.root / "E0-01" / "report.txt").write_bytes(b"tampered")
+        valid, ready, report = snapshot_checker.snapshot(self.document, self.root)
+        self.assertTrue(valid)
+        self.assertFalse(ready)
+        self.assertNotIn("snapshot_sha256", report)
+        pending = copy.deepcopy(self.document)
+        pending["gates"][0]["result"] = "NOT RUN"
+        valid, ready, report = snapshot_checker.snapshot(pending, self.root)
+        self.assertTrue(valid)
+        self.assertFalse(ready)
+        self.assertNotIn("snapshot_sha256", report)
+
+    def test_snapshot_cli_never_reports_operational_approval(self):
+        filename = Path(self.temp.name) / "private-e0.json"
+        filename.write_text(json.dumps(self.document), encoding="utf-8")
+        out = io.StringIO()
+        with redirect_stdout(out):
+            code = snapshot_checker.main(["--check", str(filename),
+                                          "--evidence-root", str(self.root)])
+        self.assertEqual(code, 0)
+        report = json.loads(out.getvalue())
+        self.assertEqual(report["verdict"], "SNAPSHOT_READY")
+        self.assertFalse(report["operational_go"])
+        self.assertNotIn("lab-approval-01", out.getvalue())
+        self.assertNotIn(str(self.root), out.getvalue())
 
 if __name__ == "__main__":
     unittest.main()

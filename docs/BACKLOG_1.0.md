@@ -185,3 +185,5 @@ restore same-cluster/roles existentes não qualifica recuperação cross-cluster
 [v0.6.83 — separação de revisão E0](validation/E0_MAKER_CHECKER_GATE_v0.6.83.md): bloqueio de autoaprovação por operador, revisão de segurança/release independente e diagnósticos sem IDs arbitrários. v0.6.82 integrada via PR #193; E0 operacional ainda NO-GO.
 
 [v0.6.84 — integridade local das evidências E0](validation/E0_ARTIFACT_INTEGRITY_v0.6.84.md): verificação real de arquivos por SHA-256, confinamento seguro de diretórios e teste adversarial. v0.6.83 integrada no PR #194; E0 operacional permanece NO-GO.
+
+[v0.6.85 — snapshot de evidências E0](validation/E0_EVIDENCE_SNAPSHOT_CONTRACT_v0.6.85.md): hash canônico reproduzível após verificação dos arquivos; mantém NO-GO sem evidências e não representa autenticação externa de revisores. v0.6.84 integrada pelo PR #195.
