@@ -31,17 +31,17 @@ both technical and executive archives and preserve no-cookie/storage behavior.
 
 Executable source: `2db86d56f3077babc00eacb0a94cb885e2966348`.
 Git tree: `d519af99d774ede0e0e90038cd1f86d15b56a001`.
-[PR #115](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/pull/115).
+[PR #115](https://github.com/brunosfs-droid/canca/pull/115).
 Subsequent qualification-document changes preserve this executable source.
 All eight exact-head runs completed successfully, with sixteen actual jobs and
 nonempty executed steps; both pull_request and push matrices passed.
 
 | Workflow | pull_request | push | Jobs per event |
 | --- | --- | --- | --- |
-| Python CI | [37146668209](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37146668209) | [37146666328](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37146666328) | 1 |
-| PostgreSQL CI | [37146668155](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37146668155) | [37146666335](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37146666335) | 2 |
-| Operator Web CI | [37146668222](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37146668222) | [37146666332](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37146666332) | 1 |
-| Optional Agent CI | [37146668224](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37146668224) | [37146666331](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37146666331) | 4 |
+| Python CI | [37146668209](https://github.com/brunosfs-droid/canca/actions/runs/37146668209) | [37146666328](https://github.com/brunosfs-droid/canca/actions/runs/37146666328) | 1 |
+| PostgreSQL CI | [37146668155](https://github.com/brunosfs-droid/canca/actions/runs/37146668155) | [37146666335](https://github.com/brunosfs-droid/canca/actions/runs/37146666335) | 2 |
+| Operator Web CI | [37146668222](https://github.com/brunosfs-droid/canca/actions/runs/37146668222) | [37146666332](https://github.com/brunosfs-droid/canca/actions/runs/37146666332) | 1 |
+| Optional Agent CI | [37146668224](https://github.com/brunosfs-droid/canca/actions/runs/37146668224) | [37146666331](https://github.com/brunosfs-droid/canca/actions/runs/37146666331) | 4 |
 
 ## Results
 
