@@ -5,7 +5,6 @@
 **Nome do produto:** Cancã  
 **Descriptor:** Open Infrastructure Assessment & Intelligence Platform  
 **Empresa:** Orizon IT  
-**Identificador interno do portfólio:** P01
 
 ## Conceito
 
@@ -16,7 +15,6 @@ A identidade visual conceito v1 usa a ave como símbolo de observação, descobe
 ## Arte
 
 - `canca-brand-concept-v1.jpg` — versão otimizada para documentação e GitHub.
-- O arquivo mestre em maior resolução é mantido na governança de produto da Orizon IT no Google Drive.
 
 ## Status
 
