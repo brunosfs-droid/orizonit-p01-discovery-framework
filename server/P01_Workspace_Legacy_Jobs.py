@@ -55,6 +55,38 @@ class LegacyRunRoots:
         return path
 
 
+
+def _linux_running_group_member(pgid):
+    """True if /proc still reports a running process in this process group.
+
+    Zombie members do not execute and are excluded. When /proc cannot
+    be inspected, do not claim verified cleanup: the caller quarantines.
+    Linux only; other POSIX platforms retain their prior cleanup behavior.
+    """
+    try:
+        with os.scandir("/proc") as entries:
+            for entry in entries:
+                if not entry.name.isdecimal():
+                    continue
+                try:
+                    raw = (Path(entry.path) / "stat").read_bytes()
+                except FileNotFoundError:
+                    # A PID can disappear between directory scan and read.
+                    continue
+                detail = raw.rsplit(b") ", 1)
+                if len(detail) != 2:
+                    raise OSError("unreadable process status")
+                fields = detail[1].split()
+                if len(fields) < 3:
+                    raise OSError("incomplete process status")
+                if int(fields[2]) == pgid and fields[0] not in (b"Z", b"X"):
+                    return True
+    except (OSError, ValueError) as exc:
+        raise pg.PersistenceError("workspace_legacy_job_failed") from None
+    return False
+
+
+
 def _stop(process):
     """Bounded best-effort process-group cleanup before releasing the workspace job.
 
@@ -93,6 +125,14 @@ def _stop(process):
             process.wait(timeout=1)
         except (OSError, subprocess.TimeoutExpired):
             raise pg.PersistenceError("workspace_legacy_job_failed") from None
+        if sys.platform.startswith("linux"):
+            # Waiting for the leader alone does not prove descendants exited.
+            # A still-running member after SIGKILL must block A→B transitions.
+            verify_deadline = time.monotonic() + 0.75
+            while _linux_running_group_member(pgid):
+                if time.monotonic() >= verify_deadline:
+                    raise pg.PersistenceError("workspace_legacy_job_failed")
+                time.sleep(0.025)
         return
     if process.poll() is not None:
         return
