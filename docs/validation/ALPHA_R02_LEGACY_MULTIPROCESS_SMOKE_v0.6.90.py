@@ -55,10 +55,8 @@ def qualification(*, cycles=2, workers=2):
         SYNTHETIC.SimulatedLease(), authorizer=authorize,
         heartbeat_seconds=30, max_jobs=workers,
     )
-    failures = []
     timings = []
     total_fenced = 0
-    all_pids = set()
     started = False
     try:
         with tempfile.TemporaryDirectory(prefix="canca-r02-offline-") as directory:
@@ -113,7 +111,6 @@ def qualification(*, cycles=2, workers=2):
                                 break
                             time.sleep(0.02)
                         found = set(int(p.stem) for p in marks.glob("*.pid"))
-                        all_pids.update(found)
                         if len(found) != workers or len(runtime._jobs) != workers:
                             raise AssertionError("synthetic jobs did not start")
                         start = time.monotonic()
@@ -146,7 +143,7 @@ def qualification(*, cycles=2, workers=2):
                         for thread in threads:
                             if thread.is_alive():
                                 thread.join(timeout=4)
-                        for pid in all_pids:
+                        for pid in found:
                             if pid_active(pid):
                                 # Fail closed: a leaked process must be killed
                                 # even if a preceding assertion failed.
