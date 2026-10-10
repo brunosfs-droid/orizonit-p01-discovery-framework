@@ -9,7 +9,7 @@ das PRs #133–137 e retomada das tarefas1–4, consultar o
 
 ## Estado anterior confirmado
 
-- Repo público brunosfs-droid/orizonit-p01-discovery-framework, main.
+- Repo público brunosfs-droid/canca, main.
 - HEAD remoto/clone: `546d939ea50299ab3506dfb0d4546e6ddba0b714`.
 - Último commit: docs: sync SNMP v0.4b.9 completion and next steps (#131).
 - Working tree limpo antes da revisão; nenhuma PR aberta; #131 integrada.
@@ -31,5 +31,5 @@ Primeiro incremento: R01/v0.6.21 alvo, contratos Workspace/Site/Environment,
 ownership/grants/migração aditiva e testes A/B; depois carga única/histórico.
 Mantenedor solicitou preparação e aviso antes de começar essa execução.
 
-GitHub mantém documentação viva. OneDrive recebe snapshot formal com manifest/
+GitHub mantém documentação viva. private evidence archive recebe snapshot formal com manifest/
 hashes/referência da branch/commit, sem fonte editável concorrente.
