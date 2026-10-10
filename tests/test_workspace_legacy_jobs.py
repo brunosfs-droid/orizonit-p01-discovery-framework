@@ -127,6 +127,56 @@ class LegacyJobsTests(unittest.TestCase):
             adapter.legacy_checkpoint("reader", token)
         self.assertEqual(new.workspace_id, "B")
 
+    def test_failed_child_cleanup_quarantines_and_cancels_other_jobs(self):
+        token = self.opened()
+        script, source, adapter = self.configured()
+        with self.c.borrow("reader", token) as other_operation:
+            with (
+                patch.object(jobs, "SCRIPT", script),
+                patch.object(jobs.subprocess, "Popen") as spawned,
+                patch.object(jobs, "_stop",
+                             side_effect=OSError("PRIVATE child cleanup diagnostic")),
+            ):
+                spawned.return_value.poll.return_value = 0
+                with self.assertRaisesRegex(
+                    pg.PersistenceError, "workspace_legacy_job_failed"
+                ) as caught:
+                    adapter.legacy_checkpoint("reader", token, timeout=2)
+                self.assertNotIn("PRIVATE", str(caught.exception))
+                self.assertEqual(self.c.state, "recovery_required")
+                self.assertTrue(other_operation.cancel.is_set())
+                with self.assertRaisesRegex(pg.PersistenceError, "workspace_lease_lost"):
+                    other_operation.check()
+                with self.assertRaisesRegex(pg.PersistenceError, "workspace_lease_lost"):
+                    self.opened("B")
+                spawned.assert_called_once()
+        self.assertFalse(self.c._jobs)
+        self.assertEqual(self.c._cache, {})
+        self.assertEqual(self.c._bytes, 0)
+
+    def test_cleanup_failure_after_revocation_stays_quarantined(self):
+        token = self.opened()
+        script, source, adapter = self.configured()
+
+        def revoke_on_exit(*args, **kwargs):
+            self.grants["reader"].clear()
+            return 0
+
+        with (
+            patch.object(jobs, "SCRIPT", script),
+            patch.object(jobs.subprocess, "Popen") as spawned,
+            patch.object(jobs, "_stop", side_effect=RuntimeError("private failure")),
+        ):
+            spawned.return_value.poll.side_effect = revoke_on_exit
+            with self.assertRaisesRegex(
+                pg.PersistenceError, "workspace_legacy_job_failed"
+            ):
+                adapter.legacy_checkpoint("reader", token, timeout=2)
+        self.assertEqual(self.c.state, "recovery_required")
+        self.assertFalse(self.c._jobs)
+        with self.assertRaisesRegex(pg.PersistenceError, "workspace_lease_lost"):
+            self.opened("B")
+
     def test_revoked_reader_cannot_receive_result(self):
         token = self.opened()
         script, source, adapter = self.configured()

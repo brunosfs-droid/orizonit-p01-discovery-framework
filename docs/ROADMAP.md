@@ -910,3 +910,8 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 
 - [Procedimento e limites](validation/ALPHA_R02_LIVE_REVOCATION_v0.6.91.md): exercita adaptador de checkpoint com processos Python sintéticos reais sob revogação de leitor ou perda de lease, validando cancelamento e ausência de publicação tardia.
 - v0.6.90 integrada pelo PR #201; EVE-NG e R02 com credenciais/coletores reais, regrant atômico e multi-host continuam pendentes.
+
+## v0.6.92 — quarentena do coordenador diante de falha de cleanup R02 (CANDIDATE)
+
+- [Contrato e regressões](validation/ALPHA_R02_CLEANUP_QUARANTINE_v0.6.92.md): `fail_closed()` bloqueia troca de workspace quando `_stop(child)` falha, cancela outros jobs e limpa cache; erro sanitizado antes de liberar job.
+- v0.6.91 integrada pelo PR #202. R02/E0 com I/O real, EVE-NG e T13/R20 cross-cluster continuam pendentes.
