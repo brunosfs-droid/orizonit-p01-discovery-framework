@@ -7,6 +7,36 @@ import json
 from pathlib import Path
 import re
 
+MAX_REGISTER_BYTES = 1024 * 1024
+
+
+def strict_json_loads(raw):
+    """Reject ambiguous JSON (duplicate keys and non-finite numbers) safely."""
+    def unique_keys(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                # Deliberately avoid printing untrusted key names.
+                raise ValueError("duplicate JSON object member")
+            result[key] = value
+        return result
+
+    def reject_constant(_value):
+        raise ValueError("non-finite JSON numeric constant")
+
+    return json.loads(raw, object_pairs_hook=unique_keys,
+                      parse_constant=reject_constant)
+
+
+def load_register(path):
+    """Bound the input size before strict UTF-8 decoding and JSON parsing."""
+    with Path(path).open("rb") as source:
+        raw = source.read(MAX_REGISTER_BYTES + 1)
+    if len(raw) > MAX_REGISTER_BYTES:
+        raise ValueError("E0 register exceeds size limit")
+    return strict_json_loads(raw.decode("utf-8"))
+
+
 GATE_IDS = tuple(f"E0-{i:02d}" for i in range(1, 11))
 STATES = frozenset({"PASS", "FAIL", "BLOCKED", "NOT RUN"})
 DIGEST = re.compile(r"^[0-9a-f]{64}$")
@@ -110,8 +140,8 @@ def main(argv=None):
                         help="CI structure check only; NEVER implies operational approval")
     args = parser.parse_args(argv)
     try:
-        data = json.loads(args.check.read_text(encoding="utf-8"))
-    except (OSError, ValueError) as exc:
+        data = load_register(args.check)
+    except (OSError, ValueError, UnicodeError, RecursionError) as exc:
         print(json.dumps({"verdict": "INVALID", "error": type(exc).__name__}))
         return 2
     valid, go, detail = assess(data)
