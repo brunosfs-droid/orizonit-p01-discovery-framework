@@ -845,3 +845,8 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 
 - [Gate SQL](WORKSPACE_LEDGER_READER_INTENT_TRUNCATE_DENIAL_v0.6.78.md): role read-only reconcedida não pode truncar a tabela de intenções sem CASCADE.
 - v0.6.77 integrada pelo PR #188; E0 e R02/R06 seguem abertos.
+
+## v0.6.79 — isolamento do ledger A-B-A após regrant (CANDIDATE)
+
+- [Gate SQL](WORKSPACE_LEDGER_REGRANT_CROSS_SCOPE_v0.6.79.md): reconcessão de leitura em A não expõe o histórico ao entrar no contexto B.
+- v0.6.78 integrada pelo PR #189; E0 e R02/R06 permanecem abertos.

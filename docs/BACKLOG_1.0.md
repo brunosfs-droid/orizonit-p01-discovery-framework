@@ -1,5 +1,7 @@
 # Cancã — backlog rastreável 1.0
 
+[v0.6.79 — regrant de A isolado no contexto B](WORKSPACE_LEDGER_REGRANT_CROSS_SCOPE_v0.6.79.md): histórico preservado em A e negado em B após reconcessão; v0.6.78 integrada no PR #189; E0 pendente.
+
 [v0.6.78 — negação de TRUNCATE sem CASCADE](WORKSPACE_LEDGER_READER_INTENT_TRUNCATE_DENIAL_v0.6.78.md): leitor reconcedido não pode truncar intenções, preservando histórico; v0.6.77 integrada pelo PR #188; E0 pendente.
 
 [v0.6.77 — negação de INSERT direto em intenções](WORKSPACE_LEDGER_READER_INTENT_INSERT_DENIAL_v0.6.77.md): leitor reconcedido não pode criar intenção via SQL direto; v0.6.76 integrada pelo PR #187; E0 pendente.
