@@ -199,3 +199,5 @@ restore same-cluster/roles existentes não qualifica recuperação cross-cluster
 [v0.6.90 — multi-processo R02](validation/ALPHA_R02_LEGACY_MULTIPROCESS_SMOKE_v0.6.90.md): adapter legado sob processos reais e fixture offline, encerramento de filhos na troca A/B e verificação de fence de geração; v0.6.89 integrada no PR #200. Não fecha R02/T14 nem E0.
 
 [v0.6.91 — falhas assíncronas R02](validation/ALPHA_R02_LIVE_REVOCATION_v0.6.91.md): testes Linux com dois subprocessos e injeção de revogação de leitor ou perda de lease em execução; nenhum resultado tardio, sem reabertura de geração comprometida. v0.6.90 integrada no PR #201; E0 permanece NO-GO.
+
+[v0.6.92 — quarentena R02](validation/ALPHA_R02_CLEANUP_QUARANTINE_v0.6.92.md): erro de encerramento de subprocesso bloqueia nova geração/workspace, cancela outros jobs e limpa cache; exige investigação/recriação controlada. v0.6.91 integrada no PR #202, E0 continua NO-GO.
