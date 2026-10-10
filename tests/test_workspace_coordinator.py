@@ -158,6 +158,23 @@ class CoordinatorTests(unittest.TestCase):
         self.assertTrue(all(type(x) is int or x=='workspace_generation_stale' for x in result))
         self.assertEqual(b.generation,a.generation+3)
 
+    def test_internal_fail_closed_cancels_jobs_and_blocks_workspace_switch(self):
+        token = self.opened()
+        with self.c.borrow("reader", token) as running:
+            running.cache_put("sample", b"abc")
+            self.assertEqual(self.c._cache["sample"], b"abc")
+            self.c.fail_closed()
+            self.c.fail_closed()  # Idempotent: never re-enables a generation.
+            self.assertEqual(self.c.state, "recovery_required")
+            self.assertTrue(running.cancel.is_set())
+            self.assertEqual(self.c._cache, {})
+            self.assertEqual(self.c._bytes, 0)
+            with self.assertRaisesRegex(pg.PersistenceError, "workspace_lease_lost"):
+                running.check()
+            with self.assertRaisesRegex(pg.PersistenceError, "workspace_lease_lost"):
+                self.opened("B")
+        self.assertFalse(self.c._jobs)
+
     def test_lease_loss_cancels_jobs_clears_cache_and_never_reopens(self):
         a=self.opened()
         with self.c.borrow('writer',a) as job:
