@@ -178,6 +178,81 @@ class E0EvidenceGateTests(unittest.TestCase):
             self.assertEqual(parsed["verdict"], "INVALID")
             self.assertNotIn(secret, output.getvalue())
 
+    def test_pinned_e0_description_cannot_be_substituted(self):
+        d = self.complete()
+        d["gates"][5]["description"] = "Skip coordinator, cancellation and lease tests"
+        valid, go, result = checker.assess(d)
+        self.assertFalse(valid)
+        self.assertFalse(go)
+        self.assertIn(
+            "E0-06: gate description differs from the pinned contract",
+            result["errors"],
+        )
+
+    def test_register_extra_or_missing_fields_invalid(self):
+        for change in ("unknown", "missing"):
+            with self.subTest(change=change):
+                d = self.complete()
+                if change == "unknown":
+                    d["unreviewed_override"] = True
+                else:
+                    del d["topology_sha256"]
+                valid, go, result = checker.assess(d)
+                self.assertFalse(valid)
+                self.assertFalse(go)
+                self.assertIn("register fields differ from the schema contract",
+                              result["errors"])
+
+    def test_gate_extra_or_missing_fields_invalid(self):
+        for change in ("unknown", "missing"):
+            with self.subTest(change=change):
+                d = self.complete()
+                if change == "unknown":
+                    d["gates"][0]["approved_without_evidence"] = True
+                else:
+                    del d["gates"][0]["description"]
+                valid, go, result = checker.assess(d)
+                self.assertFalse(valid)
+                self.assertFalse(go)
+                self.assertIn(
+                    "E0-01: gate fields differ from the schema contract",
+                    result["errors"],
+                )
+
+    def test_schema_version_bool_and_string_not_accepted(self):
+        for value in (True, 1.0, "1", False, None):
+            with self.subTest(value=value):
+                d = self.complete()
+                d["schema_version"] = value
+                valid, go, result = checker.assess(d)
+                self.assertFalse(valid)
+                self.assertFalse(go)
+                self.assertIn("schema_version must be integer 1",
+                              result["errors"])
+
+    def test_nonstring_fields_fail_closed_even_when_not_run(self):
+        d = self.document.copy()
+        d["operator"] = ["forged-operator"]
+        d["gates"] = [gate.copy() for gate in self.document["gates"]]
+        d["gates"][0]["evidence_sha256"] = ["wrong-data-type"]
+        valid, go, result = checker.assess(d)
+        self.assertFalse(valid)
+        self.assertFalse(go)
+        self.assertIn("metadata: operator must be a string or null", result["errors"])
+        self.assertIn(
+            "E0-01: evidence_sha256 must be a string or null", result["errors"])
+
+    def test_malformed_gate_id_redacted_even_for_not_run_state(self):
+        d = self.document.copy()
+        d["gates"] = [gate.copy() for gate in self.document["gates"]]
+        secret = "secret-in-untrusted-gate-identifier"
+        d["gates"][0]["gate_id"] = secret
+        valid, go, result = checker.assess(d)
+        self.assertFalse(valid)
+        self.assertFalse(go)
+        self.assertIn("gate[1]: NOT RUN", result["missing"])
+        self.assertNotIn(secret, json.dumps(result))
+
     def test_cli_no_go_exit_code_and_ci_structure_mode(self):
         for ci_mode, expected in ((False, 1), (True, 0)):
             with self.subTest(ci_mode=ci_mode):
