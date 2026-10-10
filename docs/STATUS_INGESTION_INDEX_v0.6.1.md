@@ -30,7 +30,7 @@ Lifecycle do assessment e controle de transições, com ADR e contratos próprio
 antes de acrescentar identidade persistente de assets, findings, API/UI e reporting.
 Qualificação PostgreSQL do LAB segue com roteiro isolado em momento apropriado.
 
-Novos documentos corporativos são arquivados em OneDrive/SharePoint, conforme a
-mudança autorizada. Google Drive permanece legado; migração geral é independente.
+Novos documentos corporativos são arquivados em private evidence archive, conforme a
+mudança autorizada. private legacy storage permanece legado; migração geral é independente.
 
 [Guia](INGESTION_INDEX_v0.6.1.md) · [ADR](ADR_0012_Ingestion_Index_v0.6.1.md)
