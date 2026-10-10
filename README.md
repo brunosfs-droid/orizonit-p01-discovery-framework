@@ -2,11 +2,10 @@
 
 ![Cancã — identidade visual conceito v1](docs/branding/canca-brand-concept-v1.jpg)
 
-> **Orizon IT — Produto 01 (P01)**  
 > **Cancã — Open Infrastructure Assessment & Intelligence Platform**  
 > Plataforma open-source em desenvolvimento para discovery, inventário, análise de configuração, assessment, evidência técnica e inteligência de infraestrutura.
 
-**Cancã** é o nome oficial do produto. O identificador **P01** permanece temporariamente em nomes de arquivos, schemas, headers e artefatos internos durante a fase Technical Alpha para preservar compatibilidade e rastreabilidade dos testes. A migração dos identificadores internos será feita de forma controlada, sem quebrar contratos já validados.
+**Cancã** é o nome oficial do projeto. O identificador legado **P01** permanece temporariamente em nomes de arquivos, schemas, headers e artefatos técnicos durante a fase Technical Alpha para preservar compatibilidade e rastreabilidade dos testes. A migração desses identificadores será feita de forma controlada, sem quebrar contratos já validados.
 
 ## Especificação 1.0 — revisão 06/10/2026
 
@@ -108,7 +107,6 @@ connected node mTLS retain their separate purposes. Optional AD integration foll
 - [Project Governance](docs/PROJECT_GOVERNANCE.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Engineering Roadmap](docs/ROADMAP.md)
-- [Source of Truth — GitHub x OneDrive/SharePoint](docs/SOURCE_OF_TRUTH.md)
 - [Brand identity](docs/branding/README.md)
 
 ## Status de engenharia
@@ -202,7 +200,6 @@ O scanner **descobre**. Os collectors **aprofundam**. O Asset Resolver **dedupli
 ├── docs/
 │   ├── ARCHITECTURE.md
 │   ├── VALIDATION.md
-│   ├── SOURCE_OF_TRUTH.md
 │   ├── ROADMAP.md
 │   └── validation/
 └── .github/workflows/
@@ -283,13 +280,9 @@ python3 ./analyzer/P01_Discovery_Analyzer.py \
 
 `lastLogonTimestamp` é administrado pelo Active Directory e não deve ser tratado como um campo livremente editável para simulação. A validação do caminho de stale deve usar threshold reduzido em objetos que nunca logaram e testes sintéticos. O threshold operacional padrão permanece 90 dias. Veja [docs/validation/AD_STALE_v0.3.md](docs/validation/AD_STALE_v0.3.md).
 
-## GitHub x OneDrive/SharePoint
+## Repositório público
 
-O **GitHub é a fonte de verdade de engenharia**: código, testes, schemas, rulesets, documentação técnica, CI, issues e histórico de commits.
-
-O **OneDrive/SharePoint é a fonte de verdade de produto, governança e evidência**: CI do produto, oferta comercial, LAB, resultados brutos, JSON/SHA256 de validação, relatórios, entregáveis e snapshots formais de release. Google Drive pessoal permanece legado durante a migração autorizada.
-
-Não devem existir duas cópias editáveis concorrentes do mesmo código. Veja [docs/SOURCE_OF_TRUTH.md](docs/SOURCE_OF_TRUTH.md).
+Este repositório contém somente código, documentação técnica, testes e evidências sanitizadas adequadas à distribuição pública. Dados de clientes, infraestrutura corporativa, caminhos de armazenamento privados, credenciais, artefatos internos de outros projetos e referências a repositórios privados não devem ser commitados.
 
 
 ## Licenciamento e comunidade
