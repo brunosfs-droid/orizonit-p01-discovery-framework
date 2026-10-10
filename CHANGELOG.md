@@ -181,7 +181,7 @@
 - Reconcile one reviewed import with the existing explicit index-import command; no migration, sweep or retry on startup.
 - Clean canonical staging under the bundle lock to protect concurrent duplicate requests.
 - Add real PostgreSQL CI for unavailable DB, transaction rollback, concurrent duplicates and process exit before/after DB commit.
-- Update corporate artifact policy to OneDrive/SharePoint; Google Drive remains legacy during independent migration.
+- Update corporate artifact policy to private evidence archive; private legacy storage remains legacy during independent migration.
 
 ## v0.6.0 — PostgreSQL metadata foundation (CANDIDATE)
 
@@ -924,7 +924,7 @@ Protocol availability does not authorize credential use. Credential selection st
 - Device/OS heuristic classification with confidence
 - JSON + SHA256 network discovery output
 - Unit tests for scope parsing and basic classification
-- Source-of-truth policy for GitHub vs Google Drive
+- Source-of-truth policy for GitHub vs private legacy storage
 
 ### Security
 - No credential attempts in v0.4a
