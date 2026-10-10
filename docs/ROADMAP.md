@@ -840,3 +840,8 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 
 - [Gate SQL](WORKSPACE_LEDGER_READER_INTENT_INSERT_DENIAL_v0.6.77.md): role read-only reconcedida não pode criar intenção por SQL direto.
 - v0.6.76 integrada pelo PR #187; E0 e R02/R06 seguem abertos.
+
+## v0.6.78 — leitor sem TRUNCATE direto em intenções (CANDIDATE)
+
+- [Gate SQL](WORKSPACE_LEDGER_READER_INTENT_TRUNCATE_DENIAL_v0.6.78.md): role read-only reconcedida não pode truncar a tabela de intenções sem CASCADE.
+- v0.6.77 integrada pelo PR #188; E0 e R02/R06 seguem abertos.
