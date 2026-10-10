@@ -900,3 +900,8 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 
 - [Ensaio e limitações](validation/ALPHA_R02_COORDINATOR_LOAD_SMOKE_v0.6.89.md): ciclos A/B com cancelamento de jobs e rejeição de tokens antigos, métricas p50/p95 e pico de alocações Python sem metas de produção implícitas.
 - v0.6.88 integrada pelo PR #199. E0/EVE-NG e qualificação R02 com processos/collectors reais ainda pendentes; T14 permanece parcial.
+
+## v0.6.90 — drain concorrente de processos legados no R02 (CANDIDATE)
+
+- [Ensaio Linux/POSIX](validation/ALPHA_R02_LEGACY_MULTIPROCESS_SMOKE_v0.6.90.md): processos Python locais sob adapter de checkpoint real, cancelamento simultâneo, limpeza de grupos, tokens obsoletos negados e medidas de fechamento p50/p95.
+- v0.6.89 integrada pelo PR #200; scanners reais/WinRM/SNMP, E0/EVE-NG e benchmark T14 continuam pendentes.
