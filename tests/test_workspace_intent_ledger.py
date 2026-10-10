@@ -586,6 +586,28 @@ class LedgerTests(unittest.TestCase):
         self.assertEqual([event['decision'] for event in history['decisions']],['approved'])
         self.assertFalse(history['execution_authorized'])
 
+    def test_a_reader_regrant_never_exposes_a_history_in_b_context(self):
+        ident=self.record()['intent_id']
+        self.decide(ident,'approved','approve')
+        self.conn.execute(
+            "DELETE FROM canca.workspace_grants WHERE workspace_id='A' AND principal_role='canca_ws_a'")
+        self.conn.execute(
+            "INSERT INTO canca.workspace_grants VALUES ('A','canca_ws_a','workspace:read')")
+        with self.role('canca_ws_a'):
+            before=self.service.scan_intent_history(self.conn,self.token,ident)
+        with self.role('canca_ws_writer'):
+            self.c.close(self.conn,'A',self.token.generation)
+            b=self.c.open(self.conn,'B',self.c.generation)
+        with self.role('canca_ws_a'),self.assertRaises(pg.PersistenceError):
+            self.service.scan_intent_history(self.conn,b,ident)
+        with self.role('canca_ws_writer'):
+            self.c.close(self.conn,'B',b.generation)
+            reopened=self.c.open(self.conn,'A',self.c.generation)
+        with self.role('canca_ws_a'):
+            after=self.service.scan_intent_history(self.conn,reopened,ident)
+        self.assertEqual(before['decisions'],after['decisions'])
+        self.assertFalse(after['execution_authorized'])
+
     def test_append_only_and_sql_transition_guard(self):
         from psycopg import errors
         ident=self.record()['intent_id']
