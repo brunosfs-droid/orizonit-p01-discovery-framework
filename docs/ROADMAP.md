@@ -915,3 +915,8 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 
 - [Contrato e regressões](validation/ALPHA_R02_CLEANUP_QUARANTINE_v0.6.92.md): `fail_closed()` bloqueia troca de workspace quando `_stop(child)` falha, cancela outros jobs e limpa cache; erro sanitizado antes de liberar job.
 - v0.6.91 integrada pelo PR #202. R02/E0 com I/O real, EVE-NG e T13/R20 cross-cluster continuam pendentes.
+
+## v0.6.93 — fence pós-SIGKILL de processo legado R02 (CANDIDATE)
+
+- [Contrato e testes](validation/ALPHA_R02_POST_SIGKILL_GROUP_CHECK_v0.6.93.md): confirmação Linux via /proc de membros do grupo ainda ativos após escalonamento de SIGKILL; se cleanup não puder ser confirmado, impede troca A/B via quarentena v0.6.92.
+- v0.6.92 integrada pelo PR #203; E0/EVE-NG, scanners reais e qualificação cross-cluster continuam pendentes.
