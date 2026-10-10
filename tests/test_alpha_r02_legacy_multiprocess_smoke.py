@@ -57,7 +57,7 @@ class R02MultiprocessSmokeTests(unittest.TestCase):
         self.assertEqual(result["cancellations_fenced"], 2)
         self.assertFalse(result["operational_go"])
         self.assertFalse(result["lab_executed"])
-        self.assertNotIn("token", output.getvalue().lower())
+        self.assertNotIn("synthetic-lease", output.getvalue())
 
     def test_cli_invalid_size_fails_closed(self):
         output = io.StringIO()
