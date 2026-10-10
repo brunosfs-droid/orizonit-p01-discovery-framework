@@ -195,3 +195,5 @@ restore same-cluster/roles existentes não qualifica recuperação cross-cluster
 [v0.6.88 — esquema E0 fixado](validation/E0_PINNED_GATE_SCHEMA_v0.6.88.md): validação fail-closed de descrições de gates, campos obrigatórios exatos e tipos. v0.6.87 integrada pelo PR #198; E0 segue NO-GO.
 
 [v0.6.89 — ensaio offline R02/T14](validation/ALPHA_R02_COORDINATOR_LOAD_SMOKE_v0.6.89.md): verificação sintética de drain, cancelamento de jobs, gerações antigas e métricas p50/p95/RAM. v0.6.88 integrada pelo PR #199; E0 operacional e R02 real permanecem abertos.
+
+[v0.6.90 — multi-processo R02](validation/ALPHA_R02_LEGACY_MULTIPROCESS_SMOKE_v0.6.90.md): adapter legado sob processos reais e fixture offline, encerramento de filhos na troca A/B e verificação de fence de geração; v0.6.89 integrada no PR #200. Não fecha R02/T14 nem E0.
