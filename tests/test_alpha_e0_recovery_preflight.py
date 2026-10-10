@@ -1,5 +1,6 @@
 """Non-destructive, cross-platform unit tests for the E0 offline artifact gate."""
 import json
+import importlib.util
 import os
 from pathlib import Path
 import shutil
@@ -8,9 +9,13 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 GATE = ROOT / "docs" / "validation" / "ALPHA_E0_RECOVERY_PREFLIGHT.py"
+SPEC = importlib.util.spec_from_file_location("alpha_e0_recovery_preflight", GATE)
+gate = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(gate)
 
 
 class E0RecoveryArtifactTests(unittest.TestCase):
@@ -119,6 +124,55 @@ class E0RecoveryArtifactTests(unittest.TestCase):
         self.store = self.root / "store-link"
         self.store.symlink_to(self.root / "store", target_is_directory=True)
         self.assertEqual(self.run_gate("capture")[0].returncode, 2)
+
+    @unittest.skipUnless(os.name == "posix" and hasattr(os, "O_NOFOLLOW") and
+                         os.open in os.supports_dir_fd,
+                         "directory-descriptor nofollow test requires POSIX")
+    def test_parent_symlink_is_rejected_before_any_source_bytes_are_read(self):
+        real = self.root / "real-roles"
+        real.mkdir()
+        (real / "globals.sql").write_bytes(b"PRIVATE-INDIRECT-ROLE")
+        alias = self.root / "symlink-roles"
+        try:
+            alias.symlink_to(real, target_is_directory=True)
+        except (OSError, NotImplementedError):
+            self.skipTest("symlink creation unsupported")
+        process, result = self.run_gate("capture", roles=alias / "globals.sql")
+        self.assertEqual(process.returncode, 2)
+        self.assertEqual(result["reason"], "input_unavailable")
+        self.assertFalse(self.output.exists())
+
+    @unittest.skipUnless(os.name == "posix" and hasattr(os, "O_NOFOLLOW") and
+                         os.open in os.supports_dir_fd,
+                         "lstat/open race test requires POSIX")
+    def test_symlink_swap_between_lstat_and_open_fails_closed(self):
+        sensitive = self.root / "sensitive-roles.sql"
+        sensitive.write_bytes(b"SECRET-NEVER-READ")
+        backup = self.root / "original-roles.sql"
+        original = gate._regular
+        swapped = False
+
+        def replace_after_initial_lstat(path):
+            nonlocal swapped
+            info = original(path)
+            if path == self.roles and not swapped:
+                swapped = True
+                self.roles.rename(backup)
+                self.roles.symlink_to(sensitive)
+            return info
+
+        with patch.object(gate, "_regular", side_effect=replace_after_initial_lstat):
+            with self.assertRaisesRegex(gate.GateError, "input_unavailable"):
+                gate._file(self.roles)
+        self.assertTrue(swapped)
+        self.assertEqual(sensitive.read_bytes(), b"SECRET-NEVER-READ")
+        self.assertFalse(self.output.exists())
+
+    def test_same_backup_bytes_keep_round_trip_valid_after_hardening(self):
+        self.capture()
+        outcome, result = self.run_gate("verify")
+        self.assertEqual(outcome.returncode, 0)
+        self.assertEqual(result["status"], "PASS")
 
     def test_no_overwrite_and_no_output_inside_source_tree(self):
         self.capture()

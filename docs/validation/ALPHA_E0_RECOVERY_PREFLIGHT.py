@@ -32,19 +32,63 @@ def _regular(path):
     return info
 
 
+
+def _open_source(path):
+    """Open evidence without following directory/file symlinks on POSIX.
+
+    File descriptor traversal closes a classic lstat/open race. On platforms
+    lacking O_NOFOLLOW and open(dir_fd=...), the existing lstat/fstat checks
+    still apply, but this strong race fence is not available.
+    """
+    if not (os.name == "posix" and hasattr(os, "O_NOFOLLOW") and
+            hasattr(os, "O_DIRECTORY") and os.open in os.supports_dir_fd):
+        return path.open("rb")
+    components = path.absolute().parts
+    if any(component in (".", "..") for component in components[1:]):
+        raise GateError("unsafe_source_path")
+    dir_flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
+    directory = os.open(components[0], dir_flags)
+    try:
+        for component in components[1:-1]:
+            opened = os.open(component, dir_flags, dir_fd=directory)
+            os.close(directory)
+            directory = opened
+        file_flags = os.O_RDONLY | os.O_NOFOLLOW | getattr(os, "O_NONBLOCK", 0)
+        fd = os.open(components[-1], file_flags, dir_fd=directory)
+        try:
+            return os.fdopen(fd, "rb")
+        except BaseException:
+            os.close(fd)
+            raise
+    finally:
+        os.close(directory)
+
+
+def _identity(info):
+    return (info.st_dev, info.st_ino, info.st_size, info.st_mtime_ns,
+            info.st_ctime_ns, stat.S_IMODE(info.st_mode))
+
+
+
 def _file(path):
     before = _regular(path)
     h = hashlib.sha256()
     try:
-        with path.open("rb") as reader:
+        with _open_source(path) as reader:
+            opened = os.fstat(reader.fileno())
+            if not stat.S_ISREG(opened.st_mode) or opened.st_size == 0:
+                raise GateError("invalid_regular_file")
+            if _identity(opened) != _identity(before):
+                raise GateError("input_changed")
             for chunk in iter(lambda: reader.read(BLOCK), b""):
                 h.update(chunk)
+            finished = os.fstat(reader.fileno())
+            if _identity(finished) != _identity(opened):
+                raise GateError("input_changed")
     except OSError:
         raise GateError("input_unavailable") from None
     after = _regular(path)
-    if (before.st_dev, before.st_ino, before.st_size, before.st_mtime_ns) != (
-        after.st_dev, after.st_ino, after.st_size, after.st_mtime_ns
-    ):
+    if _identity(before) != _identity(after):
         raise GateError("input_changed")
     return {"sha256": h.hexdigest(), "bytes": after.st_size}
 

@@ -920,3 +920,8 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 
 - [Contrato e testes](validation/ALPHA_R02_POST_SIGKILL_GROUP_CHECK_v0.6.93.md): confirmação Linux via /proc de membros do grupo ainda ativos após escalonamento de SIGKILL; se cleanup não puder ser confirmado, impede troca A/B via quarentena v0.6.92.
 - v0.6.92 integrada pelo PR #203; E0/EVE-NG, scanners reais e qualificação cross-cluster continuam pendentes.
+
+## v0.6.94 — hardening R06 preflight contra corrida de symlink (CANDIDATE)
+
+- [Contrato e testes](validation/ALPHA_R06_PREFLIGHT_TOCTOU_v0.6.94.md): hash de artefatos via descritores O_NOFOLLOW em POSIX, verificação de inode/metadados antes/depois, testes de symlink no diretório ancestral e substituição entre lstat/open.
+- v0.6.93 integrada pelo PR #204 após reexecução aprovada do Optional Agent CI (Windows 3.13); risco de intermitência da temporização CI a investigar. EVE-NG E0 e R06 cross-cluster permanecem pendentes.
