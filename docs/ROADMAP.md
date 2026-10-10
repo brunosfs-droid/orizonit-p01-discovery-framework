@@ -855,3 +855,8 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 
 - [Matriz operacional](validation/E0_OPERATIONAL_ACCEPTANCE_v0.6.80.md): dez gates reproduzíveis, classificação PASS/FAIL/BLOCKED/NOT RUN, trilha de evidências e regras de interrupção.
 - v0.6.79 integrada pelo PR #190. Publicar checklist não equivale a homologar o EVE-NG; R02/R06/T13/R20 seguem abertos.
+
+## v0.6.81 — registro auditável das evidências E0 (CANDIDATE)
+
+- [Registro](validation/E0_EVIDENCE_REGISTER_v0.6.81.md): dez gates E0 inicialmente NOT RUN, URI/digest/revisor e aprovação obrigatórios, go/no-go explícito.
+- v0.6.80 integrada pelo PR #191; E0/R02/R06/T13/R20 não homologados.
