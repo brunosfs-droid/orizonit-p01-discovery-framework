@@ -16,7 +16,7 @@ Não instalar serviço, abrir firewall, mudar grants ou reutilizar senhas de alv
 
 ## 1. Pacote no Windows
 
-PowerShell em `C:\GitHub\orizonit-p01-discovery-framework`:
+PowerShell em `C:\GitHub\canca`:
 
 ```powershell
 git fetch origin

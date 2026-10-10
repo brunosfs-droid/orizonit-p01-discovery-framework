@@ -11,7 +11,7 @@ para live AUTH/upload; não substitui os gates reais abaixo.
 | Campo | Valor observado |
 |---|---|
 | Discovery Node | P01-MGMT01 / Windows / Python 3.13.15 |
-| Repositório | `C:\GitHub\orizonit-p01-discovery-framework` |
+| Repositório | `C:\GitHub\canca` |
 | Assessment | P01LAB-CTX-R1 |
 | Run portátil concluído | P01LAB-RUNTIME-R3 |
 | Novo run do agente | P01LAB-AGENT-R1 |
@@ -106,7 +106,7 @@ Os caminhos PKI abaixo foram usados na homologação anterior. Confirmar sua
 existência antes de usar; o script para se faltarem arquivos. Não enviar a key.
 
 ```powershell
-Set-Location "C:\GitHub\orizonit-p01-discovery-framework"
+Set-Location "C:\GitHub\canca"
 . .\.venv\Scripts\Activate.ps1
 $AgentWorkspace = "C:\Canca\runs\P01LAB-CTX-R1\P01LAB-AGENT-R1"
 $AgentPolicy = Join-Path $AgentWorkspace "config/agent-policy.json"

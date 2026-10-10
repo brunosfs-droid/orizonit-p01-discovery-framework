@@ -9,7 +9,7 @@ Dez runs / **24 jobs** completados com sucesso nesse head. **76 etapas críticas
 foram conferidas como executadas, com conclusão success e timestamps preenchidos.
 O tree remoto é igual ao tree local completo, incluindo binários/branding.
 A revisão final deste registro e de próximos passos altera apenas dois documentos;
-nenhum código muda. [PR #118](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/pull/118).
+nenhum código muda. [PR #118](https://github.com/brunosfs-droid/canca/pull/118).
 
 ## Verificação local
 
@@ -27,16 +27,16 @@ nenhum código muda. [PR #118](https://github.com/brunosfs-droid/orizonit-p01-di
 
 | Evento | Workflow | Run |
 | --- | --- | --- |
-| pull_request | Operator Accounts CI | [37163801695](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37163801695) |
-| pull_request | Operator Web CI | [37163801700](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37163801700) |
-| pull_request | PostgreSQL CI | [37163801711](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37163801711) |
-| pull_request | Python CI | [37163801698](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37163801698) |
-| pull_request | Optional Agent CI | [37163801721](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37163801721) |
-| push | Operator Accounts CI | [37163799395](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37163799395) |
-| push | PostgreSQL CI | [37163799361](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37163799361) |
-| push | Operator Web CI | [37163799368](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37163799368) |
-| push | Python CI | [37163799371](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37163799371) |
-| push | Optional Agent CI | [37163799398](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37163799398) |
+| pull_request | Operator Accounts CI | [37163801695](https://github.com/brunosfs-droid/canca/actions/runs/37163801695) |
+| pull_request | Operator Web CI | [37163801700](https://github.com/brunosfs-droid/canca/actions/runs/37163801700) |
+| pull_request | PostgreSQL CI | [37163801711](https://github.com/brunosfs-droid/canca/actions/runs/37163801711) |
+| pull_request | Python CI | [37163801698](https://github.com/brunosfs-droid/canca/actions/runs/37163801698) |
+| pull_request | Optional Agent CI | [37163801721](https://github.com/brunosfs-droid/canca/actions/runs/37163801721) |
+| push | Operator Accounts CI | [37163799395](https://github.com/brunosfs-droid/canca/actions/runs/37163799395) |
+| push | PostgreSQL CI | [37163799361](https://github.com/brunosfs-droid/canca/actions/runs/37163799361) |
+| push | Operator Web CI | [37163799368](https://github.com/brunosfs-droid/canca/actions/runs/37163799368) |
+| push | Python CI | [37163799371](https://github.com/brunosfs-droid/canca/actions/runs/37163799371) |
+| push | Optional Agent CI | [37163799398](https://github.com/brunosfs-droid/canca/actions/runs/37163799398) |
 
 As etapas críticas incluem a suíte Python, os dois passos PostgreSQL por versão,
 o fluxo Chromium, compilação e testes da nova ferramenta nas quatro combinações,

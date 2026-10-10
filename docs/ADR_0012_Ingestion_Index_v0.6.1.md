@@ -53,6 +53,6 @@ rollback, conflicts and schema drift. Preserve all existing core and native serv
 checks. Deployment TLS/roles, backup/restore, multi-process filesystem writers,
 full assessment lifecycle, assets/findings and Web/UI remain separate gates.
 
-Corporate artifacts now target OneDrive/SharePoint per the user's 02/10/2026
-direction. GitHub remains the engineering source; Google Drive is legacy. This
+Corporate artifacts now target private evidence archive per the user's 02/10/2026
+direction. GitHub remains the engineering source; private legacy storage is legacy. This
 increment does not perform or claim completion of the general file migration.

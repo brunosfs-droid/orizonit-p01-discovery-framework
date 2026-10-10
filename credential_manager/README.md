@@ -98,7 +98,7 @@ The secret value is not exposed by the P01 CLI.
 ## Security model
 
 - no plaintext secrets in Git;
-- no plaintext secrets in OneDrive/SharePoint or legacy Google Drive;
+- no plaintext secrets in private evidence archive or legacy private legacy storage;
 - no plaintext secrets in JSON output;
 - credential profiles are scoped by protocol/network;
 - optional contextual selectors narrow eligibility by discovered service and asset identity;

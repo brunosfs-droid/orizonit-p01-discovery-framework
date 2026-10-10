@@ -34,4 +34,4 @@ The prior home-router test remains valuable: authentication succeeded but the ta
 ### Windows 11
 The Windows 11 LAB endpoint was powered off during the Discovery Node baseline. Its absence was expected and will be tested during WinRM/WMI validation.
 
-Raw LAB outputs remain in protected Google Drive storage and are intentionally not committed to Git.
+Raw LAB outputs remain in protected private legacy storage storage and are intentionally not committed to Git.

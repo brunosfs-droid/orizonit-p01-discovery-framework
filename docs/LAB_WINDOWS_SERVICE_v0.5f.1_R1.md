@@ -22,7 +22,7 @@ or broad LocalService write access to policy/PKI. Administration is necessary fo
 SCM installation/removal and SID ACLs.
 
 ```powershell
-Set-Location "C:\GitHub\orizonit-p01-discovery-framework"
+Set-Location "C:\GitHub\canca"
 . .\.venv\Scripts\Activate.ps1
 git pull origin main
 python -m pip install -r agent/requirements-windows-service.txt

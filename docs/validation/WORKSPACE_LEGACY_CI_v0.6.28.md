@@ -1,7 +1,7 @@
 # Workspace Legacy v0.6.28 — qualificação CI
 
 08/10/2026 (-03). **CANDIDATE opt-in schema9**.
-[PR #139](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/pull/139). Tarefas1–3 e a reconciliação da PR #138 preservadas.
+[PR #139](https://github.com/brunosfs-droid/canca/pull/139). Tarefas1–3 e a reconciliação da PR #138 preservadas.
 
 Fonte: `4ab193c423c07003a700f0f9cc34ea38ea3808b0`; tree `d86452d08fa6090ba2d9151fce36c0e467a566fb`.
 Base: `8dda792e24f1865793616a5021b7dc7f66ebbce9`. A documentação e o ajuste do
@@ -15,7 +15,7 @@ foram conferidas; skips de plataforma/opt-in são explícitos, não casos SQL om
 do gate workspace.
 
 Python CI da fonte: **784 casos / 567 executados / 217 skips esperados**, PASS,
-[job113249019895](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37758537981/job/113249019895).
+[job113249019895](https://github.com/brunosfs-droid/canca/actions/runs/37758537981/job/113249019895).
 A regressão local inicial registrou783 casos/216 skips, sem falhas; ajustes posteriores
 foram verificados por compilação, suite local do legado23/18 skips e guard, e pela
 regressão completa remota da fonte acima. PostgreSQL real/restore não foi executado
@@ -28,8 +28,8 @@ push/pull_request passaram; logs dos dois jobs da PR conferidos.
 
 | PostgreSQL | Job da PR | Testes e restore |
 | --- | --- | --- |
-| 16 (160015) | [113249051201](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37758547324/job/113249051201) | 141 / zero skips / restore8+9 PASS |
-| 17 (170011) | [113249051407](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37758547324/job/113249051407) | 141 / zero skips / restore8+9 PASS |
+| 16 (160015) | [113249051201](https://github.com/brunosfs-droid/canca/actions/runs/37758547324/job/113249051201) | 141 / zero skips / restore8+9 PASS |
+| 17 (170011) | [113249051407](https://github.com/brunosfs-droid/canca/actions/runs/37758547324/job/113249051407) | 141 / zero skips / restore8+9 PASS |
 
 A fixture produz imports/assets/findings genuínos em schema4 antes do upgrade9.
 Verifica mapping/grants antes dos bytes, reader sem SELECT legado, RLS A/B/contexto
@@ -55,14 +55,14 @@ PASS, com restore4 independente. Esse workflow não substitui o gate workspace a
 
 | Workflow | pull_request | push |
 | --- | --- | --- |
-| Workspace Foundation CI | [37758547324](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37758547324) | [37758537993](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37758537993) |
-| Python CI | [37758547350](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37758547350) | [37758537981](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37758537981) |
-| CodeQL | [37758547426](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37758547426) | — |
-| Read-only SNMP CI | [37758547476](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37758547476) | [37758537969](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37758537969) |
-| Operator Accounts CI | [37758547407](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37758547407) | [37758538022](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37758538022) |
-| Operator Web CI | [37758547318](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37758547318) | [37758538044](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37758538044) |
-| PostgreSQL CI | [37758547376](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37758547376) | [37758537987](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37758537987) |
-| Optional Agent CI | [37758547432](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37758547432) | [37758538061](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37758538061) |
+| Workspace Foundation CI | [37758547324](https://github.com/brunosfs-droid/canca/actions/runs/37758547324) | [37758537993](https://github.com/brunosfs-droid/canca/actions/runs/37758537993) |
+| Python CI | [37758547350](https://github.com/brunosfs-droid/canca/actions/runs/37758547350) | [37758537981](https://github.com/brunosfs-droid/canca/actions/runs/37758537981) |
+| CodeQL | [37758547426](https://github.com/brunosfs-droid/canca/actions/runs/37758547426) | — |
+| Read-only SNMP CI | [37758547476](https://github.com/brunosfs-droid/canca/actions/runs/37758547476) | [37758537969](https://github.com/brunosfs-droid/canca/actions/runs/37758537969) |
+| Operator Accounts CI | [37758547407](https://github.com/brunosfs-droid/canca/actions/runs/37758547407) | [37758538022](https://github.com/brunosfs-droid/canca/actions/runs/37758538022) |
+| Operator Web CI | [37758547318](https://github.com/brunosfs-droid/canca/actions/runs/37758547318) | [37758538044](https://github.com/brunosfs-droid/canca/actions/runs/37758538044) |
+| PostgreSQL CI | [37758547376](https://github.com/brunosfs-droid/canca/actions/runs/37758547376) | [37758537987](https://github.com/brunosfs-droid/canca/actions/runs/37758537987) |
+| Optional Agent CI | [37758547432](https://github.com/brunosfs-droid/canca/actions/runs/37758547432) | [37758538061](https://github.com/brunosfs-droid/canca/actions/runs/37758538061) |
 
 ## Limites e próximos marcos
 

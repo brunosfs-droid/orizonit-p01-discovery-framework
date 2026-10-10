@@ -22,7 +22,7 @@ catalog isolation and a lifecycle writer after the last data page.
 Executable source revision:
 `bb73c1c47cd741985ae2e09f7d9f258205605e19`.
 Git tree: `cba92990f327814ace8eb552cc4d73b93731ebe3`.
-[PR #114](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/pull/114).
+[PR #114](https://github.com/brunosfs-droid/canca/pull/114).
 Subsequent qualification-document changes preserve this executable source.
 
 All eight runs completed successfully on that exact head: sixteen actual jobs,
@@ -30,10 +30,10 @@ with nonempty executed steps. Both pull_request and push matrices passed.
 
 | Workflow | pull_request | push | Jobs per event |
 | --- | --- | --- | --- |
-| Python CI | [37140520095](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37140520095) | [37140517454](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37140517454) | 1 |
-| PostgreSQL CI | [37140520101](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37140520101) | [37140517434](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37140517434) | 2 |
-| Operator Web CI | [37140520103](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37140520103) | [37140517447](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37140517447) | 1 |
-| Optional Agent CI | [37140520110](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37140520110) | [37140517452](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37140517452) | 4 |
+| Python CI | [37140520095](https://github.com/brunosfs-droid/canca/actions/runs/37140520095) | [37140517454](https://github.com/brunosfs-droid/canca/actions/runs/37140517454) | 1 |
+| PostgreSQL CI | [37140520101](https://github.com/brunosfs-droid/canca/actions/runs/37140520101) | [37140517434](https://github.com/brunosfs-droid/canca/actions/runs/37140517434) | 2 |
+| Operator Web CI | [37140520103](https://github.com/brunosfs-droid/canca/actions/runs/37140520103) | [37140517447](https://github.com/brunosfs-droid/canca/actions/runs/37140517447) | 1 |
+| Optional Agent CI | [37140520110](https://github.com/brunosfs-droid/canca/actions/runs/37140520110) | [37140517452](https://github.com/brunosfs-droid/canca/actions/runs/37140517452) | 4 |
 
 ## Results and practical limits
 

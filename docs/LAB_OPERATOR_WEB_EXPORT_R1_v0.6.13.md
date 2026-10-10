@@ -13,7 +13,7 @@ Não há restore, migração, coleta, instalação de serviço ou abertura de fi
 
 ## 1. Preparar o pacote no Windows
 
-Na primeira janela PowerShell, em `C:\GitHub\orizonit-p01-discovery-framework`:
+Na primeira janela PowerShell, em `C:\GitHub\canca`:
 
 ```powershell
 $P01WebExportRelease = '9cb8442e4a9ff84384b6b4f42bf5c8db0a65d871'

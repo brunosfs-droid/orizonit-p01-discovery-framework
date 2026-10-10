@@ -4,7 +4,7 @@ Data: 04/10/2026 (-03). **CANDIDATE para dispositivos reais.**
 Fonte qualificada: `c3402e544c60303eb1d227c0e3828b883c2414d6`.
 Tree integral: `d4b1c1e1a523a5640e41785ec9723ed68bb2bbf2`.
 Base: `399bc5021ca81d8a9537e846068c0f49a2292b8b`.
-[PR #121](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/pull/121)
+[PR #121](https://github.com/brunosfs-droid/canca/pull/121)
 · [ADR 0033](../ADR_0033_Read_Only_SNMP_v0.4b.7.md)
 · [Contrato e uso](../../credentialed_enrichment/README-SNMP.md).
 
@@ -19,13 +19,13 @@ Nenhum novo passo manual solicitado; o adiamento do LAB continua respeitado.
 
 | Workflow | PR run | Push run | Jobs no par |
 | --- | --- | --- | --- |
-| Read-only SNMP CI | [37211337082](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37211337082) | [37211333884](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37211333884) | 12 |
-| Python CI | [37211336986](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37211336986) | [37211333883](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37211333883) | 2 |
-| PostgreSQL CI | [37211336912](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37211336912) | [37211333906](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37211333906) | 4 |
-| Operator Web CI | [37211337060](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37211337060) | [37211333901](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37211333901) | 2 |
-| Operator Accounts CI | [37211336886](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37211336886) | [37211333987](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37211333987) | 8 |
-| Optional Agent CI | [37211336858](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37211336858) | [37211333926](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37211333926) | 8 |
-| JSON Parse Validation | [37211336958](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37211336958) | Não acionado: este push altera apenas Python | 1 |
+| Read-only SNMP CI | [37211337082](https://github.com/brunosfs-droid/canca/actions/runs/37211337082) | [37211333884](https://github.com/brunosfs-droid/canca/actions/runs/37211333884) | 12 |
+| Python CI | [37211336986](https://github.com/brunosfs-droid/canca/actions/runs/37211336986) | [37211333883](https://github.com/brunosfs-droid/canca/actions/runs/37211333883) | 2 |
+| PostgreSQL CI | [37211336912](https://github.com/brunosfs-droid/canca/actions/runs/37211336912) | [37211333906](https://github.com/brunosfs-droid/canca/actions/runs/37211333906) | 4 |
+| Operator Web CI | [37211337060](https://github.com/brunosfs-droid/canca/actions/runs/37211337060) | [37211333901](https://github.com/brunosfs-droid/canca/actions/runs/37211333901) | 2 |
+| Operator Accounts CI | [37211336886](https://github.com/brunosfs-droid/canca/actions/runs/37211336886) | [37211333987](https://github.com/brunosfs-droid/canca/actions/runs/37211333987) | 8 |
+| Optional Agent CI | [37211336858](https://github.com/brunosfs-droid/canca/actions/runs/37211336858) | [37211333926](https://github.com/brunosfs-droid/canca/actions/runs/37211333926) | 8 |
+| JSON Parse Validation | [37211336958](https://github.com/brunosfs-droid/canca/actions/runs/37211336958) | Não acionado: este push altera apenas Python | 1 |
 
 ## Protocolo e contrato novos
 

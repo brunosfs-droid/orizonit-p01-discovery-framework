@@ -4,7 +4,7 @@ Data: 05/10/2026 (-03). **CANDIDATE para dispositivos reais.**
 Fonte qualificada: `b99806a1cc9623feb0fac660753ff2e8900f9c1d`.
 Tree integral da fonte: `ff8315e787026d68bbf19de6357586056bef5668`.
 Base: `1010a07d9a4bcb2db34a1baf2ab1777ff1484c24`.
-[PR 122](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/pull/122).
+[PR 122](https://github.com/brunosfs-droid/canca/pull/122).
 
 ## Evidência de execução
 
@@ -16,13 +16,13 @@ não contam como execução. Logs de cada um dos doze jobs SNMP confirmaram
 
 | Workflow | PR run | Push run | Jobs no par |
 | --- | --- | --- | --- |
-| Read-only SNMP CI | [37294901741](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37294901741) | [37294834916](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37294834916) | 12 |
-| Python CI | [37294901635](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37294901635) | [37294834954](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37294834954) | 2 |
-| PostgreSQL CI | [37294901601](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37294901601) | [37294835023](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37294835023) | 4 |
-| Operator Web CI | [37294901713](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37294901713) | [37294834951](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37294834951) | 2 |
-| Operator Accounts CI | [37294901622](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37294901622) | [37294835011](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37294835011) | 8 |
-| Optional Agent CI | [37294901619](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37294901619) | [37294834984](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37294834984) | 8 |
-| JSON Parse Validation | [37294901730](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37294901730) | [37294834959](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37294834959) | 2 |
+| Read-only SNMP CI | [37294901741](https://github.com/brunosfs-droid/canca/actions/runs/37294901741) | [37294834916](https://github.com/brunosfs-droid/canca/actions/runs/37294834916) | 12 |
+| Python CI | [37294901635](https://github.com/brunosfs-droid/canca/actions/runs/37294901635) | [37294834954](https://github.com/brunosfs-droid/canca/actions/runs/37294834954) | 2 |
+| PostgreSQL CI | [37294901601](https://github.com/brunosfs-droid/canca/actions/runs/37294901601) | [37294835023](https://github.com/brunosfs-droid/canca/actions/runs/37294835023) | 4 |
+| Operator Web CI | [37294901713](https://github.com/brunosfs-droid/canca/actions/runs/37294901713) | [37294834951](https://github.com/brunosfs-droid/canca/actions/runs/37294834951) | 2 |
+| Operator Accounts CI | [37294901622](https://github.com/brunosfs-droid/canca/actions/runs/37294901622) | [37294835011](https://github.com/brunosfs-droid/canca/actions/runs/37294835011) | 8 |
+| Optional Agent CI | [37294901619](https://github.com/brunosfs-droid/canca/actions/runs/37294901619) | [37294834984](https://github.com/brunosfs-droid/canca/actions/runs/37294834984) | 8 |
+| JSON Parse Validation | [37294901730](https://github.com/brunosfs-droid/canca/actions/runs/37294901730) | [37294834959](https://github.com/brunosfs-droid/canca/actions/runs/37294834959) | 2 |
 
 As 186 etapas compreendem cinco por job Python, quatro por PostgreSQL, uma por
 Web, seis por contas, seis por agent (incluindo duas nativas do OS), cinco por

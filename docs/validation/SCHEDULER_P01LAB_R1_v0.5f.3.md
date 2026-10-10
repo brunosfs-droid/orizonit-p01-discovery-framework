@@ -2,7 +2,7 @@
 
 Data: 02/10/2026 (-03). Status: **LAB VALIDATED para o R1 offline de ciclos limitados e revisão após interrupção**.
 Refs Issue #83; [ADR 0010](../ADR_0010_Scheduler_v0.5f.3.md).
-Implementação: [PR #93](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/pull/93),
+Implementação: [PR #93](https://github.com/brunosfs-droid/canca/pull/93),
 main de referência ac9c5ce7f927ff274b6a0292a8b8242957097cf5; candidato CI 2cb49fd8440ea3b53b34c45c266c02360874a31b.
 O hash HEAD do checkout do operador não aparece nestas oito capturas. A correlação
 é pelo helper versionado, versões 0.5f.3 reportadas, atualização visível de arquivos

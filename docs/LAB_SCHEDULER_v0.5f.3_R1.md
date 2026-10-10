@@ -18,7 +18,7 @@ repetições criam outra fixture, sem apagar intent de revisão.
 PowerShell elevado, mesmo checkout/venv do R1 manual. Confirmar os comandos sem erro:
 
 ```powershell
-Set-Location "C:\GitHub\orizonit-p01-discovery-framework"
+Set-Location "C:\GitHub\canca"
 git pull origin main
 if ($LASTEXITCODE -ne 0) { throw "Falha no git pull." }
 . .\.venv\Scripts\Activate.ps1

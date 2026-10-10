@@ -22,10 +22,10 @@ Todos os oito runs (push + pull request), dezesseis jobs, passaram no head acima
 
 | Workflow | Pull request | Push |
 | --- | --- | --- |
-| Python | [37128386783](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37128386783) | [37128384115](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37128384115) |
-| PostgreSQL 16/17 | [37128386745](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37128386745) | [37128384155](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37128384155) |
-| Operator Web | [37128386747](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37128386747) | [37128384116](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37128384116) |
-| Optional Agent | [37128386779](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37128386779) | [37128384134](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37128384134) |
+| Python | [37128386783](https://github.com/brunosfs-droid/canca/actions/runs/37128386783) | [37128384115](https://github.com/brunosfs-droid/canca/actions/runs/37128384115) |
+| PostgreSQL 16/17 | [37128386745](https://github.com/brunosfs-droid/canca/actions/runs/37128386745) | [37128384155](https://github.com/brunosfs-droid/canca/actions/runs/37128384155) |
+| Operator Web | [37128386747](https://github.com/brunosfs-droid/canca/actions/runs/37128386747) | [37128384116](https://github.com/brunosfs-droid/canca/actions/runs/37128384116) |
+| Optional Agent | [37128386779](https://github.com/brunosfs-droid/canca/actions/runs/37128386779) | [37128384134](https://github.com/brunosfs-droid/canca/actions/runs/37128384134) |
 
 Artefato `operator-web-synthetic-screens`, ID 11276280441, contém quatro PNGs e
 dois ZIPs de relatório; SHA256

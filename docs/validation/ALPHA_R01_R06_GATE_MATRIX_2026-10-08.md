@@ -27,7 +27,7 @@ Este registro é um inventário de evidência e gates, não uma promoção de ca
 
 ## Evidência obrigatória por teste
 
-Usar campos: `case_id`, commit SHA, workflow/run/job ou hostname LAB, DB major e configuração, data/hora, pré-condição e permissão, comando/roteiro, resultado esperado, observado, status PASS/FAIL/SKIP, limite explícito, artefatos SHA256 e responsável. Logs/snapshots reais privados em OneDrive restrito; Git somente relatório sanitizado e fixtures artificiais.
+Usar campos: `case_id`, commit SHA, workflow/run/job ou hostname LAB, DB major e configuração, data/hora, pré-condição e permissão, comando/roteiro, resultado esperado, observado, status PASS/FAIL/SKIP, limite explícito, artefatos SHA256 e responsável. Logs/snapshots reais privados em private evidence archive restrito; Git somente relatório sanitizado e fixtures artificiais.
 
 **Estado:** R01–R06 PARCIAIS; E0 operacional NÃO EXECUTADO neste incremento; cross-cluster NÃO VALIDADO. Nenhum resultado desta branch deve ser interpretado como EVE-NG PASS ou Product Alpha fechada.
 

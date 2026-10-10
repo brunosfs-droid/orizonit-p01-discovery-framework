@@ -6,9 +6,9 @@ de retomar a tarefa3 ou4, preservando as duas etapas já concluídas.
 
 ## Baseline verificada
 
-- Repositório: [brunosfs-droid/orizonit-p01-discovery-framework](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework).
+- Repositório: [brunosfs-droid/canca](https://github.com/brunosfs-droid/canca).
 - Branch de integração: `main`, commit
-  [3874be4d4e39bf485ba72c1fc1ff8e631a0fc0a1](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/commit/3874be4d4e39bf485ba72c1fc1ff8e631a0fc0a1),
+  [3874be4d4e39bf485ba72c1fc1ff8e631a0fc0a1](https://github.com/brunosfs-droid/canca/commit/3874be4d4e39bf485ba72c1fc1ff8e631a0fc0a1),
   tree `a65244cf06c73b24f586cbbabb621c75ba271e50`.
 - Último commit executável integrado: v0.6.27 database-bound workspace leases and
   isolated restore (#137), 07/10/2026 09:31:16 (-03).
@@ -35,11 +35,11 @@ Integrações existentes:
 
 | PR | Commit em main | Entrega |
 | --- | --- | --- |
-| [#133](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/pull/133) | `741f482` | Fundação workspace v0.6.21. |
-| [#134](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/pull/134) | `a61b494` | Coordenador v0.6.22. |
-| [#135](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/pull/135) | `3fcd4c7` | Backend23–25 e integração das operações ao coordenador. |
-| [#136](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/pull/136) | `cfad001` | Listener humano workspace v0.6.26. |
-| [#137](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/pull/137) | `3874be4` | Fence por banco/recuperação isolada v0.6.27. |
+| [#133](https://github.com/brunosfs-droid/canca/pull/133) | `741f482` | Fundação workspace v0.6.21. |
+| [#134](https://github.com/brunosfs-droid/canca/pull/134) | `a61b494` | Coordenador v0.6.22. |
+| [#135](https://github.com/brunosfs-droid/canca/pull/135) | `3fcd4c7` | Backend23–25 e integração das operações ao coordenador. |
+| [#136](https://github.com/brunosfs-droid/canca/pull/136) | `cfad001` | Listener humano workspace v0.6.26. |
+| [#137](https://github.com/brunosfs-droid/canca/pull/137) | `3874be4` | Fence por banco/recuperação isolada v0.6.27. |
 
 A sequência coordenador → isolamento/cancelamento → CI → integração foi
 comprovada no código/testes e nas integrações existentes. Não se refaz tarefa3.
@@ -56,18 +56,18 @@ as etapas workspace/model/service/API/recovery foram executadas com success.
 
 | Workflow | Run | Jobs | Resultado |
 | --- | --- | --- | --- |
-| Python CI | [37621587624](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37621587624) | 1 | PASS |
-| Workspace Foundation CI | [37621587686](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37621587686) | 2 | PASS |
-| PostgreSQL CI | [37621587791](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37621587791) | 2 | PASS |
-| Operator Web CI | [37621587694](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37621587694) | 1 | PASS |
-| Operator Accounts CI | [37621587746](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37621587746) | 4 | PASS |
-| Optional Agent CI | [37621587792](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37621587792) | 4 | PASS |
-| Read-only SNMP CI | [37621587543](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37621587543) | 6 | PASS |
-| CodeQL | [37621587787](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37621587787) | 1 | PASS |
+| Python CI | [37621587624](https://github.com/brunosfs-droid/canca/actions/runs/37621587624) | 1 | PASS |
+| Workspace Foundation CI | [37621587686](https://github.com/brunosfs-droid/canca/actions/runs/37621587686) | 2 | PASS |
+| PostgreSQL CI | [37621587791](https://github.com/brunosfs-droid/canca/actions/runs/37621587791) | 2 | PASS |
+| Operator Web CI | [37621587694](https://github.com/brunosfs-droid/canca/actions/runs/37621587694) | 1 | PASS |
+| Operator Accounts CI | [37621587746](https://github.com/brunosfs-droid/canca/actions/runs/37621587746) | 4 | PASS |
+| Optional Agent CI | [37621587792](https://github.com/brunosfs-droid/canca/actions/runs/37621587792) | 4 | PASS |
+| Read-only SNMP CI | [37621587543](https://github.com/brunosfs-droid/canca/actions/runs/37621587543) | 6 | PASS |
+| CodeQL | [37621587787](https://github.com/brunosfs-droid/canca/actions/runs/37621587787) | 1 | PASS |
 
 Logs relidos: Python job112792910132, **761 casos/562 executados/199 skips opt-in**,
-PASS. Workspace jobs [PG16/112792910789](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37621587686/job/112792910789)
-e [PG17/112792910553](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37621587686/job/112792910553),
+PASS. Workspace jobs [PG16/112792910789](https://github.com/brunosfs-droid/canca/actions/runs/37621587686/job/112792910789)
+e [PG17/112792910553](https://github.com/brunosfs-droid/canca/actions/runs/37621587686/job/112792910553),
 **118 casos sem skips por job**: 18 foundation, 27 coordinator, 30 model, 13 service,
 19 API, 10 recovery e um guard. Em cada job, WORKSPACE BACKUP RESTORE PASS,
 28 tabelas comparadas, revisões/grafo/recibos/bytes/RLS e ACLs das roles existentes

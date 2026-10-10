@@ -6,7 +6,7 @@ operação em LAB e migração completa de inventário permanecem pendentes.
 Fonte executável: `1ede18c4eba768cbe17fe77e46a7dfa98ed11b85`.
 Tree: `6564b7be345fda895bcd3c9da4b399e187dcbe7c`.
 Base: `2f72ea3a1effba7334c7228c5c86b40410d090b7`.
-[PR #133](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/pull/133).
+[PR #133](https://github.com/brunosfs-droid/canca/pull/133).
 O commit seguinte deste registro altera apenas documentação.
 
 ## Verificação local
@@ -26,8 +26,8 @@ Esse modo apaga o schema canca somente no banco de teste dedicado.
 
 | PostgreSQL | Job da PR | Casos | Skips | Resultado |
 | --- | --- | --- | --- | --- |
-| 16 | [112720752873](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37599692743/job/112720752873) | 18 | 0 | PASS |
-| 17 | [112720752576](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37599692743/job/112720752576) | 18 | 0 | PASS |
+| 16 | [112720752873](https://github.com/brunosfs-droid/canca/actions/runs/37599692743/job/112720752873) | 18 | 0 | PASS |
+| 17 | [112720752576](https://github.com/brunosfs-droid/canca/actions/runs/37599692743/job/112720752576) | 18 | 0 | PASS |
 
 Quatro contratos puros e quatorze testes de integração por versão. Logs e etapas
 dos dois jobs foram conferidos; não há skip substituindo o teste de banco real.
@@ -47,14 +47,14 @@ de push. Cada célula abaixo aponta para o run correspondente.
 
 | Workflow | pull_request | push |
 | --- | --- | --- |
-| Workspace Foundation CI | [37599692743](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37599692743) | [37599687697](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37599687697) |
-| Python CI | [37599692663](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37599692663) | [37599687723](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37599687723) |
-| PostgreSQL CI | [37599692766](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37599692766) | [37599687678](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37599687678) |
-| Operator Accounts CI | [37599692702](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37599692702) | [37599687546](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37599687546) |
-| Operator Web CI | [37599692727](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37599692727) | [37599687591](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37599687591) |
-| Optional Agent CI | [37599692780](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37599692780) | [37599687575](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37599687575) |
-| Read-only SNMP CI | [37599692787](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37599692787) | [37599687675](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37599687675) |
-| CodeQL | [37599692785](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37599692785) | — |
+| Workspace Foundation CI | [37599692743](https://github.com/brunosfs-droid/canca/actions/runs/37599692743) | [37599687697](https://github.com/brunosfs-droid/canca/actions/runs/37599687697) |
+| Python CI | [37599692663](https://github.com/brunosfs-droid/canca/actions/runs/37599692663) | [37599687723](https://github.com/brunosfs-droid/canca/actions/runs/37599687723) |
+| PostgreSQL CI | [37599692766](https://github.com/brunosfs-droid/canca/actions/runs/37599692766) | [37599687678](https://github.com/brunosfs-droid/canca/actions/runs/37599687678) |
+| Operator Accounts CI | [37599692702](https://github.com/brunosfs-droid/canca/actions/runs/37599692702) | [37599687546](https://github.com/brunosfs-droid/canca/actions/runs/37599687546) |
+| Operator Web CI | [37599692727](https://github.com/brunosfs-droid/canca/actions/runs/37599692727) | [37599687591](https://github.com/brunosfs-droid/canca/actions/runs/37599687591) |
+| Optional Agent CI | [37599692780](https://github.com/brunosfs-droid/canca/actions/runs/37599692780) | [37599687575](https://github.com/brunosfs-droid/canca/actions/runs/37599687575) |
+| Read-only SNMP CI | [37599692787](https://github.com/brunosfs-droid/canca/actions/runs/37599692787) | [37599687675](https://github.com/brunosfs-droid/canca/actions/runs/37599687675) |
+| CodeQL | [37599692785](https://github.com/brunosfs-droid/canca/actions/runs/37599692785) | — |
 
 Uma corrida preexistente no teste HTTP de exportação da base principal foi
 corrigida: o teste aguarda a saída do contexto de entrega do handler antes

@@ -9,7 +9,7 @@ Dez runs / **24 jobs PASS** nesse head, com **120 etapas críticas** conferidas
 como efetivamente executadas e timestamps preenchidos. Tree remoto e local
 completos iguais, incluindo binários/branding. O commit final deste registro e
 de próximos passos muda somente dois documentos, sem alteração de código.
-[PR #120](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/pull/120).
+[PR #120](https://github.com/brunosfs-droid/canca/pull/120).
 
 ## Verificação local e preservação
 
@@ -26,16 +26,16 @@ de próximos passos muda somente dois documentos, sem alteração de código.
 
 | Evento | Workflow | Run |
 | --- | --- | --- |
-| pull_request | Operator Accounts CI | [37195906860](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37195906860) |
-| pull_request | PostgreSQL CI | [37195906858](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37195906858) |
-| pull_request | Operator Web CI | [37195906851](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37195906851) |
-| pull_request | Python CI | [37195906874](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37195906874) |
-| pull_request | Optional Agent CI | [37195906853](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37195906853) |
-| push | Operator Accounts CI | [37195903710](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37195903710) |
-| push | PostgreSQL CI | [37195903721](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37195903721) |
-| push | Operator Web CI | [37195903616](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37195903616) |
-| push | Python CI | [37195903648](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37195903648) |
-| push | Optional Agent CI | [37195903722](https://github.com/brunosfs-droid/orizonit-p01-discovery-framework/actions/runs/37195903722) |
+| pull_request | Operator Accounts CI | [37195906860](https://github.com/brunosfs-droid/canca/actions/runs/37195906860) |
+| pull_request | PostgreSQL CI | [37195906858](https://github.com/brunosfs-droid/canca/actions/runs/37195906858) |
+| pull_request | Operator Web CI | [37195906851](https://github.com/brunosfs-droid/canca/actions/runs/37195906851) |
+| pull_request | Python CI | [37195906874](https://github.com/brunosfs-droid/canca/actions/runs/37195906874) |
+| pull_request | Optional Agent CI | [37195906853](https://github.com/brunosfs-droid/canca/actions/runs/37195906853) |
+| push | Operator Accounts CI | [37195903710](https://github.com/brunosfs-droid/canca/actions/runs/37195903710) |
+| push | PostgreSQL CI | [37195903721](https://github.com/brunosfs-droid/canca/actions/runs/37195903721) |
+| push | Operator Web CI | [37195903616](https://github.com/brunosfs-droid/canca/actions/runs/37195903616) |
+| push | Python CI | [37195903648](https://github.com/brunosfs-droid/canca/actions/runs/37195903648) |
+| push | Optional Agent CI | [37195903722](https://github.com/brunosfs-droid/canca/actions/runs/37195903722) |
 
 Etapas críticas: compilações e testes de contas/auditoria/revisão nas quatro
 combinações; compilações e suíte Python; compilações/transações/backup-restore

@@ -17,7 +17,7 @@ Base de planejamento: `docs/TEST_PLAN_1.0.md` (E0, T01–T07/T13) e
    autorizadas. SQL e variáveis de libpq usam secret provider/.pgpass/PGPASSFILE privados,
    jamais DSN com senha na linha de comando, logs ou Git.
 4. EVE-NG: reutilizar P01-MGMT01/DC01/W11/Rocky/Ubuntu onde disponíveis;
-   ligar somente rodada E0. Evidências reais privadas (OneDrive restrito);
+   ligar somente rodada E0. Evidências reais privadas (private evidence archive restrito);
    somente relatório sanitizado no repositório.
 5. As rotinas abaixo são **passos distintos**: captura e verificação offline são
    não destrutivas; provisionamento/restauração requerem aprovação humana antes da execução.

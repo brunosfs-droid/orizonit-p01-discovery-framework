@@ -42,4 +42,4 @@ The run returned zero SSDP responders. This does not establish a scanner defect 
 
 This is not equivalent to production certification. Routed networks, VLANs, corporate devices and credentialed protocols still require their own validation matrix.
 
-Raw residential network data remains in protected Google Drive evidence storage and is intentionally not committed to Git.
+Raw residential network data remains in protected private legacy storage evidence storage and is intentionally not committed to Git.

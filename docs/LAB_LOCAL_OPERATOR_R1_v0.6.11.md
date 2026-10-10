@@ -14,7 +14,7 @@ tokens no output. PostgreSQL e store aprovados são preservados.
 
 ## 1. Pacote no Windows
 
-PowerShell no repositório `C:\GitHub\orizonit-p01-discovery-framework`:
+PowerShell no repositório `C:\GitHub\canca`:
 
 ```powershell
 git fetch origin
