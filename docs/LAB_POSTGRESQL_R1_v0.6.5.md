@@ -138,7 +138,7 @@ Nenhuma instalação/partida foi executada pelo desenvolvimento; este é o gate 
 Etapa posterior ao checkpoint 3. No PowerShell do Windows, no repositório:
 
 ```powershell
-Set-Location C:\GitHub\orizonit-p01-discovery-framework
+Set-Location C:\GitHub\canca
 git pull --ff-only
 git rev-parse HEAD
 ```
