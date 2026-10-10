@@ -129,6 +129,16 @@ class E0EvidenceGateTests(unittest.TestCase):
                     detail["errors"],
                 )
 
+    def test_untrusted_gate_id_never_echoes_suspected_secret(self):
+        d = self.complete()
+        d["gates"][0]["gate_id"] = "secret-value-should-never-appear"
+        d["gates"][0]["result"] = "not-a-state"
+        valid, go, detail = checker.assess(d)
+        self.assertFalse(valid)
+        self.assertFalse(go)
+        self.assertNotIn("secret-value-should-never-appear", json.dumps(detail))
+        self.assertIn("gate[1]: invalid result", detail["errors"])
+
     def test_checkers_with_distinct_identities_still_go(self):
         d = self.complete()
         valid, go, detail = checker.assess(d)
