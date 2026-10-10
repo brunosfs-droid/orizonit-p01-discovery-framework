@@ -93,6 +93,126 @@ def _file(path):
     return {"sha256": h.hexdigest(), "bytes": after.st_size}
 
 
+
+def _secure_tree_supported():
+    return (os.name == "posix" and hasattr(os, "O_NOFOLLOW") and
+            hasattr(os, "O_DIRECTORY") and os.open in os.supports_dir_fd
+            and os.stat in os.supports_dir_fd)
+
+
+def _open_source_directory(path):
+    """Anchor a directory tree to kernel fds; never traverse a symlink."""
+    parts = path.absolute().parts
+    if any(part in (".", "..") for part in parts[1:]):
+        raise GateError("unsafe_source_path")
+    flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
+    fd = os.open(parts[0], flags)
+    try:
+        for part in parts[1:]:
+            nxt = os.open(part, flags, dir_fd=fd)
+            os.close(fd)
+            fd = nxt
+        return fd
+    except BaseException:
+        os.close(fd)
+        raise
+
+
+def _tree_secure(root, root_stat):
+    """Hash every entry using directory-relative, nofollow kernel handles.
+
+    All observed paths/identities must agree across opening and traversal.
+    Atomic tree snapshots still require an operator-controlled quiesce.
+    """
+    root_fd = _open_source_directory(root)
+    try:
+        if _identity(os.fstat(root_fd)) != _identity(root_stat):
+            raise GateError("input_changed")
+        entries = []
+        files = 0
+        dirs = 0
+        bytes_total = 0
+        dir_flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
+        file_flags = os.O_RDONLY | os.O_NOFOLLOW | getattr(os, "O_NONBLOCK", 0)
+
+        def walk(directory_fd, prefix, depth):
+            nonlocal files, dirs, bytes_total
+            if depth > 64:
+                raise GateError("entry_limit")
+            initial = os.fstat(directory_fd)
+            if not stat.S_ISDIR(initial.st_mode):
+                raise GateError("invalid_directory")
+            for leaf in sorted(os.listdir(directory_fd)):
+                name = prefix + leaf
+                if len(entries) >= MAX_ENTRIES:
+                    raise GateError("entry_limit")
+                observed = os.stat(leaf, dir_fd=directory_fd,
+                                   follow_symlinks=False)
+                if stat.S_ISDIR(observed.st_mode):
+                    fd = os.open(leaf, dir_flags, dir_fd=directory_fd)
+                    try:
+                        opened = os.fstat(fd)
+                        if _identity(observed) != _identity(opened):
+                            raise GateError("input_changed")
+                        entries.append((name, ["D", name,
+                                               oct(stat.S_IMODE(opened.st_mode))]))
+                        dirs += 1
+                        walk(fd, name + "/", depth + 1)
+                        if _identity(os.fstat(fd)) != _identity(opened):
+                            raise GateError("input_changed")
+                    finally:
+                        os.close(fd)
+                elif stat.S_ISREG(observed.st_mode):
+                    fd = os.open(leaf, file_flags, dir_fd=directory_fd)
+                    try:
+                        with os.fdopen(fd, "rb") as reader:
+                            fd = -1  # Ownership transferred to context manager.
+                            before = os.fstat(reader.fileno())
+                            if (not stat.S_ISREG(before.st_mode) or
+                                    before.st_size == 0):
+                                raise GateError("invalid_regular_file")
+                            if _identity(observed) != _identity(before):
+                                raise GateError("input_changed")
+                            digest = hashlib.sha256()
+                            for chunk in iter(lambda: reader.read(BLOCK), b""):
+                                digest.update(chunk)
+                            if _identity(os.fstat(reader.fileno())) != _identity(before):
+                                raise GateError("input_changed")
+                    finally:
+                        if fd >= 0:
+                            os.close(fd)
+                    entries.append((name, ["F", name, str(before.st_size),
+                                           digest.hexdigest(),
+                                           oct(stat.S_IMODE(before.st_mode))]))
+                    files += 1
+                    bytes_total += before.st_size
+                else:
+                    raise GateError("unsupported_tree_entry")
+                after = os.stat(leaf, dir_fd=directory_fd,
+                                follow_symlinks=False)
+                if _identity(after) != _identity(observed):
+                    raise GateError("input_changed")
+            if _identity(os.fstat(directory_fd)) != _identity(initial):
+                raise GateError("input_changed")
+
+        walk(root_fd, "", 0)
+        if _identity(os.fstat(root_fd)) != _identity(root_stat):
+            raise GateError("input_changed")
+        if _identity(root.lstat()) != _identity(root_stat):
+            raise GateError("input_changed")
+        if files == 0:
+            raise GateError("empty_directory")
+        digest = hashlib.sha256()
+        digest.update(("ROOT\\0" + oct(stat.S_IMODE(root_stat.st_mode)) +
+                       "\\n").encode())
+        for _, line in sorted(entries, key=lambda item: item[0]):
+            digest.update(("\\0".join(line) + "\\n").encode("utf-8"))
+        return {"sha256": digest.hexdigest(), "files": files,
+                "directories": dirs, "bytes": bytes_total}
+    finally:
+        os.close(root_fd)
+
+
 def _directory(root):
     try:
         root_stat = root.lstat()
@@ -100,6 +220,11 @@ def _directory(root):
         raise GateError("input_unavailable") from None
     if not stat.S_ISDIR(root_stat.st_mode):
         raise GateError("invalid_directory")
+    if _secure_tree_supported():
+        try:
+            return _tree_secure(root, root_stat)
+        except (OSError, UnicodeError, ValueError):
+            raise GateError("input_unavailable") from None
     entries = 0
     files = 0
     directories = 0
