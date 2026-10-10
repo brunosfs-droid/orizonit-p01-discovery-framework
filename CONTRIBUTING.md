@@ -72,3 +72,17 @@ No CLA acceptance is required merely to run the Community software.
 Do not import proprietary commercial module code into this repository without
 explicit authorization and a compatible license grant. See
 [licensing and editions](docs/LICENSING_AND_EDITIONS.md).
+
+
+## Public repository boundary
+
+This repository is public. Contributions must not expose private infrastructure, internal storage locations, customer data, credentials, private repository names, or documentation from unrelated projects/products.
+
+Before opening a pull request:
+- keep examples synthetic or sanitized;
+- never commit real credentials, private keys, tokens, customer outputs or internal inventories;
+- do not reference private storage platforms, internal document locations or non-public repositories;
+- do not copy material from unrelated internal projects/products;
+- prefer public documentation links and repository-local documentation.
+
+CI includes a repository-boundary check intended to prevent known internal-storage references from being reintroduced.
