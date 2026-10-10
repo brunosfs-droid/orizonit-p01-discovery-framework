@@ -835,3 +835,8 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 
 - [Gate SQL](WORKSPACE_LEDGER_READER_INTENT_UPDATE_DENIAL_v0.6.76.md): role read-only reconcedida não pode modificar nem transferir intenção persistida.
 - v0.6.75 integrada pelo PR #186; E0 e R02/R06 seguem abertos.
+
+## v0.6.77 — leitor sem INSERT direto em intenções (CANDIDATE)
+
+- [Gate SQL](WORKSPACE_LEDGER_READER_INTENT_INSERT_DENIAL_v0.6.77.md): role read-only reconcedida não pode criar intenção por SQL direto.
+- v0.6.76 integrada pelo PR #187; E0 e R02/R06 seguem abertos.
