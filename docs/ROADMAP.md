@@ -1,6 +1,6 @@
 # Cancã — Engineering Roadmap
 
-> Cancã is Orizon IT Product 01 (P01). Existing P01 identifiers remain valid during Technical Alpha for compatibility.
+> Cancã is the public project name. Existing legacy P01 identifiers remain valid during Technical Alpha for compatibility.
 
 ## Roadmap vigente — rebaseline 06/10/2026 (-03)
 
