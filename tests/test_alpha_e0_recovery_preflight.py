@@ -184,8 +184,8 @@ class E0RecoveryArtifactTests(unittest.TestCase):
         nested.mkdir()
         (nested / "inventory.json").write_bytes(b"synthetic-inventory")
         expected = hashlib.sha256()
-        expected.update(("ROOT\\0" + oct(stat.S_IMODE(self.store.lstat().st_mode)) +
-                         "\\n").encode())
+        expected.update(("ROOT\0" + oct(stat.S_IMODE(self.store.lstat().st_mode)) +
+                         "\n").encode())
         for path in sorted(self.store.rglob("*"),
                            key=lambda p: p.relative_to(self.store).as_posix()):
             info = path.lstat()
@@ -196,7 +196,7 @@ class E0RecoveryArtifactTests(unittest.TestCase):
                 line = ["F", name, str(info.st_size),
                         hashlib.sha256(path.read_bytes()).hexdigest(),
                         oct(stat.S_IMODE(info.st_mode))]
-            expected.update(("\\0".join(line) + "\\n").encode("utf-8"))
+            expected.update(("\0".join(line) + "\n").encode("utf-8"))
         result = gate._directory(self.store)
         self.assertEqual(result["sha256"], expected.hexdigest())
         self.assertEqual(result["files"], 2)
