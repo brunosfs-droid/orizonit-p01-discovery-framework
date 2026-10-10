@@ -880,3 +880,8 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 
 - [Contrato de snapshot](validation/E0_EVIDENCE_SNAPSHOT_CONTRACT_v0.6.85.md): prova local de integridade byte a byte seguida de hash canônico do registro E0 completo, ancorando commit, topologia, escopo, revisores e arquivos.
 - v0.6.84 integrada via PR #195. Fingerprint não equivale à assinatura digital ou aceite operacional; E0/R02/R06/T13/R20 continuam abertos.
+
+## v0.6.86 — comparação de fingerprint E0 com referência aprovada (CANDIDATE)
+
+- [Contrato de comparação](validation/E0_PINNED_SNAPSHOT_COMPARISON_v0.6.86.md): revalidação local dos arquivos e comparação constante com SHA-256 fixado em registro externo; diferenças bloqueiam o avanço e impedem aceitação implícita.
+- v0.6.85 integrada pelo PR #196; sem execução EVE-NG. R02/R06/T13/R20 e E0 permanecem abertos.
