@@ -46,7 +46,7 @@ def assess(document):
     gates = document.get("gates")
     if not isinstance(gates, list):
         return False, False, {"errors": errors + ["gates must be an array"], "missing": [], "counts": {}}
-    ids = [g.get("gate_id") if isinstance(g, dict) else None for g in gates]
+    ids = [g.get("gate_id") if isinstance(g, dict) and isinstance(g.get("gate_id"), str) else None for g in gates]
     if len(gates) != len(GATE_IDS) or set(ids) != set(GATE_IDS) or len(set(ids)) != len(ids):
         errors.append("gate_id set must contain E0-01..E0-10 exactly once")
     for gate in gates:
@@ -55,7 +55,7 @@ def assess(document):
             continue
         gid = gate.get("gate_id")
         state = gate.get("result")
-        if state not in STATES:
+        if not isinstance(state, str) or state not in STATES:
             errors.append(f"{gid}: invalid result")
             continue
         counts[state] += 1
