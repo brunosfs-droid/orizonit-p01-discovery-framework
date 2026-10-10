@@ -9,7 +9,7 @@ Preserve origem `canca_p01_lab_r1`, fixture `P01-PG-R1-06230404e329` e arquivos 
 No PowerShell do Windows, venv/repositório existentes:
 
 ```powershell
-Set-Location C:\GitHub\orizonit-p01-discovery-framework
+Set-Location C:\GitHub\canca
 git pull origin main
 $P01Commit = 'COLE_O_MERGE_SHA_V067_DO_RELATORIO_DE_VALIDACAO'
 git archive --format=tar --output=C:\Canca\canca-postgres-lab-v0.6.7.tar $P01Commit
