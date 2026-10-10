@@ -207,5 +207,79 @@ class E0ArtifactIntegrityTests(unittest.TestCase):
         self.assertNotIn("lab-approval-01", out.getvalue())
         self.assertNotIn(str(self.root), out.getvalue())
 
+    def test_pinned_snapshot_matches_verified_independent_reference(self):
+        expected = snapshot_checker.snapshot(self.document, self.root)[2]["snapshot_sha256"]
+        valid, matched, report = snapshot_checker.compare_pinned_snapshot(
+            self.document, self.root, expected)
+        self.assertTrue(valid)
+        self.assertTrue(matched)
+        self.assertTrue(report["matches_pinned_snapshot"])
+        self.assertFalse(report["operational_go"])
+
+    def test_pinned_snapshot_rejects_register_substitution(self):
+        expected = snapshot_checker.snapshot(self.document, self.root)[2]["snapshot_sha256"]
+        modified = copy.deepcopy(self.document)
+        modified["scope_approval_ref"] = "replaced-lab-approval"
+        valid, matched, report = snapshot_checker.compare_pinned_snapshot(
+            modified, self.root, expected)
+        self.assertTrue(valid)
+        self.assertFalse(matched)
+        self.assertFalse(report["matches_pinned_snapshot"])
+        self.assertNotIn("snapshot_sha256", report)
+        self.assertIn("snapshot differs from pinned reference", report["artifact_errors"])
+
+    def test_pinned_snapshot_rejects_artifact_tampering(self):
+        expected = snapshot_checker.snapshot(self.document, self.root)[2]["snapshot_sha256"]
+        (self.root / "E0-01" / "report.txt").write_bytes(b"altered evidence")
+        valid, matched, report = snapshot_checker.compare_pinned_snapshot(
+            self.document, self.root, expected)
+        self.assertTrue(valid)
+        self.assertFalse(matched)
+        self.assertFalse(report["artifacts_verified"])
+        self.assertNotIn("snapshot_sha256", report)
+
+    def test_pinned_snapshot_rejects_invalid_reference_without_file_reads(self):
+        for expected in ("ABC" * 21 + "A", "0" * 63, "0" * 64 + "x", ""):
+            with self.subTest(expected=expected):
+                valid, matched, report = snapshot_checker.compare_pinned_snapshot(
+                    self.document, self.root / "nonexistent", expected)
+                self.assertFalse(valid)
+                self.assertFalse(matched)
+                self.assertFalse(report["operational_go"])
+
+    def test_pinned_snapshot_cli_match_mismatch_and_invalid(self):
+        path = Path(self.temp.name) / "private.json"
+        path.write_text(json.dumps(self.document), encoding="utf-8")
+        expected = snapshot_checker.snapshot(self.document, self.root)[2]["snapshot_sha256"]
+        for digest, code, verdict in (
+            (expected, 0, "SNAPSHOT_MATCH"),
+            ("f" * 64 if expected != "f" * 64 else "e" * 64, 1, "SNAPSHOT_MISMATCH"),
+            ("not-a-valid-digest", 2, "INVALID"),
+        ):
+            with self.subTest(verdict=verdict):
+                out = io.StringIO()
+                with redirect_stdout(out):
+                    exit_code = snapshot_checker.main([
+                        "--check", str(path), "--evidence-root", str(self.root),
+                        "--expected-sha256", digest,
+                    ])
+                self.assertEqual(exit_code, code)
+                response = json.loads(out.getvalue())
+                self.assertEqual(response["verdict"], verdict)
+                self.assertFalse(response["operational_go"])
+                self.assertNotIn("lab-approval-01", out.getvalue())
+                self.assertNotIn(str(self.root), out.getvalue())
+
+    def test_pinned_snapshot_pending_gate_stays_no_go(self):
+        expected = snapshot_checker.snapshot(self.document, self.root)[2]["snapshot_sha256"]
+        doc = copy.deepcopy(self.document)
+        doc["gates"][3]["result"] = "BLOCKED"
+        valid, matched, report = snapshot_checker.compare_pinned_snapshot(
+            doc, self.root, expected)
+        self.assertTrue(valid)
+        self.assertFalse(matched)
+        self.assertNotIn("snapshot_sha256", report)
+
+
 if __name__ == "__main__":
     unittest.main()
