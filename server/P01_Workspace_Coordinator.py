@@ -198,6 +198,17 @@ class Coordinator:
         self._cache.clear(); self._bytes = 0
         self._condition.notify_all()
 
+    def fail_closed(self):
+        """Trusted internal quarantine after unverified subprocess cleanup.
+
+        Do not permit a new workspace to open while a legacy subprocess or
+        descendant may still be running. This is intentionally irreversible
+        for the current coordinator instance: operator recovery is required.
+        """
+        with self._condition:
+            if not self._terminated:
+                self._fault()
+
     def _live(self):
         pg.require(self._started and not self._terminated and self.state != 'recovery_required', 'workspace_lease_lost')
         try:
