@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "release_commit": null,
+  "topology_sha256": null,
+  "scope_approval_ref": null,
+  "operator": null,
+  "executed_at_utc": null,
+  "security_reviewer": null,
+  "release_reviewer": null,
+  "gates": [
+    {
+      "gate_id": "E0-01",
+      "description": "Offline package and import",
+      "result": "NOT RUN",
+      "evidence_uri": null,
+      "evidence_sha256": null,
+      "reviewer": null,
+      "executed_at_utc": null
+    },
+    {
+      "gate_id": "E0-02",
+      "description": "Windows WinRM authorized profiles",
+      "result": "NOT RUN",
+      "evidence_uri": null,
+      "evidence_sha256": null,
+      "reviewer": null,
+      "executed_at_utc": null
+    },
+    {
+      "gate_id": "E0-03",
+      "description": "Linux authorized SSH collection",
+      "result": "NOT RUN",
+      "evidence_uri": null,
+      "evidence_sha256": null,
+      "reviewer": null,
+      "executed_at_utc": null
+    },
+    {
+      "gate_id": "E0-04",
+      "description": "Denied/unreachable endpoints fail closed",
+      "result": "NOT RUN",
+      "evidence_uri": null,
+      "evidence_sha256": null,
+      "reviewer": null,
+      "executed_at_utc": null
+    },
+    {
+      "gate_id": "E0-05",
+      "description": "Workspace scope and stale generation",
+      "result": "NOT RUN",
+      "evidence_uri": null,
+      "evidence_sha256": null,
+      "reviewer": null,
+      "executed_at_utc": null
+    },
+    {
+      "gate_id": "E0-06",
+      "description": "Coordinator cancel/drain/lease (R02)",
+      "result": "NOT RUN",
+      "evidence_uri": null,
+      "evidence_sha256": null,
+      "reviewer": null,
+      "executed_at_utc": null
+    },
+    {
+      "gate_id": "E0-07",
+      "description": "Import/reconciliation (R05/R06)",
+      "result": "NOT RUN",
+      "evidence_uri": null,
+      "evidence_sha256": null,
+      "reviewer": null,
+      "executed_at_utc": null
+    },
+    {
+      "gate_id": "E0-08",
+      "description": "Same-cluster recovery (T13)",
+      "result": "NOT RUN",
+      "evidence_uri": null,
+      "evidence_sha256": null,
+      "reviewer": null,
+      "executed_at_utc": null
+    },
+    {
+      "gate_id": "E0-09",
+      "description": "HTTP audit and secret redaction",
+      "result": "NOT RUN",
+      "evidence_uri": null,
+      "evidence_sha256": null,
+      "reviewer": null,
+      "executed_at_utc": null
+    },
+    {
+      "gate_id": "E0-10",
+      "description": "Rollback and reproducibility",
+      "result": "NOT RUN",
+      "evidence_uri": null,
+      "evidence_sha256": null,
+      "reviewer": null,
+      "executed_at_utc": null
+    }
+  ]
+}
