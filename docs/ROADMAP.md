@@ -890,3 +890,8 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 
 - [Contrato de segurança](validation/E0_STRICT_JSON_INTAKE_v0.6.87.md): nega chaves JSON duplicadas, NaN/Infinity, arquivos maiores que 1 MiB e UTF-8 inválido nos três CLIs E0, antes de acessar evidências.
 - v0.6.86 integrada via PR #197; EVE-NG e R02/R06/T13/R20 permanecem pendentes.
+
+## v0.6.88 — schema e semântica imutáveis dos gates E0 (CANDIDATE)
+
+- [Contrato E0](validation/E0_PINNED_GATE_SCHEMA_v0.6.88.md): campos exatos, versão inteira, tipagem estrita, descrições E0-01..E0-10 fixadas e IDs de entrada não confiável redigidos nos diagnósticos.
+- v0.6.87 integrada pelo PR #198; E0/EVE-NG, R02/R06 e T13/R20 seguem pendentes.
