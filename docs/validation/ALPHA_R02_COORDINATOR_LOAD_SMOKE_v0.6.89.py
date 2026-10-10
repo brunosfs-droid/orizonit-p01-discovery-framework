@@ -60,10 +60,11 @@ def qualify(*, cycles=5, workers=4):
     # Both test actors can read both contexts: generation fences must hold
     # independently of authorization success. No DB, network, or files touched.
     def authorizer(actor, workspace, permission, target):
-        pg.require(actor in ("reader", "writer") and workspace in ("A", "B")
-                   and permission == "workspace:read" or
-                   actor == "writer" and workspace in ("A", "B") and permission == "workspace:write",
-                   "workspace_access_denied")
+        permitted = (workspace in ("A", "B") and
+                     ((actor == "reader" and permission == "workspace:read") or
+                      (actor == "writer" and permission in
+                       ("workspace:read", "workspace:write"))))
+        pg.require(permitted, "workspace_access_denied")
         pg.require(target == ("offline", 0, "synthetic"), "workspace_connection_mismatch")
 
     lease = SimulatedLease()
@@ -129,6 +130,9 @@ def qualify(*, cycles=5, workers=4):
                 if failures:
                     raise AssertionError("synthetic coordinator invariant failed")
             finally:
+                # On barrier timeout or other errors, unblock each worker
+                # before leaving the scope to avoid leaked synthetic threads.
+                runtime._cancel.set()
                 for thread in threads:
                     if thread.is_alive():
                         thread.join(timeout=5)
