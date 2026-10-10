@@ -860,3 +860,8 @@ em v0.6.27; R06 ainda depende de migração, readers/reports, audit e gates oper
 
 - [Registro](validation/E0_EVIDENCE_REGISTER_v0.6.81.md): dez gates E0 inicialmente NOT RUN, URI/digest/revisor e aprovação obrigatórios, go/no-go explícito.
 - v0.6.80 integrada pelo PR #191; E0/R02/R06/T13/R20 não homologados.
+
+## v0.6.82 — validador automático das evidências E0 (CANDIDATE)
+
+- [Validador e contrato](validation/E0_EVIDENCE_MACHINE_GATE_v0.6.82.md): JSON E0 com dez gates NOT RUN, verificação offline de campos, digests e revisão; CI assegura validade estrutural sem conferir GO operacional.
+- v0.6.81 integrada pelo PR #192; E0/R02/R06/T13/R20 continuam sem homologação de laboratório.
